@@ -433,6 +433,8 @@ out/
 #===========================
 !*.exe
 *.obj
+*.tlog
+*.idb
 !**/resources/**/*.obj
 .history
 .gradle/

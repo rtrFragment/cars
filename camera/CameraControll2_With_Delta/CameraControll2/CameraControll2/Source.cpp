@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <stdio.h> 
-#include <gl/glew.h> 
+#include <C:\glew\include\GL\glew.h> 
 #include <gl/GL.h>
 
 #include "glm/glm.hpp" 
@@ -9,8 +9,8 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "camera.h"
 
-
-#pragma comment(lib,"glew32.lib")
+//C:\glew\lib\Release\Win32
+#pragma comment(lib,"C:\\glew\\lib\\Release\\Win32\\glew32.lib")
 #pragma comment(lib,"opengl32.lib")
 
 #define WIN_WIDTH 800
