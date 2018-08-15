@@ -73,7 +73,7 @@ int main(int argc, char const *argv[])
     alGenBuffers(1, &defaultAudioBufferId_3);
 
     // Check for any errors
-    alError = alGetError();
+    ALenum alError = alGetError();
 
     if(alError != AL_NO_ERROR)
     {
@@ -134,7 +134,7 @@ int main(int argc, char const *argv[])
     alGenSources(1, &soundSourceId);
 
     // Check for any errors.
-    ALenum alError = alGetError();
+    alError = alGetError();
 
     if(alError != AL_NO_ERROR)
     {
