@@ -469,8 +469,8 @@ void initialize(void)
 	DrawPlane();
 	//DrawSphere();
 	DrawCube();
-	//count_of_vertices_car_1 = LoadMeshData("resources/sls_amg.obj", gv_vertices_1, gv_textures_1, gv_normals_1);
-	//DrawCar();
+	count_of_vertices_car_1 = LoadMeshData("resources/sls_amg.obj", gv_vertices_1, gv_textures_1, gv_normals_1);
+	DrawCar();
 
 	// load textures
 	// -------------
@@ -829,8 +829,8 @@ void renderScene(const GLuint &shader, GLuint &NewModel)
 	model = glm::scale(model, glm::vec3(0.5f));
 	glUniformMatrix4fv(NewModel, 1, GL_FALSE, &model[0][0]);
 	
-	renderCube();
-	//renderCar();
+	//renderCube();
+	renderCar();
 
 	model = glm::mat4();
 	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
