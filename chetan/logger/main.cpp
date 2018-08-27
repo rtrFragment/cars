@@ -4,10 +4,11 @@
 
 int main()
 {
-    Logger::init("debug.log");
+    Logger::initialize("debug.log");
 
     logInfo("This is a log with parameter %d.\n", 1);
-    logInfo("This is simple log\n");
+    logInfo("This is simple log.\n");
+    logError("This is an error with message: %s.\n", "Sample error");
 
     Logger::close();
 

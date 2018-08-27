@@ -3,15 +3,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// #define logInfo(x) Logger::info(__FILE__, __FUNCTION__, __LINE__, x)
-#define logInfo(x, ...) Logger::info(__FILE__, __FUNCTION__, __LINE__, x, __VA_ARGS__)
+#define logInfo(x_message, ...) Logger::info(__FILE__, __FUNCTION__, __LINE__, x_message, __VA_ARGS__)
+#define logError(x_message, ...) Logger::error(__FILE__, __FUNCTION__, __LINE__, x_message, __VA_ARGS__)
 
 class Logger
 {
 
 public:
-    static void init(const char *fileName);
-    static void info(const char *file, const char *function, int line, const char *format, ...);
+    static void initialize(const char *fileName);
+    static void info(const char *file, const char *function, int line, const char *message, ...);
+    static void error(const char *file, const char *function, int line, const char *message, ...);
     static void close();
 
 private:
@@ -19,7 +20,9 @@ private:
     ~Logger();
     Logger(const Logger&);
 
+    void log(const char *file, const char *function, int line, const char *tag, const char *message, va_list args);
+
     static Logger* logger;
 
-    FILE *logfile;
+    FILE *logfile = nullptr;
 };

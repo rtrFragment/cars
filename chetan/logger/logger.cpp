@@ -8,12 +8,12 @@ Logger* Logger::logger = nullptr;
 Logger::Logger() {}
 Logger::Logger(const Logger&) {};
 
-void Logger::init(const char *fileName)
+void Logger::initialize(const char *fileName)
 {
     if(logger == nullptr)
     {
         char dateTime[100] = {0};
-        size_t size = currentDateTime(dateTime);
+        size_t size = currentDateTime(dateTime, sizeof(dateTime));
 
         logger = new Logger();
         logger->logfile = fopen(fileName, "w");
@@ -34,16 +34,20 @@ void Logger::init(const char *fileName)
 
 Logger::~Logger()
 {
-    if(logger->logfile != NULL)
+    if(logger->logfile == NULL)
     {
-        char dateTime[100] = {0};
-        size_t size = currentDateTime(dateTime);
-
-        fprintf(logger->logfile, "-----------------------------------\n");
-        fprintf(logger->logfile, "| Logs end: %s   |\n", dateTime);
-        fprintf(logger->logfile, "-----------------------------------\n");
-        fclose(logger->logfile);
+        return;
     }
+
+    char dateTime[100] = {0};
+    size_t size = currentDateTime(dateTime, sizeof(dateTime));
+
+    fprintf(logger->logfile, "-----------------------------------\n");
+    fprintf(logger->logfile, "| Logs end: %s   |\n", dateTime);
+    fprintf(logger->logfile, "-----------------------------------\n");
+    fflush(logger->logfile);
+    fclose(logger->logfile);
+    logger->logfile = nullptr;
 }
 
 void Logger::close()
@@ -52,7 +56,23 @@ void Logger::close()
     logger = nullptr;
 }
 
-void Logger::info(const char *file, const char *function, int line, const char *format, ...)
+void Logger::info(const char *file, const char *function, int line, const char *message, ...)
+{
+    va_list args;
+    va_start(args, message);
+    logger->log(file, function, line, "[Info]", message, args);
+    va_end(args);
+}
+
+void Logger::error(const char *file, const char *function, int line, const char *message, ...)
+{
+    va_list args;
+    va_start(args, message);
+    logger->log(file, function, line, "[Error]", message, args);
+    va_end(args);
+}
+
+void Logger::log(const char *file, const char *function, int line, const char *tag, const char *message, va_list args)
 {
     if(logger->logfile == NULL)
     {
@@ -60,14 +80,10 @@ void Logger::info(const char *file, const char *function, int line, const char *
     }
 
     char dateTime[100] = {0};
-    size_t size = currentDateTime(dateTime);
+    size_t size = currentDateTime(dateTime, sizeof(dateTime));
 
-    fprintf(logger->logfile, "%s | %s | % s | %04d: ", dateTime, file, function, line);
-
-    va_list args;
-    va_start(args, format);
-    vfprintf(logger->logfile, format, args);
-    va_end(args);
+    fprintf(logger->logfile, "%s | %s:%04d | %s | %s | ", dateTime, file, line, function, tag);
+    vfprintf(logger->logfile, message, args);
 
     fflush(logger->logfile);
 }
