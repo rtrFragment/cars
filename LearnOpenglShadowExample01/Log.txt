@@ -1,7 +1,0 @@
-Log File Is Successfully Opened.
-4.6.0 NVIDIA 397.31
-Shading Lang Version : 4.60 NVIDIA 
-In ShadowMappingShaderBuildNCompileShader.
-In SimpleDepthShaderBuildNCompileShader 
- Image Successfully Loaded.
-Log File Is Successfully Closed.

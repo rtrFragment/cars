@@ -1,3 +1,0 @@
-#include "Header.h"
-
-IDBITMAP_WOOD BITMAP "resources/wood.bmp"
