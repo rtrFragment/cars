@@ -2,7 +2,7 @@
 
 ###### Dependency
 
--   We need FreeType library, Windows binary can be downloaded at [01 - Window](iOS/01-window)
+-   We need FreeType library, it is available in `lib/freetype` folder. The `build.bat` file is also modified to use this path while compiling. Right now it configured to build `x64` version, if you want to build `x86` version, then modify the build file to point to `.\lib\freetype\win32` folder for 32-bit free type lib.
 
 ###### How to compile
 
@@ -15,10 +15,16 @@ rc.exe /V resource.rc
 cd %root%
 ```
 
--   Now compile the program.
+-   Compile the x64 version
 
 ```
-cl.exe /EHsc /DUNICODE /Zi /I %GLEW_PATH%\include /I %FREETYPE_PATH%\include /Fe:font *.cpp /link resources\resource.res /LIBPATH:%GLEW_LIB_PATH% /LIBPATH:%FREETYPE_LIB_PATH% user32.lib kernel32.lib gdi32.lib openGL32.lib glew32.lib freetype.lib
+cl.exe /EHsc /DUNICODE /Zi /I %GLEW_PATH%\include /I ".\lib\freetype\include" /Fe:font *.cpp /link resources\resource.res /LIBPATH:%GLEW_LIB_PATH% /LIBPATH:".\lib\freetype\win64" user32.lib kernel32.lib gdi32.lib openGL32.lib glew32.lib freetype.lib
+```
+
+-   Compile the x86 version
+
+```
+cl.exe /EHsc /DUNICODE /Zi /I %GLEW_PATH%\include /I ".\lib\freetype\include" /Fe:font *.cpp /link resources\resource.res /LIBPATH:%GLEW_LIB_PATH% /LIBPATH:".\lib\freetype\win32" user32.lib kernel32.lib gdi32.lib openGL32.lib glew32.lib freetype.lib
 ```
 
 ###### Keyboard shortcuts
