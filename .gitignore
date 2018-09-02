@@ -432,7 +432,8 @@ out/
 # User Defined
 #===========================
 !*.exe
-*.obj
+# We actually do not need add all obj
+!*.obj
 *.tlog
 *.idb
 !**/resources/**/*.obj
