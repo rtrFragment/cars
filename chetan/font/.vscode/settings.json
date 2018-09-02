@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "map": "cpp",
+        "initializer_list": "cpp",
+        "vector": "cpp",
+        "xstring": "cpp",
+        "xtree": "cpp",
+        "cmath": "cpp"
+    }
+}
