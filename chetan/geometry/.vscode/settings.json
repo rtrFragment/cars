@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "xlocale": "cpp",
+        "vector": "cpp",
+        "exception": "cpp",
+        "iomanip": "cpp",
+        "memory": "cpp",
+        "type_traits": "cpp",
+        "xstring": "cpp",
+        "xtree": "cpp",
+        "xutility": "cpp"
+    }
+}
