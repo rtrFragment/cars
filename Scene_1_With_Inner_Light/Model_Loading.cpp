@@ -202,6 +202,10 @@ glm::vec3 cameraTarget;
 glm::vec3 cameraUP;
 Camera  camera;
 
+AudioManager *audioManager = NULL;
+SoundSource *soundSource = NULL;
+ALuint audioBufferId = 0;
+
 int giNumberOfLights = 20;
 int camera_Z_counter = 0.0f;
 GLfloat deltaTime = 0.0f;
@@ -213,6 +217,7 @@ GLfloat gfRight_Door_Translate = 0.0f;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
 {
 	void initialize(void);
+ 	void initializeAudio(void);
 	void ToggleFullscreen(void);
 	void display(void);
 	void update(void);
@@ -258,6 +263,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	SetForegroundWindow(hwnd);
 
 	initialize();
+	initializeAudio();
 
 	//MessageBox(hwnd, TEXT("After init"), TEXT("MSG"), MB_OK);
 
@@ -413,6 +419,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			{
 				gbLight = true;
 				gbIsLKeyPressed = true;
+
+				if(soundSource != NULL && audioBufferId != 0)
+				{
+					soundSource->play(audioBufferId);
+				}
 			}
 			else
 			{
@@ -841,6 +852,44 @@ void initialize(void)
 	QueryPerformanceCounter((LARGE_INTEGER*)&initTime);
 
 	resize(WIN_WIDTH, WIN_HEIGHT);
+}
+
+void initializeAudio(void)
+{
+    audioManager = new AudioManager();
+    ALboolean audioManagerrInitialize = audioManager->initialize();
+
+    if(!audioManagerrInitialize)
+    {
+        logError("Not able to initialize audio manager.\n");
+    }
+    else
+    {
+        audioManager->setListenerPosition(0.0f, 0.0f, 0.0f);
+        audioManager->setListenerVelocity(0.0f, 0.0f, 0.0f);
+
+        alGenBuffers(1, &audioBufferId);
+
+        ALenum error = alGetError();
+
+        if(error != AL_NO_ERROR)
+        {
+            logError("Not able to create audio buffer, error code: %d\n", error);
+        }
+
+        error = AL_NO_ERROR;
+
+        ALboolean waveDataLoaded = audioManager->loadWaveAudio("resources/audio/SpotLightSound.wav", audioBufferId);
+
+        if(!waveDataLoaded)
+        {
+            logError("Not able to load audio file.\n");
+        }
+
+	 	soundSource = new SoundSource();
+        soundSource->setSourcef(AL_ROLLOFF_FACTOR, 1.0f);
+        soundSource->setSourcef(AL_REFERENCE_DISTANCE, 1.0f);
+    }
 }
 
 void MouseMovement(double xpos, double ypos)
@@ -1506,6 +1555,24 @@ void uninitialize(int i_Exit_Flag)
 		SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
 		ShowCursor(TRUE);
 	}
+
+	if(soundSource != NULL)
+    {
+        delete soundSource;
+        soundSource = NULL;
+    }
+
+    if(audioBufferId != 0)
+    {
+        alDeleteBuffers(1, &audioBufferId);
+        audioBufferId = 0;
+    }
+
+    if(audioManager != NULL)
+    {
+        delete audioManager;
+        audioManager = NULL;
+    }
 
 	if (Gaurage_Body.Vao)
 	{
