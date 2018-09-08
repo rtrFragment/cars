@@ -1,27 +1,32 @@
-#include<windows.h>
-#include<windowsx.h>
-#include<C:\glew\include\GL\glew.h>
-#include<gl/GL.h>
-#include<stdio.h>
-//#include"vmath.h"
-#include<vector>
-#include<stdlib.h>
-#include "glm/glm.hpp" 
+#include <windows.h>
+#include <windowsx.h>
+// #include <C:\glew\include\GL\glew.h>
+#include <gl/glew.h>
+#include <gl/GL.h>
+#include <stdio.h>
+#include <vector>
+#include <stdlib.h>
+#include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include"Obj_Loader.h"
-#include"camera.h"
+#include "Obj_Loader.h"
+#include "camera.h"
+#include "lib/audioManager/audioManager.h"
+#include "lib/audioManager/soundSource.h"
+#include "lib/logger/logger.h"
 
-#pragma comment(lib,"User32.lib")
-#pragma comment(lib,"GDI32.lib")
-#pragma comment(lib,"C:\\glew\\lib\\Release\\x64\\glew32.lib")
+#pragma comment(lib,"user32.lib")
+#pragma comment(lib,"gdi32.lib")
+#pragma comment(lib,"kernel32.lib")
 #pragma comment(lib,"opengl32.lib")
+#pragma comment(lib,"glew32.lib")
+#pragma comment(lib,"openal32.lib")
 
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
 
 //using namespace vmath;
-		
+
 enum
 {
 	HAD_ATTRIBUTE_POSITION = 0,
@@ -44,7 +49,6 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 #define END_ANGLE_POS			360.0f	//Marks terminating angle position rotation
 #define MODEL_ANGLE_INCREMENT	0.1f	//Increment angle for MODEL
 
-FILE *gpFile;
 HWND ghwnd;
 HDC ghdc;
 HGLRC ghrc;
@@ -219,13 +223,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	TCHAR szClassName[] = TEXT("My App");
 	bool bDone = false;
 
-	if (fopen_s(&gpFile, "Log.txt", "w") != NULL)
+	if (!Logger::initialize("debug.log"))
 	{
-		//MessageBox(NULL, TEXT("Cannot Create Log File !!!"), TEXT("Error"), MB_OK);
+		MessageBox(NULL, TEXT("Cannot Create Log File !!!"), TEXT("Error"), MB_OK);
 		exit(EXIT_FAILURE);
 	}
-	else
-		fprintf(gpFile, "Log File Created Successfully...\n");
 
 	wndclass.cbSize = sizeof(WNDCLASSEX);
 	wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -245,8 +247,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	hwnd = CreateWindowEx(WS_EX_APPWINDOW, szClassName, TEXT("OpenGLPP : 3D Rotation"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, 100, 100, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
 	if (hwnd == NULL)
 	{
-		fprintf(gpFile, "Cannot Create Window...\n");
-		uninitialize(1);
+		logError("Cannot Create Window...\n");
+		uninitialize(EXIT_FAILURE);
 	}
 
 	ghwnd = hwnd;
@@ -287,7 +289,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		}
 	}
 
-	uninitialize(0);
+	uninitialize(EXIT_SUCCESS);
 	return((int)msg.wParam);
 }
 
@@ -402,8 +404,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case 0x50://P
-			fprintf(gpFile, "Camera Counter :%i\n", camera_Z_counter);
-			//fprintf(gpFile, "Linear :%f\n", pointLight.gLinear);
+			//logInfo("Camera Counter :%i\n", camera_Z_counter);
+			//logInfo("Linear :%f\n", pointLight.gLinear);
 			break;
 
 		case 0x4C:
@@ -421,9 +423,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_MOUSEMOVE:
-		xPos = GET_X_LPARAM(lParam);
-		yPos = GET_Y_LPARAM(lParam);
-		MouseMovement((double)xPos, (double)yPos);
+		// xPos = GET_X_LPARAM(lParam);
+		// yPos = GET_Y_LPARAM(lParam);
+		// MouseMovement((double)xPos, (double)yPos);
 		break;
 
 	case WM_DESTROY:
@@ -458,34 +460,34 @@ void initialize(void)
 	ghdc = GetDC(ghwnd);
 	if (ghdc == NULL)
 	{
-		fprintf(gpFile, "GetDC() Failed.\n");
-		uninitialize(1);
+		logError("GetDC() Failed.\n");
+		uninitialize(EXIT_FAILURE);
 	}
 
 	iPixelFormatIndex = ChoosePixelFormat(ghdc, &pfd);
 	if (iPixelFormatIndex == 0)
 	{
-		fprintf(gpFile, "ChoosePixelFormat() Failed.\n");
-		uninitialize(1);
+		logError("ChoosePixelFormat() Failed.\n");
+		uninitialize(EXIT_FAILURE);
 	}
 
 	if (SetPixelFormat(ghdc, iPixelFormatIndex, &pfd) == FALSE)
 	{
-		fprintf(gpFile, "SetPixelFormat() Failed.\n");
-		uninitialize(1);
+		logError("SetPixelFormat() Failed.\n");
+		uninitialize(EXIT_FAILURE);
 	}
 
 	ghrc = wglCreateContext(ghdc);
 	if (ghrc == NULL)
 	{
-		fprintf(gpFile, "wglCreateContext() Failed.\n");
-		uninitialize(1);
+		logError("wglCreateContext() Failed.\n");
+		uninitialize(EXIT_FAILURE);
 	}
 
 	if (wglMakeCurrent(ghdc, ghrc) == FALSE)
 	{
-		fprintf(gpFile, "wglMakeCurrent() Failed");
-		uninitialize(1);
+		logError("wglMakeCurrent() Failed");
+		uninitialize(EXIT_FAILURE);
 	}
 
 	GLenum glew_error = glewInit();
@@ -514,7 +516,7 @@ void initialize(void)
 	//MessageBox(ghwnd, TEXT("After LoadMeshData 6"), TEXT("MSG"), MB_OK);
 	Mustang.count_of_vertices = LoadMeshData("Mustang_GT\\mustang_GT_new.obj", Mustang.gv_vertices, Mustang.gv_textures, Mustang.gv_normals);
 	//MessageBox(ghwnd, TEXT("After LoadMeshData 6"), TEXT("MSG"), MB_OK);
-	
+
 
 	//Vertex Shader
 	gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
@@ -558,10 +560,10 @@ void initialize(void)
 			{
 				GLsizei written;
 				glGetShaderInfoLog(gVertexShaderObject, iInfoLogLength, &written, szInfoLog);
-				fprintf(gpFile, "Vertex Shader Compilation Log : %s\n", szInfoLog);
+				logError("Vertex Shader Compilation Log : %s\n", szInfoLog);
 				free(szInfoLog);
-				uninitialize(1);
-				exit(0);
+				uninitialize(EXIT_FAILURE);
+				exit(EXIT_FAILURE);
 			}
 		}
 	}
@@ -702,10 +704,10 @@ void initialize(void)
 			{
 				GLsizei written;
 				glGetShaderInfoLog(gFragmentShaderObject, iInfoLogLength, &written, szInfoLog);
-				fprintf(gpFile, "Fragment Shader Compilation Log : %s\n", szInfoLog);
+				logError("Fragment Shader Compilation Log : %s\n", szInfoLog);
 				free(szInfoLog);
-				uninitialize(1);
-				exit(0);
+				uninitialize(EXIT_FAILURE);
+				exit(EXIT_FAILURE);
 			}
 		}
 	}
@@ -736,10 +738,10 @@ void initialize(void)
 			{
 				GLsizei written;
 				glGetProgramInfoLog(gShaderProgramObject, iInfoLogLength, &written, szInfoLog);
-				fprintf(gpFile, "Shader Program Link Log : %s\n", szInfoLog);
+				logError("Shader Program Link Log : %s\n", szInfoLog);
 				free(szInfoLog);
-				uninitialize(1);
-				exit(0);
+				uninitialize(EXIT_FAILURE);
+				exit(EXIT_FAILURE);
 			}
 		}
 	}
@@ -825,7 +827,7 @@ void initialize(void)
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glShadeModel(GL_SMOOTH);
-	
+
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	gPerspectiveProjectionMatrix = glm::mat4(1.0f);
@@ -1144,10 +1146,10 @@ void display(void)
 	lastFrame = currentFrame;
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	
+
 	//Use Shader Program Object
 	glUseProgram(gShaderProgramObject);
-	
+
 	if (gbLight == true)
 	{
 		if (gbUpper_Middle_Light_On_Flag == true)
@@ -1175,7 +1177,7 @@ void display(void)
 		glUniform3fv(materialProperties.gKsUniform, 1, materialProperties.materialSpecular);
 		glUniform1f(materialProperties.gMaterialShininessUniform, materialProperties.materialShininess);
 		glUniform3fv(gViewPositionUniform, 1, glm::value_ptr(gViewPosition));
-		
+
 		//Spot Light
 		glUniform3fv(spotLight.gLaUniform, 1, spotLight.lightAmbient);
 		glUniform3fv(spotLight.gLdUniform, 1, spotLight.lightDiffuse);
@@ -1249,7 +1251,7 @@ void display(void)
 	glBindVertexArray(Gaurage_Body.Vao);
 
 	glDrawArrays(GL_TRIANGLES, 0, Gaurage_Body.count_of_vertices);
-	
+
 	glBindVertexArray(0);
 
 	/*************Gaurage Outer Light*************/
@@ -1523,7 +1525,7 @@ void uninitialize(int i_Exit_Flag)
 		gVbo_Normal = 0;
 	}
 
-	//Detach Shader 
+	//Detach Shader
 	glDetachShader(gShaderProgramObject, gVertexShaderObject);
 	glDetachShader(gShaderProgramObject, gFragmentShaderObject);
 
@@ -1555,17 +1557,11 @@ void uninitialize(int i_Exit_Flag)
 		ghdc = NULL;
 	}
 
-	if (i_Exit_Flag == 0)
+	if (i_Exit_Flag == EXIT_FAILURE)
 	{
-		fprintf(gpFile, "Log File Closed Successfully");
-	}
-	else if (i_Exit_Flag == 1)
-	{
-		fprintf(gpFile, "Log File Closed Erroniously");
+		logError("Program exited erroneously");
 	}
 
-	fclose(gpFile);
-	gpFile = NULL;
-
+	Logger::close();
 	DestroyWindow(ghwnd);
 }
