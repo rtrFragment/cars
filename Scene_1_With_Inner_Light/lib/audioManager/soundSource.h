@@ -9,7 +9,8 @@ class SoundSource
         SoundSource();
         ~SoundSource();
 
-        void setPosition(ALfloat position[3]);
+        void setPosition3f(ALfloat x, ALfloat y, ALfloat z);
+        void setPositionfv(ALfloat position[3]);
         void setVolume(ALfloat volume);
         void setPitch(ALfloat pitch);
         void setSourcei(ALenum property, ALint value);
@@ -27,6 +28,7 @@ class SoundSource
         void resume();
         void stop();
         void loop(ALboolean loop);
+        unsigned int playCount();
 
         ALboolean isPlaying();
         ALboolean isPaused();
@@ -36,4 +38,5 @@ class SoundSource
     private:
         ALuint sourceId = 0;
         ALboolean loopingEnabled = AL_FALSE;
+        unsigned int count = 0;
 };

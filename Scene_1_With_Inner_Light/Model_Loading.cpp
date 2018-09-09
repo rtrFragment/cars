@@ -49,6 +49,8 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 #define END_ANGLE_POS			360.0f	//Marks terminating angle position rotation
 #define MODEL_ANGLE_INCREMENT	0.1f	//Increment angle for MODEL
 
+#define DOOR_OPENING_SOUND_POSITION -36.465961
+
 HWND ghwnd;
 HDC ghdc;
 HGLRC ghrc;
@@ -203,8 +205,15 @@ glm::vec3 cameraUP;
 Camera  camera;
 
 AudioManager *audioManager = NULL;
-SoundSource *soundSource = NULL;
-ALuint audioBufferId = 0;
+SoundSource *soundSourcePointLight = NULL;
+SoundSource *soundSourceDoorOpening = NULL;
+SoundSource *soundSourceSpotLight1 = NULL;
+SoundSource *soundSourceSpotLight2 = NULL;
+SoundSource *soundSourceSpotLight3 = NULL;
+SoundSource *soundSourceSpotLight4 = NULL;
+ALuint audioBufferIdPointLight = 0;
+ALuint audioBufferIdDoorOpening = 0;
+ALuint audioBufferIdSpotLight = 0;
 
 int giNumberOfLights = 20;
 int camera_Z_counter = 0.0f;
@@ -213,6 +222,10 @@ uint64_t initTime, initFrequency, changingTime;
 GLfloat currentFrame = 0.0f, lastFrame = 0.0f;
 GLfloat gfLeft_Door_Translate = 0.0f;
 GLfloat gfRight_Door_Translate = 0.0f;
+
+void loadPointLightAudio(void);
+void loadDoorOpeningAudio(void);
+void loadSpotLightAudio(void);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
 {
@@ -420,9 +433,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				gbLight = true;
 				gbIsLKeyPressed = true;
 
-				if(soundSource != NULL && audioBufferId != 0)
+				if(soundSourcePointLight != NULL)
 				{
-					soundSource->play(audioBufferId);
+					soundSourcePointLight->play(audioBufferIdPointLight);
 				}
 			}
 			else
@@ -497,7 +510,7 @@ void initialize(void)
 
 	if (wglMakeCurrent(ghdc, ghrc) == FALSE)
 	{
-		logError("wglMakeCurrent() Failed");
+		logError("wglMakeCurrent() Failed\n");
 		uninitialize(EXIT_FAILURE);
 	}
 
@@ -868,28 +881,84 @@ void initializeAudio(void)
         audioManager->setListenerPosition(0.0f, 0.0f, 0.0f);
         audioManager->setListenerVelocity(0.0f, 0.0f, 0.0f);
 
-        alGenBuffers(1, &audioBufferId);
-
-        ALenum error = alGetError();
-
-        if(error != AL_NO_ERROR)
-        {
-            logError("Not able to create audio buffer, error code: %d\n", error);
-        }
-
-        error = AL_NO_ERROR;
-
-        ALboolean waveDataLoaded = audioManager->loadWaveAudio("resources/audio/PointLightSound.wav", audioBufferId);
-
-        if(!waveDataLoaded)
-        {
-            logError("Not able to load audio file.\n");
-        }
-
-	 	soundSource = new SoundSource();
-        soundSource->setSourcef(AL_ROLLOFF_FACTOR, 1.0f);
-        soundSource->setSourcef(AL_REFERENCE_DISTANCE, 1.0f);
+		loadPointLightAudio();
+		loadDoorOpeningAudio();
+		loadSpotLightAudio();
     }
+}
+
+void loadPointLightAudio()
+{
+	alGenBuffers(1, &audioBufferIdPointLight);
+
+	ALenum error = alGetError();
+
+	if(error != AL_NO_ERROR)
+	{
+		logError("Not able to create point light audio buffer, error code: %d\n", error);
+	}
+
+	error = AL_NO_ERROR;
+
+	ALboolean waveDataLoaded = audioManager->loadWaveAudio("resources/audio/PointLight.wav", audioBufferIdPointLight);
+
+	if(!waveDataLoaded)
+	{
+		logError("Not able to point light audio file.\n");
+	}
+
+	soundSourcePointLight = new SoundSource();
+	soundSourcePointLight->setPosition3f(MODEL_X_TRANSLATE, MODEL_Y_TRANSLATE, 0.0f);
+}
+
+void loadDoorOpeningAudio()
+{
+	alGenBuffers(1, &audioBufferIdDoorOpening);
+
+	ALenum error = alGetError();
+
+	if(error != AL_NO_ERROR)
+	{
+		logError("Not able to create door opening audio buffer, error code: %d\n", error);
+	}
+
+	error = AL_NO_ERROR;
+
+	ALboolean waveDataLoaded = audioManager->loadWaveAudio("resources/audio/DoorOpening.wav", audioBufferIdDoorOpening);
+
+	if(!waveDataLoaded)
+	{
+		logError("Not able to door opening load audio file.\n");
+	}
+
+	soundSourceDoorOpening = new SoundSource();
+	soundSourceDoorOpening->setPosition3f(MODEL_X_TRANSLATE, MODEL_Y_TRANSLATE, DOOR_OPENING_SOUND_POSITION);
+}
+
+void loadSpotLightAudio(void)
+{
+	alGenBuffers(1, &audioBufferIdSpotLight);
+
+	ALenum error = alGetError();
+
+	if(error != AL_NO_ERROR)
+	{
+		logError("Not able to create spot light audio buffer, error code: %d\n", error);
+	}
+
+	error = AL_NO_ERROR;
+
+	ALboolean waveDataLoaded = audioManager->loadWaveAudio("resources/audio/SpotLightSound.wav", audioBufferIdSpotLight);
+
+	if(!waveDataLoaded)
+	{
+		logError("Not able to load spot light audio file.\n");
+	}
+
+	soundSourceSpotLight1 = new SoundSource();
+	soundSourceSpotLight2 = new SoundSource();
+	soundSourceSpotLight3 = new SoundSource();
+	soundSourceSpotLight4 = new SoundSource();
 }
 
 void MouseMovement(double xpos, double ypos)
@@ -1474,22 +1543,35 @@ void display(void)
 
 void update(void)
 {
+	audioManager->setListenerPosition(camera.Position[0], camera.Position[1], camera.Position[2]);
+
 	if (camera_Z_counter < 600)
 	{
 		camera.MoveCamera(CameraMoveOnZ, -0.06f, deltaTime);
 		camera_Z_counter++;
 		if (camera_Z_counter == 410)
+		{
 			gbDoor_Open_Flag = true;
+			soundSourceDoorOpening->play(audioBufferIdDoorOpening);
+		}
+
 		if (camera_Z_counter == 460)
+		{
 			gbUpper_Middle_Light_On_Flag = true;
+			soundSourceSpotLight1->play(audioBufferIdSpotLight);
+		}
+
 		if (camera_Z_counter == 500)
 		{
+			soundSourceSpotLight2->play(audioBufferIdSpotLight);
 			gbUpper_Side_Light_On_Flag = true;
 			//gbUpper_Middle_Light_On_Flag = false;
 		}
+
 		if (camera_Z_counter == 558)
 		{
 			gbInner_Side_Light_On_Flag = true;
+			soundSourceSpotLight3->play(audioBufferIdSpotLight);
 			//gbUpper_Side_Light_On_Flag = false;
 			//gbUpper_Middle_Light_On_Flag = false;
 		}
@@ -1556,17 +1638,45 @@ void uninitialize(int i_Exit_Flag)
 		ShowCursor(TRUE);
 	}
 
-	if(soundSource != NULL)
-    {
-        delete soundSource;
-        soundSource = NULL;
-    }
+	if(soundSourcePointLight != NULL)
+	{
+		delete soundSourcePointLight;
+		soundSourcePointLight = NULL;
+	}
 
-    if(audioBufferId != 0)
-    {
-        alDeleteBuffers(1, &audioBufferId);
-        audioBufferId = 0;
-    }
+	if(soundSourceDoorOpening != NULL)
+	{
+		delete soundSourceDoorOpening;
+		soundSourceDoorOpening = NULL;
+	}
+
+	if(soundSourceSpotLight1 != NULL)
+	{
+		delete soundSourceSpotLight1;
+		soundSourceSpotLight1 = NULL;
+	}
+
+	if(soundSourceSpotLight2 != NULL)
+	{
+		delete soundSourceSpotLight2;
+		soundSourceSpotLight2 = NULL;
+	}
+
+	if(soundSourceSpotLight3 != NULL)
+	{
+		delete soundSourceSpotLight3;
+		soundSourceSpotLight3 = NULL;
+	}
+
+	if(soundSourceSpotLight4 != NULL)
+	{
+		delete soundSourceSpotLight4;
+		soundSourceSpotLight4 = NULL;
+	}
+
+	alDeleteBuffers(1, &audioBufferIdPointLight);
+	alDeleteBuffers(1, &audioBufferIdDoorOpening);
+	alDeleteBuffers(1, &audioBufferIdSpotLight);
 
     if(audioManager != NULL)
     {
@@ -1626,7 +1736,7 @@ void uninitialize(int i_Exit_Flag)
 
 	if (i_Exit_Flag == EXIT_FAILURE)
 	{
-		logError("Program exited erroneously");
+		logError("Program exited erroneously\n");
 	}
 
 	Logger::close();

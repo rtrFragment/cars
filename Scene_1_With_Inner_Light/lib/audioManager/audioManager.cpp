@@ -7,7 +7,7 @@ AudioManager::AudioManager()
 
     if(waveLoader == NULL)
     {
-        logError("Not able to create wave loader.");
+        logError("Not able to create wave loader.\n");
     }
 }
 

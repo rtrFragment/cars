@@ -1,4 +1,5 @@
 #include "soundSource.h"
+#include "../logger/logger.h"
 
 SoundSource::SoundSource()
 {
@@ -6,11 +7,18 @@ SoundSource::SoundSource()
     alSource3f(sourceId, AL_POSITION, 0.0f, 0.0f, 0.0f);
     alSourcef(sourceId, AL_GAIN, 1.0f);
     alSourcef(sourceId, AL_PITCH, 1.0f);
+    alSourcef(sourceId, AL_ROLLOFF_FACTOR, 1.0f);
+	alSourcef(sourceId, AL_REFERENCE_DISTANCE, 1.0f);
 }
 
-void SoundSource::setPosition(ALfloat position[3])
+void SoundSource::setPositionfv(ALfloat position[3])
 {
     alSourcefv(sourceId, AL_POSITION, position);
+}
+
+void SoundSource::setPosition3f(ALfloat x, ALfloat y, ALfloat z)
+{
+    alSource3f(sourceId, AL_POSITION, x, y, z);
 }
 
 void SoundSource::setVolume(ALfloat volume)
@@ -78,6 +86,7 @@ void SoundSource::play(ALuint buffer)
     stop();
     alSourcei(sourceId, AL_BUFFER, buffer);
     alSourcePlay(sourceId);
+    ++count;
 }
 
 void SoundSource::pause()
@@ -154,10 +163,16 @@ ALboolean SoundSource::isLooping()
     return loopingEnabled;
 }
 
+unsigned int SoundSource::playCount()
+{
+    return count;
+}
+
 SoundSource::~SoundSource()
 {
     stop();
     alSourcei(sourceId, AL_BUFFER, 0);
     alDeleteSources(1, &sourceId);
     sourceId = 0;
+    logInfo("Sound source destroyed.\n");
 }
