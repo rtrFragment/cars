@@ -433,7 +433,7 @@ out/
 #===========================
 !*.exe
 # We actually do not need add all obj
-!*.obj
+*.obj
 *.tlog
 *.idb
 !**/resources/**/*.obj

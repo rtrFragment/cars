@@ -20,8 +20,6 @@ private:
     ~Logger();
     Logger(const Logger&);
 
-    void log(const char *file, const char *function, int line, const char *tag, const char *message, va_list args);
-
     static Logger* logger;
 
     FILE *logfile = nullptr;

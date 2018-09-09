@@ -10,7 +10,7 @@ class Logger
 {
 
 public:
-    static void initialize(const char *fileName);
+    static bool initialize(const char *fileName);
     static void info(const char *file, const char *function, int line, const char *message, ...);
     static void error(const char *file, const char *function, int line, const char *message, ...);
     static void close();
@@ -19,8 +19,6 @@ private:
     Logger();
     ~Logger();
     Logger(const Logger&);
-
-    void log(const char *file, const char *function, int line, const char *tag, const char *message, va_list args);
 
     static Logger* logger;
 

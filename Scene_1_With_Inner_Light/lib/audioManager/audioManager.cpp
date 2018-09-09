@@ -76,11 +76,11 @@ ALboolean AudioManager::loadWaveAudio(const char* filePath, ALuint bufferId)
                 if(error == AL_NO_ERROR)
                 {
                     loaded = AL_TRUE;
-                    logInfo("Wave file loaded: %s", filePath);
+                    logInfo("Wave file loaded: %s\n", filePath);
                 }
                 else
                 {
-                    logError("Not able to load audio data, error: %d, file: %s", error, filePath);
+                    logError("Not able to load audio data, error: %d, file: %s\n", error, filePath);
                 }
             }
             else

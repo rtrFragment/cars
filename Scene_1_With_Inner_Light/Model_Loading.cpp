@@ -879,7 +879,7 @@ void initializeAudio(void)
 
         error = AL_NO_ERROR;
 
-        ALboolean waveDataLoaded = audioManager->loadWaveAudio("resources/audio/SpotLightSound.wav", audioBufferId);
+        ALboolean waveDataLoaded = audioManager->loadWaveAudio("resources/audio/PointLightSound.wav", audioBufferId);
 
         if(!waveDataLoaded)
         {
