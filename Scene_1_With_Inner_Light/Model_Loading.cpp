@@ -49,7 +49,7 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 #define END_ANGLE_POS			360.0f	//Marks terminating angle position rotation
 #define MODEL_ANGLE_INCREMENT	0.1f	//Increment angle for MODEL
 
-#define DOOR_OPENING_SOUND_POSITION -36.465961
+#define DOOR_OPENING_SOUND_POSITION 0.0f
 
 HWND ghwnd;
 HDC ghdc;
@@ -932,7 +932,6 @@ void loadDoorOpeningAudio()
 	}
 
 	soundSourceDoorOpening = new SoundSource();
-	soundSourceDoorOpening->setPosition3f(MODEL_X_TRANSLATE, MODEL_Y_TRANSLATE, DOOR_OPENING_SOUND_POSITION);
 }
 
 void loadSpotLightAudio(void)
@@ -1543,7 +1542,7 @@ void display(void)
 
 void update(void)
 {
-	audioManager->setListenerPosition(camera.Position[0], camera.Position[1], camera.Position[2]);
+	// audioManager->setListenerPosition(camera.Position[0], camera.Position[1], camera.Position[2]);
 
 	if (camera_Z_counter < 600)
 	{
