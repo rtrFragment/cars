@@ -159,7 +159,6 @@ artifacts/
 *_i.h
 *.ilk
 *.meta
-*.obj
 *.pch
 *.pdb
 *.pgc
@@ -433,10 +432,8 @@ out/
 #===========================
 !*.exe
 # We actually do not need add all obj
-*.obj
 *.tlog
 *.idb
-!**/resources/**/*.obj
 .history
 .gradle/
 !android/**/app/build/outputs/apk
