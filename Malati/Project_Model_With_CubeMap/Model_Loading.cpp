@@ -59,7 +59,7 @@ GLuint gVertexShaderObject;
 GLuint gFragmentShaderObject;
 GLuint gShaderProgramObject;
 
-GLuint gVao_Car_1;
+GLuint gVao_road, gVao_Buildings;
 GLuint gVbo_Position, gVbo_Normal;
 
 GLuint gModelMatrixUniform, gViewMatrixUniform, gProjectionMatrixUniform;
@@ -92,10 +92,9 @@ GLfloat materialShininess = 0.6f * 128.0f;
 
 GLfloat g_rotate;
 
-std::vector<float> gv_vertices_1, gv_textures_1, gv_normals_1;
+std::vector<float> gv_vertices_road, gv_textures_road, gv_normals_road;
+std::vector<float> gv_vertices_buildings, gv_textures_buildings, gv_normals_buildings;
 std::vector<int> gv_face_tri_1, gv_face_textures_1, gv_face_normals_1;
-
-int count_of_vertices_car_1;
 
 //for camera
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -416,8 +415,10 @@ void initialize(void)
 	}
 
 	MessageBox(ghwnd, TEXT("Before LoadMeshData"), TEXT("MSG"), MB_OK);
-	count_of_vertices_car_1 = LoadMeshData("Project_Model_Without_Layer.obj", gv_vertices_1, gv_textures_1, gv_normals_1);
+	LoadMeshData("Project_Model_Only_Roads.obj", gv_vertices_road, gv_textures_road, gv_normals_road);
 	MessageBox(ghwnd, TEXT("After LoadMeshData 1"), TEXT("MSG"), MB_OK);
+	LoadMeshData("Project_Model_Without_Roads.obj", gv_vertices_buildings, gv_textures_buildings, gv_normals_buildings);
+	MessageBox(ghwnd, TEXT("After LoadMeshData 2"), TEXT("MSG"), MB_OK);
 
 	//Vertex Shader
 	gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
@@ -594,14 +595,14 @@ void initialize(void)
 
 	gMaterialShininessUniform = glGetUniformLocation(gShaderProgramObject, "u_material_shininess");
 
-	/*****************VAO For Cube*****************/
-	glGenVertexArrays(1, &gVao_Car_1);
-	glBindVertexArray(gVao_Car_1);
+	/*****************VAO For Road*****************/
+	glGenVertexArrays(1, &gVao_road);
+	glBindVertexArray(gVao_road);
 
-	/*****************Cube Position****************/
+	/*****************Road Position****************/
 	glGenBuffers(1, &gVbo_Position);
 	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Position);
-	glBufferData(GL_ARRAY_BUFFER, gv_vertices_1.size() * sizeof(float), &gv_vertices_1[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, gv_vertices_road.size() * sizeof(float), &gv_vertices_road[0], GL_STATIC_DRAW);
 
 	glVertexAttribPointer(HAD_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
@@ -609,10 +610,38 @@ void initialize(void)
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	/*****************Cube Color****************/
+	/*****************Road Normal****************/
 	glGenBuffers(1, &gVbo_Normal);
 	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Normal);
-	glBufferData(GL_ARRAY_BUFFER, gv_normals_1.size() * sizeof(float), &gv_normals_1[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, gv_normals_road.size() * sizeof(float), &gv_normals_road[0], GL_STATIC_DRAW);
+
+	glVertexAttribPointer(HAD_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glEnableVertexAttribArray(HAD_ATTRIBUTE_NORMAL);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(0);
+
+	/*****************VAO For Buildings*************/
+	glGenVertexArrays(1, &gVao_Buildings);
+	glBindVertexArray(gVao_Buildings);
+
+	/**************Building Vertices**************/
+	glGenBuffers(1, &gVbo_Position);
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Position);
+	glBufferData(GL_ARRAY_BUFFER, gv_vertices_buildings.size() * sizeof(float), &gv_vertices_buildings[0], GL_STATIC_DRAW);
+
+	glVertexAttribPointer(HAD_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glEnableVertexAttribArray(HAD_ATTRIBUTE_POSITION);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	/*****************Building Normal****************/
+	glGenBuffers(1, &gVbo_Normal);
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Normal);
+	glBufferData(GL_ARRAY_BUFFER, gv_normals_buildings.size() * sizeof(float), &gv_normals_buildings[0], GL_STATIC_DRAW);
 
 	glVertexAttribPointer(HAD_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
@@ -732,10 +761,55 @@ void display(void)
 
 	glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(gPerspectiveProjectionMatrix));
 
-	glBindVertexArray(gVao_Car_1);
+	glBindVertexArray(gVao_road);
 
-	glDrawArrays(GL_TRIANGLES, 0, gv_vertices_1.size());
+	glDrawArrays(GL_TRIANGLES, 0, gv_vertices_road.size());
 	
+	glBindVertexArray(0);
+
+	if (gbLight == true)
+	{
+		glUniform1i(gLKeyPressedUniform, 1);
+
+		glUniform3fv(gLaUniform, 1, lightAmbient);
+		glUniform3fv(gLdUniform, 1, lightDiffuse);
+		glUniform3fv(gLsUniform, 1, lightSpecular);
+		glUniform4fv(gLightPositionUniform, 1, lightPosition);
+
+		glUniform3fv(gKaUniform, 1, materialAmbient);
+		glUniform3fv(gKdUniform, 1, materialDiffuse);
+		glUniform3fv(gKsUniform, 1, materialSpecular);
+		glUniform1f(gMaterialShininessUniform, materialShininess);
+	}
+	else
+	{
+		glUniform1i(gLKeyPressedUniform, 0);
+	}
+
+	viewMatrix = glm::mat4();
+	modelMatrix = glm::mat4();
+	modelMatrix = translate(modelMatrix, glm::vec3(MODEL_X_TRANSLATE, MODEL_Y_TRANSLATE, MODEL_Z_TRANSLATE));
+
+	//rotationMatrix = vmath::rotate(180.0f, 0.0f, 1.0f, 0.0f);
+	//modelMatrix = modelMatrix*rotationMatrix;
+
+	//rotationMatrix = vmath::rotate(g_rotate, 0.0f, 1.0f, 0.0f);
+	//modelMatrix = modelMatrix*rotationMatrix;
+
+	//viewMatrix = lookat(vec3(0.0f, 1.0f, 10.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+
+	viewMatrix = camera.GetViewMatrix();
+
+	glUniformMatrix4fv(gModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+	glUniformMatrix4fv(gViewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+	glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(gPerspectiveProjectionMatrix));
+
+	glBindVertexArray(gVao_Buildings);
+
+	glDrawArrays(GL_TRIANGLES, 0, gv_vertices_buildings.size());
+
 	glBindVertexArray(0);
 
 	glUseProgram(0);
@@ -1088,10 +1162,16 @@ void uninitialize(int i_Exit_Flag)
 		skyboxVAO = 0;
 	}
 
-	if (gVao_Car_1)
+	if (gVao_road)
 	{
-		glDeleteVertexArrays(1, &gVao_Car_1);
-		gVao_Car_1 = 0;
+		glDeleteVertexArrays(1, &gVao_road);
+		gVao_road = 0;
+	}
+
+	if (gVao_Buildings)
+	{
+		glDeleteVertexArrays(1, &gVao_Buildings);
+		gVao_Buildings = 0;
 	}
 
 	if (gVbo_Position)
