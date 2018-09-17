@@ -320,11 +320,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case 0x53:
-			lightPosition[2] = lightPosition[2] - 1.0f;
+			lightPosition[2] = lightPosition[2] + 1.0f;
 			break;
 
 		case 0x57:
-			lightPosition[2] = lightPosition[2] + 1.0f;
+			lightPosition[2] = lightPosition[2] - 1.0f;
 			break;
 
 		case 0x45:
