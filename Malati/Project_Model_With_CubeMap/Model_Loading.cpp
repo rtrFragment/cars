@@ -59,7 +59,7 @@ GLuint gVertexShaderObject;
 GLuint gFragmentShaderObject;
 GLuint gShaderProgramObject;
 
-GLuint gVao_road, gVao_Buildings;
+GLuint gVao_road, gVao_Buildings, gVao_Cube;
 GLuint gVbo_Position, gVbo_Normal;
 
 GLuint gModelMatrixUniform, gViewMatrixUniform, gProjectionMatrixUniform;
@@ -83,7 +83,7 @@ bool gbIsLKeyPressed = false;
 GLfloat lightAmbient[] = { 0.0f,0.0f,0.0f,1.0f };
 GLfloat lightDiffuse[] = { 1.0f,1.0f,1.0f,1.0f };
 GLfloat lightSpecular[] = { 1.0f,1.0f,1.0f,1.0f };
-GLfloat lightPosition[] = { 0.0f,20.0f,20.0f,0.0f };
+GLfloat lightPosition[] = { -324.0f,205.0f,-365.0f,0.0f };
 
 GLfloat materialAmbient[] = { 0.25f,0.25f,0.25f,1.0f };
 GLfloat materialDiffuse[] = { 0.4f,0.4f,0.4f,1.0f };
@@ -285,7 +285,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 
-		case 0x41:
+	/*	case 0x41:
 			if (gbIsAKeyPressed == false)
 			{
 				gbAnimate = true;
@@ -296,7 +296,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				gbAnimate = false;
 				gbIsAKeyPressed = false;
 			}
-			break;
+			break;*/
 
 		case 0x4C:
 			if (gbIsLKeyPressed == false)
@@ -309,6 +309,36 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				gbLight = false;
 				gbIsLKeyPressed = false;
 			}
+			break;
+
+		case 0x41:
+			lightPosition[0] = lightPosition[0] - 1.0f;
+			break;
+
+		case 0x44:
+			lightPosition[0] = lightPosition[0] + 1.0f;
+			break;
+
+		case 0x53:
+			lightPosition[2] = lightPosition[2] - 1.0f;
+			break;
+
+		case 0x57:
+			lightPosition[2] = lightPosition[2] + 1.0f;
+			break;
+
+		case 0x45:
+			lightPosition[1] = lightPosition[1] - 1.0f;
+			break;
+
+		case 0x51:
+			lightPosition[1] = lightPosition[1] + 1.0f;
+			break;
+
+		case 0x50:
+			fopen_s(&gpFile, "Log.txt", "a+");
+			fprintf(gpFile, "Light Pos X : %f\t Y : %f\t Z : %f\n", lightPosition[0], lightPosition[1], lightPosition[2]);
+			fclose(gpFile);
 			break;
 		}
 		break;
@@ -440,8 +470,8 @@ void initialize(void)
 		"{" \
 		"if(u_lighting_enabled==1)" \
 		"{" \
-		"vec4 eye_coordinates = u_view_matrix*u_model_matrix*vPosition;" \
-		"transformed_normals = mat3(u_view_matrix*u_model_matrix)*vNormal;" \
+		"vec4 eye_coordinates = u_model_matrix*vPosition;" \
+		"transformed_normals = mat3(u_model_matrix)*vNormal;" \
 		"light_direction = vec3(u_light_position)-eye_coordinates.xyz;" \
 		"viewer_vector = -eye_coordinates.xyz;" \
 		"}" \
@@ -651,6 +681,55 @@ void initialize(void)
 
 	glBindVertexArray(0);
 
+	const GLfloat cubeVertices[] =
+	{
+		1.0f,1.0f,1.0f,
+		-1.0f,1.0f,1.0f,
+		-1.0f,-1.0f,1.0f,
+		1.0f,-1.0f,1.0f,
+
+		1.0f,1.0f,-1.0f,
+		1.0f,1.0f,1.0f,
+		1.0f,-1.0f,1.0f,
+		1.0f,-1.0f,-1.0f,
+
+		-1.0f,1.0f,-1.0f,
+		1.0f,1.0f,-1.0f,
+		1.0f,-1.0f,-1.0f,
+		-1.0f,-1.0f,-1.0f,
+
+		-1.0f,1.0f,1.0f,
+		-1.0f,1.0f,-1.0f,
+		-1.0f,-1.0f,-1.0f,
+		-1.0f,-1.0f,1.0f,
+
+		1.0f,1.0f,-1.0f,
+		-1.0f,1.0f,-1.0f,
+		-1.0f,1.0f,1.0f,
+		1.0f,1.0f,1.0f,
+
+		1.0f,-1.0f,1.0f,
+		-1.0f,-1.0f,1.0f,
+		-1.0f,-1.0f,-1.0f,
+		1.0f,-1.0f,-1.0f
+	};
+
+	/****************Cube************/
+	glGenVertexArrays(1, &gVao_Cube);
+	glBindVertexArray(gVao_Cube);
+
+	/******************Cube Vertices*****************/
+	glGenBuffers(1, &gVbo_Position);
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Position);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(HAD_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glEnableVertexAttribArray(HAD_ATTRIBUTE_POSITION);
+
+	glBindVertexArray(0);
+
 	//SkyBox
 	LoadSkyBoxShader();
 
@@ -809,6 +888,41 @@ void display(void)
 	glBindVertexArray(gVao_Buildings);
 
 	glDrawArrays(GL_TRIANGLES, 0, gv_vertices_buildings.size());
+
+	glBindVertexArray(0);
+
+	/********Cube********/
+
+	viewMatrix = glm::mat4();
+	modelMatrix = glm::mat4();
+	modelMatrix = translate(modelMatrix, glm::vec3(lightPosition[0], lightPosition[1], lightPosition[2]));
+
+	//rotationMatrix = vmath::rotate(180.0f, 0.0f, 1.0f, 0.0f);
+	//modelMatrix = modelMatrix*rotationMatrix;
+
+	//rotationMatrix = vmath::rotate(g_rotate, 0.0f, 1.0f, 0.0f);
+	//modelMatrix = modelMatrix*rotationMatrix;
+
+	//viewMatrix = lookat(vec3(0.0f, 1.0f, 10.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+
+	viewMatrix = camera.GetViewMatrix();
+
+	glUniformMatrix4fv(gModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+	glUniformMatrix4fv(gViewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+	glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(gPerspectiveProjectionMatrix));
+
+	glUniform1i(gLKeyPressedUniform, 0);
+
+	glBindVertexArray(gVao_Cube);
+
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+	glDrawArrays(GL_TRIANGLE_FAN, 8, 4);
+	glDrawArrays(GL_TRIANGLE_FAN, 12, 4);
+	glDrawArrays(GL_TRIANGLE_FAN, 16, 4);
+	glDrawArrays(GL_TRIANGLE_FAN, 20, 4);
 
 	glBindVertexArray(0);
 
