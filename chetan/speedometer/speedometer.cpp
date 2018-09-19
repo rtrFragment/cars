@@ -38,14 +38,20 @@ GLuint fragmentShaderObject = 0;
 GLuint shaderProgramObject = 0;
 
 GLuint vaoMainCircle = 0;
+GLuint vboMainCirclePosition = 0;
+GLuint vboMainCircleTexture = 0;
+
 GLuint vaoLeftCircle = 0;
-GLuint vaoSmallCircle = 0;
-GLuint vboCirclePosition = 0;
-GLuint vboCircleTexture = 0;
+GLuint vboLeftCirclePosition = 0;
+GLuint vboLeftCircleTexture = 0;
+
+GLuint vaoTriangle = 0;
+GLuint vboTrianglePosition = 0;
+
 GLuint colorUniform = 0;
+GLuint textureFlame = 0;
 GLuint textureSamplerUniform = 0;
 GLuint textureEnabledUniform = 0;
-GLuint textureSmiley = 0;
 GLuint modelMatrixUniform = 0;
 GLuint viewMatrixUniform = 0;
 GLuint projectionMatrixUniform = 0;
@@ -62,12 +68,14 @@ void initializeVertexShader(void);
 void initializeFragmentShader(void);
 void initializeShaderProgram(void);
 void initializeBuffers(void);
-void initializeCircleBuffer(GLuint *vao, GLfloat radius);
+void initializeCircleBuffer(GLuint *vao, GLuint *vboPosition, GLuint *vboTexture, GLfloat radius);
+void initializeTriangleBuffer(GLuint *vao, GLuint *vboPosition);
 void generateCircleVertices(GLfloat radius, std::vector<GLfloat> *vertices);
 void generateCircleTextureCoordinates(std::vector<GLfloat> *textureCoordinates);
 void update(void);
 void display(void);
 void drawCircle(GLuint vao, GLint textureEnabled, glm::vec3 position, glm::vec3 color);
+void drawTriangle(GLuint vao, glm::vec3 position, glm::vec3 color);
 void angleToPosition(GLfloat angle, GLfloat radius, glm::vec3 *position);
 bool loadGLTextures(GLuint *texture, TCHAR resourceId[]);
 void resize(int width, int height);
@@ -326,7 +334,7 @@ void initialize(void)
     perspectiveProjectionMatrix = glm::mat4x4();
     color = glm::vec3(1.0f, 0.0f, 0.0f);
 
-    loadGLTextures(&textureSmiley, MAKEINTRESOURCE(FIRE_BMP));
+    loadGLTextures(&textureFlame, MAKEINTRESOURCE(FIRE_BMP));
 
     // This is required for DirectX
     resize(windowRect.right - windowRect.left, windowRect.bottom - windowRect.top);
@@ -494,12 +502,12 @@ void initializeShaderProgram()
 
 void initializeBuffers(void)
 {
-    initializeCircleBuffer(&vaoMainCircle, 1.0f);
-    initializeCircleBuffer(&vaoLeftCircle, 0.5f);
-    initializeCircleBuffer(&vaoSmallCircle, 0.1f);
+    initializeCircleBuffer(&vaoMainCircle, &vboMainCirclePosition, &vboMainCircleTexture, 1.0f);
+    initializeCircleBuffer(&vaoLeftCircle, &vboLeftCirclePosition, &vboLeftCircleTexture, 0.5f);
+    initializeTriangleBuffer(&vaoTriangle, &vboTrianglePosition);
 }
 
-void initializeCircleBuffer(GLuint *vao, GLfloat radius)
+void initializeCircleBuffer(GLuint *vao, GLuint *vboPosition, GLuint *vboTexture, GLfloat radius)
 {
     std::vector<GLfloat> circleVertices;
     std::vector<GLfloat> circleTextureCoordinates;
@@ -509,8 +517,8 @@ void initializeCircleBuffer(GLuint *vao, GLfloat radius)
     glGenVertexArrays(1, vao);
     glBindVertexArray(*vao);
 
-    glGenBuffers(1, &vboCirclePosition);
-    glBindBuffer(GL_ARRAY_BUFFER, vboCirclePosition);
+    glGenBuffers(1, vboPosition);
+    glBindBuffer(GL_ARRAY_BUFFER, *vboPosition);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * circleVertices.size(), circleVertices.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(CG_ATTRIBUTE_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -518,8 +526,8 @@ void initializeCircleBuffer(GLuint *vao, GLfloat radius)
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glGenBuffers(1, &vboCircleTexture);
-    glBindBuffer(GL_ARRAY_BUFFER, vboCircleTexture);
+    glGenBuffers(1, vboTexture);
+    glBindBuffer(GL_ARRAY_BUFFER, *vboTexture);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * circleTextureCoordinates.size(), circleTextureCoordinates.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(CG_ATTRIBUTE_TEXTURE0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -527,6 +535,28 @@ void initializeCircleBuffer(GLuint *vao, GLfloat radius)
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    glBindVertexArray(0);
+}
+
+void initializeTriangleBuffer(GLuint *vao, GLuint *vboPosition)
+{
+    const GLfloat triangleVertices[] = {
+        0.0f, 0.075f, 0.0f,
+        -0.075f, -0.075f, 0.0f,
+        0.075f, -0.075f, 0.0f
+    };
+
+    glGenVertexArrays(1, vao);
+    glBindVertexArray(*vao);
+
+    glGenBuffers(1, vboPosition);
+    glBindBuffer(GL_ARRAY_BUFFER, *vboPosition);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(CG_ATTRIBUTE_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(CG_ATTRIBUTE_VERTEX_POSITION);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
 
@@ -584,7 +614,7 @@ void display(void)
         GLfloat y = sinf(angleRadians) * 0.8f;
         GLfloat z = -2.0f;
 
-        drawCircle(vaoSmallCircle, 0, glm::vec3(x, y, z), glm::vec3(1.0f, 1.0f, 1.0f));
+        drawTriangle(vaoTriangle, glm::vec3(x, y, z), glm::vec3(1.0f, 1.0f, 1.0f));
     }
 
     glBindVertexArray(0);
@@ -611,11 +641,24 @@ void drawCircle(GLuint vao, GLint textureEnabled, glm::vec3 position, glm::vec3 
 
     glBindVertexArray(vao);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textureSmiley);
+    glBindTexture(GL_TEXTURE_2D, textureFlame);
     glUniform1i(textureSamplerUniform, 0);
     glUniform3fv(colorUniform, 1, glm::value_ptr(color));
     glUniform1i(textureEnabledUniform, textureEnabled);
     glDrawArrays(GL_TRIANGLE_FAN, 0, (numberOfCirclePoints + 1) * 3);
+    glBindVertexArray(0);
+}
+
+void drawTriangle(GLuint vao, glm::vec3 position, glm::vec3 color)
+{
+    glm::mat4x4 modelMatrix = glm::mat4x4();
+    modelMatrix = glm::translate(modelMatrix, position);
+    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+    glBindVertexArray(vao);
+    glUniform3fv(colorUniform, 1, glm::value_ptr(color));
+    glUniform1i(textureEnabledUniform, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
 }
 
@@ -715,22 +758,40 @@ void cleanUp(void)
         vaoLeftCircle = 0;
     }
 
-    if(vaoSmallCircle)
+    if(vaoTriangle)
     {
-        glDeleteVertexArrays(1, &vaoSmallCircle);
-        vaoSmallCircle = 0;
+        glDeleteVertexArrays(1, &vaoTriangle);
+        vaoTriangle = 0;
     }
 
-    if(vboCirclePosition)
+    if(vboMainCircleTexture)
     {
-        glDeleteBuffers(1, &vboCirclePosition);
-        vboCirclePosition = 0;
+        glDeleteBuffers(1, &vboMainCircleTexture);
+        vboMainCircleTexture = 0;
     }
 
-    if(vboCircleTexture)
+    if(vboLeftCirclePosition)
     {
-        glDeleteBuffers(1, &vboCircleTexture);
-        vboCircleTexture = 0;
+        glDeleteBuffers(1, &vboLeftCirclePosition);
+        vboLeftCirclePosition = 0;
+    }
+
+    if(vboTrianglePosition)
+    {
+        glDeleteBuffers(1, &vboTrianglePosition);
+        vboTrianglePosition = 0;
+    }
+
+    if(vboMainCircleTexture)
+    {
+        glDeleteBuffers(1, &vboMainCircleTexture);
+        vboMainCircleTexture = 0;
+    }
+
+    if(vboLeftCircleTexture)
+    {
+        glDeleteBuffers(1, &vboLeftCircleTexture);
+        vboLeftCircleTexture = 0;
     }
 
     if(shaderProgramObject)
