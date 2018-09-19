@@ -15,10 +15,20 @@
 #include "resources/resource.h"
 #include "lib/logger/logger.h"
 
+#define MAIN_CIRCLE_RADIUS 1.0f
+#define LEFT_CIRCLE_RADIUS 0.5f
+#define SPEED_POINTS_RADIUS 0.8f
 #define NUMBER_OF_SPEED_POINTS 10
 #define MIN_SPEED_ANGLE 0.0f
 #define MAX_SPEED_ANGLE 270.0f
 #define SPEED_JUMP 30.0f
+#define MAIN_CIRCLE_X_TRANSLATION 1.1f
+#define MAIN_CIRCLE_Y_TRANSLATION 0.0f
+#define LEFT_CIRCLE_X_TRANSLATION -0.25f
+#define LEFT_CIRCLE_Y_TRANSLATION -0.5f
+#define SPEED_POINT_X_TRANSLATION 1.0f
+#define Z_TRANSLATION -2.0f
+#define Z_TRANSLATION -2.0f
 
 HWND hWnd = NULL;
 HDC hdc = NULL;
@@ -348,9 +358,9 @@ void initialize(void)
     for(int counter = 0; counter <= NUMBER_OF_SPEED_POINTS; ++counter)
     {
         GLfloat angleRadians = glm::radians(counter * step);
-        GLfloat x = 0.9f + cosf(angleRadians) * 0.8f;
-        GLfloat y = 0.0f + sinf(angleRadians) * 0.8f;
-        GLfloat z = -2.0f;
+        GLfloat x = SPEED_POINT_X_TRANSLATION + cosf(angleRadians) * SPEED_POINTS_RADIUS;
+        GLfloat y = sinf(angleRadians) * SPEED_POINTS_RADIUS;
+        GLfloat z = Z_TRANSLATION;
 
         TextData *textSpeedText = (TextData *)malloc(sizeof(TextData));
         memset(textSpeedText, 0, sizeof(TextData));
@@ -544,8 +554,8 @@ void initializeShaderProgram()
 
 void initializeBuffers(void)
 {
-    initializeCircleBuffer(&vaoMainCircle, &vboMainCirclePosition, &vboMainCircleTexture, 1.0f);
-    initializeCircleBuffer(&vaoLeftCircle, &vboLeftCirclePosition, &vboLeftCircleTexture, 0.5f);
+    initializeCircleBuffer(&vaoMainCircle, &vboMainCirclePosition, &vboMainCircleTexture, MAIN_CIRCLE_RADIUS);
+    initializeCircleBuffer(&vaoLeftCircle, &vboLeftCirclePosition, &vboLeftCircleTexture, LEFT_CIRCLE_RADIUS);
 }
 
 void initializeCircleBuffer(GLuint *vao, GLuint *vboPosition, GLuint *vboTexture, GLfloat radius)
@@ -620,8 +630,8 @@ void display(void)
     glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
     glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
 
-    drawCircle(vaoMainCircle, glm::vec3(1.0f, 0.0f, -2.0f), color);
-    drawCircle(vaoLeftCircle, glm::vec3(-0.40f, -0.5f, -2.0f), color);
+    drawCircle(vaoMainCircle, glm::vec3(MAIN_CIRCLE_X_TRANSLATION, MAIN_CIRCLE_Y_TRANSLATION, Z_TRANSLATION), color);
+    drawCircle(vaoLeftCircle, glm::vec3(LEFT_CIRCLE_X_TRANSLATION, LEFT_CIRCLE_Y_TRANSLATION, Z_TRANSLATION), color);
 
     for(int counter = 0; counter < speedPoints.size(); ++counter)
     {
@@ -638,7 +648,7 @@ void angleToPosition(GLfloat angle, GLfloat radius, glm::vec3 *position)
     GLfloat angleRadians = glm::radians(angle);
     GLfloat x = cosf(angleRadians) * radius;
     GLfloat y = sinf(angleRadians) * radius;
-    GLfloat z = -2.0f;
+    GLfloat z = Z_TRANSLATION;
 
     glm::vec3 positionLocal = glm::vec3(x, y, z);
     position = &positionLocal;
