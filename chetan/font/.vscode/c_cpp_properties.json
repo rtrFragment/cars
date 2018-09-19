@@ -35,7 +35,8 @@
                 "${workspaceRoot}",
                 "${GLEW_PATH}/include",
                 "${SPHERE_PATH}",
-                "${workspaceFolder}/lib/freetype/include"
+                "${workspaceFolder}/lib/freetype/include",
+                "${GLM_PATH}"
             ],
             "defines": ["_DEBUG", "UNICODE"],
             "intelliSenseMode": "msvc-x64",

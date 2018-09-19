@@ -3,11 +3,15 @@
 #include <windows.h>
 #include <stdio.h>
 #include <map>
+#include <vector>
 #include <gl/glew.h>
 #include <gl/gl.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
+#include "lib/logger/logger.h"
 #include "resources/resource.h"
-#include "vmath.h"
 #include "fontRenderer.h"
 
 HWND hWnd = NULL;
@@ -22,9 +26,8 @@ bool isFullscreen = false;
 bool isActive = false;
 bool isEscapeKeyPressed = false;
 
-vmath::mat4 perspectiveProjectionMatrix;
+glm::mat4 perspectiveProjectionMatrix;
 
-FILE *logFile = NULL;
 FontRenderer *fontRenderer = NULL;
 TextData *textToRender = NULL;
 
@@ -45,14 +48,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInsatnce, LPSTR lpszCmdLi
     TCHAR szApplicationClassName[] = TEXT("RTR_OPENGL_PP_PYRAMID_MULTIPLE_LIGHT");
     bool done = false;
 
-	if (fopen_s(&logFile, "debug.log", "w") != 0)
+	if (!Logger::initialize("debug.log"))
 	{
 		MessageBox(NULL, TEXT("Unable to open log file."), TEXT("Error"), MB_OK | MB_TOPMOST | MB_ICONSTOP);
 		exit(EXIT_FAILURE);
 	}
-
-    fprintf(logFile, "---------- CG: OpenGL Debug Logs Start ----------\n");
-    fflush(logFile);
 
     wndClassEx.cbSize = sizeof(WNDCLASSEX);
     wndClassEx.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -251,9 +251,7 @@ void initialize(void)
     GLenum glewError = glewInit();
 	if (glewError != GLEW_OK)
 	{
-        fprintf(logFile, "Cannot initialize GLEW, Error: %d", glewError);
-        fflush(logFile);
-
+        logInfo("Cannot initialize GLEW, Error: %d\n", glewError);
         cleanUp();
         exit(EXIT_FAILURE);
 	}
@@ -263,14 +261,14 @@ void initialize(void)
 
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
 
-    perspectiveProjectionMatrix = vmath::mat4::identity();
+    perspectiveProjectionMatrix = glm::mat4x4();
 
     fontRenderer = new FontRenderer("resources/fonts/arial.ttf", 48);
     FT_Error error = fontRenderer->initialize();
 
     if(error != 0)
     {
-        fprintf(logFile, "[Error] | Not able to initialize FreeType, error code: %d", error);
+        logInfo("[Error] | Not able to initialize FreeType, error code: %d", error);
         cleanUp();
         exit(EXIT_FAILURE);
     }
@@ -280,8 +278,8 @@ void initialize(void)
 
     textToRender->text = "OpenGL";
     textToRender->textSize = strlen(textToRender->text);
-    textToRender->textColor = vmath::vec3(0.0f, 0.0f, 0.0f);
-    textToRender->textPosition = vmath::vec3(-0.5f, 0.0f, -3.0f);
+    textToRender->textColor = glm::vec3(0.0f, 0.0f, 0.0f);
+    textToRender->textPosition = glm::vec3(-0.5f, 0.0f, -3.0f);
 
     fontRenderer->loadCharacters(textToRender->text, textToRender->textSize);
 
@@ -301,11 +299,11 @@ void display(void)
 
 void drawText(void)
 {
-    vmath::mat4 modelMatrix = vmath::mat4::identity();
-    vmath::mat4 viewMatrix = vmath::mat4::identity();
+    glm::mat4 modelMatrix = glm::mat4x4();
+    glm::mat4 viewMatrix = glm::mat4x4();
 
     // Translate the modal matrix.
-    modelMatrix = vmath::translate(0.0f, 0.0f, 0.0f);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
 
     fontRenderer->renderText(textToRender, modelMatrix, viewMatrix, perspectiveProjectionMatrix, 0.005f);
 }
@@ -318,7 +316,7 @@ void resize(int width, int height)
     }
 
     glViewport(0, 0, (GLsizei)width, (GLsizei)height);
-    perspectiveProjectionMatrix = vmath::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
+    perspectiveProjectionMatrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
 }
 
 void toggleFullscreen(HWND hWnd, bool isFullscreen)
@@ -375,9 +373,5 @@ void cleanUp(void)
     DestroyWindow(hWnd);
     hWnd = NULL;
 
-    fprintf(logFile, "---------- CG: OpenGL Debug Logs End ----------\n");
-    fflush(logFile);
-    fclose(logFile);
-
-    logFile = NULL;
+    Logger::close();
 }

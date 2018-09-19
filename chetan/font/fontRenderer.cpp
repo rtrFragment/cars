@@ -1,4 +1,5 @@
 #include "fontRenderer.h"
+#include "lib/logger/logger.h"
 
 enum
 {
@@ -10,28 +11,9 @@ enum
 
 FontRenderer::FontRenderer(char *fontFile, int fontSize)
 {
-    if (fopen_s(&logFile, "font_renderer_debug.log", "w") != 0)
-	{
-		printf("Unable to open font renderer log file.\n");
-	}
-
-    log("---------- FontRenderer | Debug Logs Starts ----------\n");
-
+    logInfo("FontRenderer created\n");
     this->fontFile = fontFile;
     this->fontSize = fontSize;
-}
-
-void FontRenderer::log(const char* message, ...)
-{
-    if(logFile != NULL)
-    {
-        va_list args;
-        va_start(args, message );
-        vfprintf(logFile, message, args );
-        va_end( args );
-
-        fflush(logFile);
-    }
 }
 
 FT_Error FontRenderer::initialize()
@@ -40,7 +22,7 @@ FT_Error FontRenderer::initialize()
 
     if(error != 0)
     {
-        log("[Error] | Not able to initialize FreeType, error code %d\n", error);
+        logError("Not able to initialize FreeType, error code %d\n", error);
         return error;
     }
 
@@ -48,7 +30,7 @@ FT_Error FontRenderer::initialize()
 
     if(error != 0)
     {
-        log("[Error] | Not able to load font face, error code %d\n", error);
+        logError("Not able to load font face, error code %d\n", error);
         return error;
     }
 
@@ -58,7 +40,7 @@ FT_Error FontRenderer::initialize()
 
     if(error != 0)
     {
-        log("[Error] | Not able to set font size, error code %d\n", error);
+        logError("Not able to set font size, error code %d\n", error);
         return error;
     }
 
@@ -87,7 +69,7 @@ void FontRenderer::loadCharacters(char *charactersToLoad, int numberOfCharacters
 
         if(error != 0)
         {
-            log("[Error] | Cannot load character '%c', error code: %d\n", characterToLoad, error);
+            logError("Cannot load character '%c', error code: %d\n", characterToLoad, error);
             continue;
         }
 
@@ -112,9 +94,9 @@ void FontRenderer::loadCharacters(char *charactersToLoad, int numberOfCharacters
 
         nextChar->textChar = characterToLoad;
         nextChar->textureId = textureId;
-        nextChar->size = vmath::ivec2(fontFace->glyph->bitmap.width, fontFace->glyph->bitmap.rows);
-        nextChar->bearing = vmath::ivec2(fontFace->glyph->bitmap_left, fontFace->glyph->bitmap_top);
-        nextChar->advance = vmath::ivec2(fontFace->glyph->advance.x, fontFace->glyph->advance.y);
+        nextChar->size = glm::ivec2(fontFace->glyph->bitmap.width, fontFace->glyph->bitmap.rows);
+        nextChar->bearing = glm::ivec2(fontFace->glyph->bitmap_left, fontFace->glyph->bitmap_top);
+        nextChar->advance = glm::ivec2(fontFace->glyph->advance.x, fontFace->glyph->advance.y);
 
         characters[characterToLoad] = nextChar;
     }
@@ -162,7 +144,7 @@ void FontRenderer::initializeVertexShader(void)
             {
                 GLsizei written = 0;
                 glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, infoLog);
-                log("[Error] | Vertex shader compilation log: %s\n", infoLog);
+                logError("Vertex shader compilation log: %s\n", infoLog);
                 free(infoLog);
             }
         }
@@ -209,7 +191,7 @@ void FontRenderer::initializeFragmentShader(void)
             {
                 GLsizei written = 0;
                 glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, infoLog);
-                log("[Error] | Fragment shader compilation log: %s\n", infoLog);
+                logError("Fragment shader compilation log: %s\n", infoLog);
             }
         }
     }
@@ -248,7 +230,7 @@ void FontRenderer::initializeShaderProgram(void)
             {
                 GLsizei written = 0;
                 glGetProgramInfoLog(shaderProgramObject, infoLogLength, &written, infoLog);
-                log("[Error] | Shader program link log: %s\n", infoLog);
+                logError("Shader program link log: %s\n", infoLog);
             }
         }
     }
@@ -287,20 +269,20 @@ void FontRenderer::initializeTextBuffers(void)
     glBindVertexArray(0);
 }
 
-void FontRenderer::renderText(TextData *textData, vmath::mat4 modelMatrix, vmath::mat4 viewMatrix, vmath::mat4 perspectiveProjectionMatrix, float scale)
+void FontRenderer::renderText(TextData *textData, glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 perspectiveProjectionMatrix, float scale)
 {
     glUseProgram(shaderProgramObject);
 
     // Pass modelMatrix to vertex shader in 'modelMatrix' variable defined in shader.
-    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, modelMatrix);
+    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
     // Pass viewMatrix to vertex shader in 'viewMatrix' variable defined in shader.
-    glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, viewMatrix);
+    glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 
     // Pass perspectiveProjectionMatrix to vertex shader in 'projectionMatrix' variable defined in shader.
-    glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, perspectiveProjectionMatrix);
+    glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
 
-    glUniform3fv(textColorUniform, 1, textData->textColor);
+    glUniform3fv(textColorUniform, 1, glm::value_ptr(textData->textColor));
 
     // Now bind the VAO to which we want to use
     glBindVertexArray(vao);
@@ -430,12 +412,7 @@ void FontRenderer::cleanUp(void)
 
     glUseProgram(0);
 
-    if(logFile)
-    {
-        log("---------- FontRenderer | Debug Logs End ----------\n");
-        fclose(logFile);
-        logFile = NULL;
-    }
+    logInfo("FontRenderer destroyed\n");
 }
 
 FontRenderer::~FontRenderer()

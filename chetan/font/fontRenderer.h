@@ -3,10 +3,11 @@
 #include <gl/glew.h>
 #include <gl/gl.h>
 #include <map>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
-#include "vmath.h"
 
 struct TextData
 {
@@ -17,10 +18,10 @@ struct TextData
     GLsizeiptr textSize;
 
     // The position where text will be rendered.
-    vmath::vec3 textPosition;
+    glm::vec3 textPosition;
 
     // The text color.
-    vmath::vec3 textColor;
+    glm::vec3 textColor;
 };
 
 class FontRenderer
@@ -32,7 +33,7 @@ public:
     FT_Error initialize();
 
     void loadCharacters(char *charactersToLoad, int numberOfCharacters);
-    void renderText(TextData *text, vmath::mat4 modelMatrix, vmath::mat4 viewMatrix, vmath::mat4 perspectiveProjectionMatrix, float scale);
+    void renderText(TextData *text, glm::mat4x4 modelMatrix, glm::mat4x4 viewMatrix, glm::mat4x4 perspectiveProjectionMatrix, float scale);
 
 private:
     struct TextCharacter
@@ -44,16 +45,15 @@ private:
         GLuint textureId;
 
         // The size of character
-        vmath::ivec2 size;
+        glm::ivec2 size;
 
         // Offset of character from base line to left and top.
-        vmath::ivec2 bearing;
+        glm::ivec2 bearing;
 
         // X and Y offset of next character from this character.
-        vmath::ivec2 advance;
+        glm::ivec2 advance;
     };
 
-    FILE *logFile = NULL;
     FT_Library freeType = NULL;
     FT_Face fontFace = NULL;
 
@@ -75,7 +75,6 @@ private:
     GLuint textureSamplerUniform = 0;
     GLuint textColorUniform = 0;
 
-    void log(const char* message, ...);
     void initializeVertexShader(void);
     void initializeFragmentShader(void);
     void initializeShaderProgram(void);
