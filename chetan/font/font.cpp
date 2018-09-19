@@ -280,6 +280,7 @@ void initialize(void)
     textToRender->textSize = strlen(textToRender->text);
     textToRender->textColor = glm::vec3(0.0f, 0.0f, 0.0f);
     textToRender->textPosition = glm::vec3(-0.5f, 0.0f, -3.0f);
+    textToRender->scale = 0.005f;
 
     fontRenderer->loadCharacters(textToRender->text, textToRender->textSize);
 
@@ -305,7 +306,7 @@ void drawText(void)
     // Translate the modal matrix.
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
 
-    fontRenderer->renderText(textToRender, modelMatrix, viewMatrix, perspectiveProjectionMatrix, 0.005f);
+    fontRenderer->renderText(textToRender, modelMatrix, viewMatrix, perspectiveProjectionMatrix);
 }
 
 void resize(int width, int height)

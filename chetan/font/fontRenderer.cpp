@@ -49,6 +49,9 @@ FT_Error FontRenderer::initialize()
     initializeShaderProgram();
     initializeTextBuffers();
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     return 0;
 }
 
@@ -269,7 +272,7 @@ void FontRenderer::initializeTextBuffers(void)
     glBindVertexArray(0);
 }
 
-void FontRenderer::renderText(TextData *textData, glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 perspectiveProjectionMatrix, float scale)
+void FontRenderer::renderText(TextData *textData, glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 perspectiveProjectionMatrix)
 {
     glUseProgram(shaderProgramObject);
 
@@ -296,10 +299,10 @@ void FontRenderer::renderText(TextData *textData, glm::mat4 modelMatrix, glm::ma
     {
         TextCharacter *nextChar = characters[textData->text[counter]];
 
-        xPosition += nextChar->bearing[0] * scale;
-        GLfloat yPosition = textData->textPosition[1] - (nextChar->size[1] - nextChar->bearing[1]) * scale;
-        GLfloat width = nextChar->size[0] * scale;
-        GLfloat height = nextChar->size[1] * scale;
+        xPosition += nextChar->bearing[0] * textData->scale;
+        GLfloat yPosition = textData->textPosition[1] - (nextChar->size[1] - nextChar->bearing[1]) * textData->scale;
+        GLfloat width = nextChar->size[0] * textData->scale;
+        GLfloat height = nextChar->size[1] * textData->scale;
 
         GLfloat vertices[18] = {
             xPosition        , yPosition + height, textData->textPosition[2],
@@ -334,7 +337,7 @@ void FontRenderer::renderText(TextData *textData, glm::mat4 modelMatrix, glm::ma
 
         // Now advance the cursors for next glyph, advance is number of 1/64 pixels
         // So bitshift by 6 to get value in pixels (2^6 = 64)
-        xPosition += (nextChar->advance[0] >> 6) * scale;
+        xPosition += (nextChar->advance[0] >> 6) * textData->scale;
     }
 
     // unbind the vao

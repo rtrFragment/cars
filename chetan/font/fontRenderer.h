@@ -22,6 +22,9 @@ struct TextData
 
     // The text color.
     glm::vec3 textColor;
+
+    // The scale factor for rendering this text.
+    float scale;
 };
 
 class FontRenderer
@@ -33,7 +36,7 @@ public:
     FT_Error initialize();
 
     void loadCharacters(char *charactersToLoad, int numberOfCharacters);
-    void renderText(TextData *text, glm::mat4x4 modelMatrix, glm::mat4x4 viewMatrix, glm::mat4x4 perspectiveProjectionMatrix, float scale);
+    void renderText(TextData *text, glm::mat4x4 modelMatrix, glm::mat4x4 viewMatrix, glm::mat4x4 perspectiveProjectionMatrix);
 
 private:
     struct TextCharacter
