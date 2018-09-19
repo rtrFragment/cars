@@ -67,7 +67,8 @@ void generateCircleVertices(GLfloat radius, std::vector<GLfloat> *vertices);
 void generateCircleTextureCoordinates(std::vector<GLfloat> *textureCoordinates);
 void update(void);
 void display(void);
-void drawCircle(GLuint vao, GLint textureEnabled);
+void drawCircle(GLuint vao, GLint textureEnabled, glm::vec3 position, glm::vec3 color);
+void angleToPosition(GLfloat angle, GLfloat radius, glm::vec3 *position);
 bool loadGLTextures(GLuint *texture, TCHAR resourceId[]);
 void resize(int width, int height);
 void toggleFullscreen(HWND hWnd, bool isFullscreen);
@@ -495,7 +496,7 @@ void initializeBuffers(void)
 {
     initializeCircleBuffer(&vaoMainCircle, 1.0f);
     initializeCircleBuffer(&vaoLeftCircle, 0.5f);
-    initializeCircleBuffer(&vaoSmallCircle, 0.25f);
+    initializeCircleBuffer(&vaoSmallCircle, 0.1f);
 }
 
 void initializeCircleBuffer(GLuint *vao, GLfloat radius)
@@ -566,26 +567,48 @@ void display(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glUseProgram(shaderProgramObject);
 
-    glm::mat4x4 modelMatrix = glm::mat4x4();
     glm::mat4x4 viewMatrix = glm::mat4x4();
-
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(1.0f, 0.0f, -2.0f));
-
-    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
     glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
     glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
 
-    drawCircle(vaoMainCircle, 1);
-    drawCircle(vaoLeftCircle, 1);
-    drawCircle(vaoSmallCircle, 0);
+    drawCircle(vaoMainCircle, 1, glm::vec3(1.0f, 0.0f, -2.0f), color);
+    drawCircle(vaoLeftCircle, 1, glm::vec3(-0.40f, -0.5f, -2.0f), color);
+
+    glm::vec3 position;
+    GLfloat step = 270.0f / 8.0f;
+
+    for(int counter = 0; counter < 8; ++counter)
+    {
+        GLfloat angleRadians = glm::radians(counter * step);
+        GLfloat x = 1.0f + cosf(angleRadians) * 0.8f;
+        GLfloat y = sinf(angleRadians) * 0.8f;
+        GLfloat z = -2.0f;
+
+        drawCircle(vaoSmallCircle, 0, glm::vec3(x, y, z), glm::vec3(1.0f, 1.0f, 1.0f));
+    }
 
     glBindVertexArray(0);
     glUseProgram(0);
     SwapBuffers(hdc);
 }
 
-void drawCircle(GLuint vao, GLint textureEnabled)
+void angleToPosition(GLfloat angle, GLfloat radius, glm::vec3 *position)
 {
+    GLfloat angleRadians = glm::radians(angle);
+    GLfloat x = cosf(angleRadians) * radius;
+    GLfloat y = sinf(angleRadians) * radius;
+    GLfloat z = -2.0f;
+
+    glm::vec3 positionLocal = glm::vec3(x, y, z);
+    position = &positionLocal;
+}
+
+void drawCircle(GLuint vao, GLint textureEnabled, glm::vec3 position, glm::vec3 color)
+{
+    glm::mat4x4 modelMatrix = glm::mat4x4();
+    modelMatrix = glm::translate(modelMatrix, position);
+    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
     glBindVertexArray(vao);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureSmiley);
