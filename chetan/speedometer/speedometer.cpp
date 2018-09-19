@@ -69,6 +69,10 @@ GLuint vaoLeftCircle = 0;
 GLuint vboLeftCirclePosition = 0;
 GLuint vboLeftCircleTexture = 0;
 
+GLuint vaoSpeedArrow = 0;
+GLuint vboSpeedArrowPosition = 0;
+GLuint vboSpeedArrowTexture = 0;
+
 GLuint colorUniform = 0;
 GLuint textureFlame = 0;
 GLuint textureSamplerUniform = 0;
@@ -96,12 +100,14 @@ void initializeVertexShader(void);
 void initializeFragmentShader(void);
 void initializeShaderProgram(void);
 void initializeBuffers(void);
+void initializeSpeedArrowBuffer(void);
 void initializeCircleBuffer(GLuint *vao, GLuint *vboPosition, GLuint *vboTexture, GLfloat radius);
 void generateCircleVertices(GLfloat radius, std::vector<GLfloat> *vertices);
 void generateCircleTextureCoordinates(std::vector<GLfloat> *textureCoordinates);
 void update(void);
 void display(void);
 void drawCircle(GLuint vao, glm::vec3 position, glm::vec3 color);
+void drawSpeedArrow(glm::vec3 position, glm::vec3 scale, GLfloat angle, glm::vec3 color);
 void angleToPosition(GLfloat angle, GLfloat radius, glm::vec3 *position);
 bool loadGLTextures(GLuint *texture, TCHAR resourceId[]);
 void resize(int width, int height);
@@ -355,6 +361,7 @@ void initialize(void)
     initializeFragmentShader();
     initializeShaderProgram();
     initializeBuffers();
+    initializeSpeedArrowBuffer();
 
     glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
     glClearDepth(1.0f);
@@ -362,6 +369,7 @@ void initialize(void)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glShadeModel(GL_SMOOTH);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
     perspectiveProjectionMatrix = glm::mat4x4();
     color = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -597,12 +605,6 @@ void initializeShaderProgram()
     textureEnabledUniform = glGetUniformLocation(shaderProgramObject, "textureEnabled");
 }
 
-void initializeBuffers(void)
-{
-    initializeCircleBuffer(&vaoMainCircle, &vboMainCirclePosition, &vboMainCircleTexture, MAIN_CIRCLE_RADIUS);
-    initializeCircleBuffer(&vaoLeftCircle, &vboLeftCirclePosition, &vboLeftCircleTexture, LEFT_CIRCLE_RADIUS);
-}
-
 void initializeCircleBuffer(GLuint *vao, GLuint *vboPosition, GLuint *vboTexture, GLfloat radius)
 {
     std::vector<GLfloat> circleVertices;
@@ -632,6 +634,35 @@ void initializeCircleBuffer(GLuint *vao, GLuint *vboPosition, GLuint *vboTexture
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindVertexArray(0);
+}
+
+void initializeSpeedArrowBuffer()
+{
+    const GLfloat triangleVertices[] = {
+        0.0f, -0.6f, 0.0f,
+        -0.04f, 0.0f, 0.0f,
+        0.04f, 0.0f, 0.0f
+    };
+
+    glGenVertexArrays(1, &vaoSpeedArrow);
+    glBindVertexArray(vaoSpeedArrow);
+
+    glGenBuffers(1, &vboSpeedArrowPosition);
+    glBindBuffer(GL_ARRAY_BUFFER, vboSpeedArrowPosition);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(CG_ATTRIBUTE_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(CG_ATTRIBUTE_VERTEX_POSITION);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void initializeBuffers(void)
+{
+    initializeCircleBuffer(&vaoMainCircle, &vboMainCirclePosition, &vboMainCircleTexture, MAIN_CIRCLE_RADIUS);
+    initializeCircleBuffer(&vaoLeftCircle, &vboLeftCirclePosition, &vboLeftCircleTexture, LEFT_CIRCLE_RADIUS);
+    initializeSpeedArrowBuffer();
 }
 
 void generateCircleVertices(GLfloat radius, std::vector<GLfloat> *vertices)
@@ -678,6 +709,12 @@ void display(void)
     drawCircle(vaoMainCircle, glm::vec3(MAIN_CIRCLE_X_TRANSLATION, MAIN_CIRCLE_Y_TRANSLATION, Z_TRANSLATION), color);
     drawCircle(vaoLeftCircle, glm::vec3(LEFT_CIRCLE_X_TRANSLATION, LEFT_CIRCLE_Y_TRANSLATION, Z_TRANSLATION), color);
 
+    drawSpeedArrow(glm::vec3(MAIN_CIRCLE_X_TRANSLATION, 0.0f, Z_TRANSLATION), glm::vec3(1.0f, 1.0f, 1.0f), -200.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+    drawSpeedArrow(glm::vec3(LEFT_CIRCLE_X_TRANSLATION, LEFT_CIRCLE_Y_TRANSLATION, Z_TRANSLATION), glm::vec3(0.5f, 0.5f, 0.5f), -180.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+
+    // The font renderer has its own program object, hence stop using current program.
+    glUseProgram(0);
+
     for(int counter = 0; counter < speedPoints.size(); ++counter)
     {
         fontRenderer->renderText(speedPoints[counter], glm::mat4x4(), viewMatrix, perspectiveProjectionMatrix);
@@ -688,8 +725,6 @@ void display(void)
         fontRenderer->renderText(fuelPoints[counter], glm::mat4x4(), viewMatrix, perspectiveProjectionMatrix);
     }
 
-    glBindVertexArray(0);
-    glUseProgram(0);
     SwapBuffers(hdc);
 }
 
@@ -718,6 +753,28 @@ void drawCircle(GLuint vao, glm::vec3 position, glm::vec3 color)
     glUniform3fv(colorUniform, 1, glm::value_ptr(color));
     glUniform1i(textureEnabledUniform, 1);
     glDrawArrays(GL_TRIANGLE_FAN, 0, (numberOfCirclePoints + 1) * 3);
+    glBindVertexArray(0);
+}
+
+void drawSpeedArrow(glm::vec3 position, glm::vec3 scale, GLfloat angle, glm::vec3 color)
+{
+    glm::mat4x4 modelMatrix = glm::mat4x4();
+    glm::mat4x4 translationMatrix = glm::mat4x4();
+    glm::mat4x4 scaleMatrix = glm::mat4x4();
+    glm::mat4x4 rotationMatrix = glm::mat4x4();
+
+    scaleMatrix = glm::scale(scaleMatrix, scale);
+    rotationMatrix = glm::rotate(rotationMatrix, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+    translationMatrix = glm::translate(translationMatrix, position);
+    modelMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+
+    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+
+    glBindVertexArray(vaoSpeedArrow);
+    glUniform3fv(colorUniform, 1, glm::value_ptr(color));
+    glUniform1i(textureEnabledUniform, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
 }
 
@@ -825,6 +882,24 @@ void cleanUp(void)
     {
         delete fontRenderer;
         fontRenderer = NULL;
+    }
+
+    if(vaoSpeedArrow)
+    {
+        glDeleteVertexArrays(1, &vaoSpeedArrow);
+        vaoSpeedArrow = 0;
+    }
+
+    if(vboMainCirclePosition)
+    {
+        glDeleteBuffers(1, &vboSpeedArrowPosition);
+        vboSpeedArrowPosition = 0;
+    }
+
+    if(vboMainCircleTexture)
+    {
+        glDeleteBuffers(1, &vboMainCircleTexture);
+        vboMainCircleTexture = 0;
     }
 
     if(vaoMainCircle)
