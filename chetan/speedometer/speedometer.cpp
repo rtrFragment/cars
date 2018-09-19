@@ -4,14 +4,21 @@
 #include <stdio.h>
 #include <vector>
 #include <math.h>
+#include <string.h>
 #include <gl/glew.h>
 #include <gl/gl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "fontRenderer.h"
 #include "resources/resource.h"
 #include "lib/logger/logger.h"
+
+#define NUMBER_OF_SPEED_POINTS 10
+#define MIN_SPEED_ANGLE 0.0f
+#define MAX_SPEED_ANGLE 270.0f
+#define SPEED_JUMP 30.0f
 
 HWND hWnd = NULL;
 HDC hdc = NULL;
@@ -56,7 +63,10 @@ GLuint projectionMatrixUniform = 0;
 glm::mat4x4 perspectiveProjectionMatrix;
 glm::vec3 color;
 
-int numberOfCirclePoints = 20000;
+int numberOfCirclePoints = 30000;
+
+FontRenderer *fontRenderer = NULL;
+std::vector<TextData *> speedPoints;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 
@@ -323,6 +333,39 @@ void initialize(void)
     initializeShaderProgram();
     initializeBuffers();
 
+    fontRenderer = new FontRenderer("resources/fonts/arial.ttf", 48);
+    FT_Error error = fontRenderer->initialize();
+
+    if(error != 0)
+    {
+        logInfo("[Error] | Not able to initialize FreeType, error code: %d", error);
+        cleanUp();
+        exit(EXIT_FAILURE);
+    }
+
+    GLfloat step = (MAX_SPEED_ANGLE - MIN_SPEED_ANGLE) / NUMBER_OF_SPEED_POINTS;
+
+    for(int counter = 0; counter <= NUMBER_OF_SPEED_POINTS; ++counter)
+    {
+        GLfloat angleRadians = glm::radians(counter * step);
+        GLfloat x = 0.9f + cosf(angleRadians) * 0.8f;
+        GLfloat y = 0.0f + sinf(angleRadians) * 0.8f;
+        GLfloat z = -2.0f;
+
+        TextData *textSpeedText = (TextData *)malloc(sizeof(TextData));
+        memset(textSpeedText, 0, sizeof(TextData));
+
+        textSpeedText->text = (char *)malloc(sizeof(char) * 4);
+        itoa(SPEED_JUMP * (NUMBER_OF_SPEED_POINTS - counter), textSpeedText->text, 10);
+        textSpeedText->textSize = strlen(textSpeedText->text);
+        textSpeedText->textColor = glm::vec3(1.0f, 1.0f, 1.0f);
+        textSpeedText->textPosition = glm::vec3(x, y, z);
+        textSpeedText->scale = 0.003f;
+
+        fontRenderer->loadCharacters(textSpeedText->text, textSpeedText->textSize);
+        speedPoints.push_back(textSpeedText);
+    }
+
     glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
     glClearDepth(1.0f);
 
@@ -580,17 +623,10 @@ void display(void)
     drawCircle(vaoMainCircle, glm::vec3(1.0f, 0.0f, -2.0f), color);
     drawCircle(vaoLeftCircle, glm::vec3(-0.40f, -0.5f, -2.0f), color);
 
-    // glm::vec3 position;
-    // GLfloat step = 270.0f / 8.0f;
-
-    // for(int counter = 0; counter < 8; ++counter)
-    // {
-    //     GLfloat angleRadians = glm::radians(counter * step);
-    //     GLfloat x = 1.0f + cosf(angleRadians) * 0.8f;
-    //     GLfloat y = sinf(angleRadians) * 0.8f;
-    //     GLfloat z = -2.0f;
-    //     drawTriangle(vaoTriangle, glm::vec3(x, y, z), glm::vec3(1.0f, 1.0f, 1.0f), glm::radians(0.0f));
-    // }
+    for(int counter = 0; counter < speedPoints.size(); ++counter)
+    {
+        fontRenderer->renderText(speedPoints[counter], glm::mat4x4(), viewMatrix, perspectiveProjectionMatrix);
+    }
 
     glBindVertexArray(0);
     glUseProgram(0);
@@ -707,6 +743,20 @@ void cleanUp(void)
         SetWindowPlacement(hWnd, &wpPrev);
         SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED);
         ShowCursor(TRUE);
+    }
+
+    for(int counter = 0; counter < speedPoints.size(); ++counter)
+    {
+        free(speedPoints[counter]->text);
+        free(speedPoints[counter]);
+    }
+
+    speedPoints.clear();
+
+    if(fontRenderer != NULL)
+    {
+        delete fontRenderer;
+        fontRenderer = NULL;
     }
 
     if(vaoMainCircle)
