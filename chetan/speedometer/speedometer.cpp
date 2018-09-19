@@ -18,15 +18,22 @@
 #define MAIN_CIRCLE_RADIUS 1.0f
 #define LEFT_CIRCLE_RADIUS 0.5f
 #define SPEED_POINTS_RADIUS 0.8f
+#define FUEL_POINTS_RADIUS 0.325f
 #define NUMBER_OF_SPEED_POINTS 10
+#define NUMBER_OF_FUEL_POINTS 5
 #define MIN_SPEED_ANGLE 0.0f
 #define MAX_SPEED_ANGLE 270.0f
+#define FUEL_JUMP 20.0f
+#define MIN_FUEL_ANGLE 0.0f
+#define MAX_FUEL_ANGLE 270.0f
 #define SPEED_JUMP 30.0f
-#define MAIN_CIRCLE_X_TRANSLATION 1.1f
+#define MAIN_CIRCLE_X_TRANSLATION 1.2f
 #define MAIN_CIRCLE_Y_TRANSLATION 0.0f
 #define LEFT_CIRCLE_X_TRANSLATION -0.25f
 #define LEFT_CIRCLE_Y_TRANSLATION -0.5f
-#define SPEED_POINT_X_TRANSLATION 1.0f
+#define SPEED_POINT_X_TRANSLATION 1.1f
+#define FUEL_POINT_X_TRANSLATION -0.375f
+#define FUEL_POINT_Y_TRANSLATION -0.5f
 #define Z_TRANSLATION -2.0f
 #define Z_TRANSLATION -2.0f
 
@@ -77,10 +84,14 @@ int numberOfCirclePoints = 30000;
 
 FontRenderer *fontRenderer = NULL;
 std::vector<TextData *> speedPoints;
+std::vector<TextData *> fuelPoints;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 
 void initialize(void);
+void initializefontRenderer(void);
+void initializeSpeedPointText(void);
+void initializeFuelPointText(void);
 void initializeVertexShader(void);
 void initializeFragmentShader(void);
 void initializeShaderProgram(void);
@@ -337,13 +348,33 @@ void initialize(void)
         exit(EXIT_FAILURE);
 	}
 
-    // Initialize the shaders and shader program object.
+    initializefontRenderer();
+    initializeSpeedPointText();
+    initializeFuelPointText();
     initializeVertexShader();
     initializeFragmentShader();
     initializeShaderProgram();
     initializeBuffers();
 
-    fontRenderer = new FontRenderer("resources/fonts/arial.ttf", 48);
+    glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
+    glClearDepth(1.0f);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glShadeModel(GL_SMOOTH);
+
+    perspectiveProjectionMatrix = glm::mat4x4();
+    color = glm::vec3(1.0f, 0.0f, 0.0f);
+
+    loadGLTextures(&textureFlame, MAKEINTRESOURCE(FIRE_BMP));
+
+    // This is required for DirectX
+    resize(windowRect.right - windowRect.left, windowRect.bottom - windowRect.top);
+}
+
+void initializefontRenderer(void)
+{
+    fontRenderer = new FontRenderer("resources/fonts/ubuntuMono.ttf", 48);
     FT_Error error = fontRenderer->initialize();
 
     if(error != 0)
@@ -352,7 +383,10 @@ void initialize(void)
         cleanUp();
         exit(EXIT_FAILURE);
     }
+}
 
+void initializeSpeedPointText(void)
+{
     GLfloat step = (MAX_SPEED_ANGLE - MIN_SPEED_ANGLE) / NUMBER_OF_SPEED_POINTS;
 
     for(int counter = 0; counter <= NUMBER_OF_SPEED_POINTS; ++counter)
@@ -375,21 +409,32 @@ void initialize(void)
         fontRenderer->loadCharacters(textSpeedText->text, textSpeedText->textSize);
         speedPoints.push_back(textSpeedText);
     }
+}
 
-    glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
-    glClearDepth(1.0f);
+void initializeFuelPointText(void)
+{
+    GLfloat step = (MAX_FUEL_ANGLE - MIN_FUEL_ANGLE) / NUMBER_OF_FUEL_POINTS;
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glShadeModel(GL_SMOOTH);
+    for(int counter = 0; counter <= NUMBER_OF_FUEL_POINTS; ++counter)
+    {
+        GLfloat angleRadians = glm::radians(counter * step);
+        GLfloat x = FUEL_POINT_X_TRANSLATION + cosf(angleRadians) * FUEL_POINTS_RADIUS;
+        GLfloat y = FUEL_POINT_Y_TRANSLATION + sinf(angleRadians) * FUEL_POINTS_RADIUS;
+        GLfloat z = Z_TRANSLATION;
 
-    perspectiveProjectionMatrix = glm::mat4x4();
-    color = glm::vec3(1.0f, 0.0f, 0.0f);
+        TextData *textFuelText = (TextData *)malloc(sizeof(TextData));
+        memset(textFuelText, 0, sizeof(TextData));
 
-    loadGLTextures(&textureFlame, MAKEINTRESOURCE(FIRE_BMP));
+        textFuelText->text = (char *)malloc(sizeof(char) * 4);
+        itoa(FUEL_JUMP * (NUMBER_OF_FUEL_POINTS - counter), textFuelText->text, 10);
+        textFuelText->textSize = strlen(textFuelText->text);
+        textFuelText->textColor = glm::vec3(1.0f, 1.0f, 1.0f);
+        textFuelText->textPosition = glm::vec3(x, y, z);
+        textFuelText->scale = 0.003f;
 
-    // This is required for DirectX
-    resize(windowRect.right - windowRect.left, windowRect.bottom - windowRect.top);
+        fontRenderer->loadCharacters(textFuelText->text, textFuelText->textSize);
+        fuelPoints.push_back(textFuelText);
+    }
 }
 
 void initializeVertexShader()
@@ -638,6 +683,11 @@ void display(void)
         fontRenderer->renderText(speedPoints[counter], glm::mat4x4(), viewMatrix, perspectiveProjectionMatrix);
     }
 
+    for(int counter = 0; counter < fuelPoints.size(); ++counter)
+    {
+        fontRenderer->renderText(fuelPoints[counter], glm::mat4x4(), viewMatrix, perspectiveProjectionMatrix);
+    }
+
     glBindVertexArray(0);
     glUseProgram(0);
     SwapBuffers(hdc);
@@ -762,6 +812,14 @@ void cleanUp(void)
     }
 
     speedPoints.clear();
+
+    for(int counter = 0; counter < fuelPoints.size(); ++counter)
+    {
+        free(fuelPoints[counter]->text);
+        free(fuelPoints[counter]);
+    }
+
+    fuelPoints.clear();
 
     if(fontRenderer != NULL)
     {
