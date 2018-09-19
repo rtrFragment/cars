@@ -11,7 +11,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "resources/resource.h"
-#include "logger.h"
+#include "lib/logger/logger.h"
 
 HWND hWnd = NULL;
 HDC hdc = NULL;
@@ -70,7 +70,7 @@ void generateCircleVertices(GLfloat radius, std::vector<GLfloat> *vertices);
 void generateCircleTextureCoordinates(std::vector<GLfloat> *textureCoordinates);
 void update(void);
 void display(void);
-void drawCircle(GLuint vao, GLint textureEnabled, glm::vec3 position, glm::vec3 color);
+void drawCircle(GLuint vao, glm::vec3 position, glm::vec3 color);
 void angleToPosition(GLfloat angle, GLfloat radius, glm::vec3 *position);
 bool loadGLTextures(GLuint *texture, TCHAR resourceId[]);
 void resize(int width, int height);
@@ -577,8 +577,8 @@ void display(void)
     glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
     glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
 
-    drawCircle(vaoMainCircle, 1, glm::vec3(1.0f, 0.0f, -2.0f), color);
-    drawCircle(vaoLeftCircle, 1, glm::vec3(-0.40f, -0.5f, -2.0f), color);
+    drawCircle(vaoMainCircle, glm::vec3(1.0f, 0.0f, -2.0f), color);
+    drawCircle(vaoLeftCircle, glm::vec3(-0.40f, -0.5f, -2.0f), color);
 
     // glm::vec3 position;
     // GLfloat step = 270.0f / 8.0f;
@@ -608,7 +608,7 @@ void angleToPosition(GLfloat angle, GLfloat radius, glm::vec3 *position)
     position = &positionLocal;
 }
 
-void drawCircle(GLuint vao, GLint textureEnabled, glm::vec3 position, glm::vec3 color)
+void drawCircle(GLuint vao, glm::vec3 position, glm::vec3 color)
 {
     glm::mat4x4 modelMatrix = glm::mat4x4();
     modelMatrix = glm::translate(modelMatrix, position);
@@ -616,10 +616,11 @@ void drawCircle(GLuint vao, GLint textureEnabled, glm::vec3 position, glm::vec3 
 
     glBindVertexArray(vao);
     glActiveTexture(GL_TEXTURE0);
+
     glBindTexture(GL_TEXTURE_2D, textureFlame);
     glUniform1i(textureSamplerUniform, 0);
     glUniform3fv(colorUniform, 1, glm::value_ptr(color));
-    glUniform1i(textureEnabledUniform, textureEnabled);
+    glUniform1i(textureEnabledUniform, 1);
     glDrawArrays(GL_TRIANGLE_FAN, 0, (numberOfCirclePoints + 1) * 3);
     glBindVertexArray(0);
 }
@@ -776,6 +777,12 @@ void cleanUp(void)
     }
 
     glUseProgram(0);
+
+    if(textureFlame != 0)
+    {
+        glDeleteTextures(1, &textureFlame);
+        textureFlame = 0;
+    }
 
     wglMakeCurrent(NULL, NULL);
 
