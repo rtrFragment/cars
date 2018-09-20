@@ -18,7 +18,7 @@ bool Logger::initialize(const char *fileName)
         size_t size = currentDateTime(dateTime, sizeof(dateTime));
 
         logger = new Logger();
-        logger->logfile = fopen(fileName, "w");
+        fopen_s(&logger->logfile, fileName, "w");
 
         if(logger->logfile == NULL)
         {
