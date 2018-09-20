@@ -37,6 +37,8 @@
 Speedometer::Speedometer()
 {
 	logInfo("Speedometer created.\n");
+	speedAngle = MIN_SPEED_ANGLE;
+    fuelAngle = MAX_FUEL_ANGLE;
 }
 
 void Speedometer::initialize(void)
@@ -82,7 +84,7 @@ void Speedometer::initializeSpeedPointText(void)
 		memset(textSpeedText, 0, sizeof(TextData));
 
 		textSpeedText->text = (char *)malloc(sizeof(char) * 4);
-		_itoa_s((int)FUEL_JUMP * (NUMBER_OF_SPEED_POINTS - counter), textSpeedText->text, sizeof(char) * 5, 10);
+		_itoa_s((int)SPEED_JUMP * (NUMBER_OF_SPEED_POINTS - counter), textSpeedText->text, sizeof(char) * 5, 10);
 		textSpeedText->textSize = strlen(textSpeedText->text);
 		textSpeedText->textColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		textSpeedText->textPosition = glm::vec3(x, y, z);
@@ -367,6 +369,35 @@ void Speedometer::generateCircleTextureCoordinates(std::vector<GLfloat> *texture
 	}
 }
 
+void Speedometer::setSpeed(float speed)
+{
+	float maxSpeed = SPEED_JUMP * NUMBER_OF_SPEED_POINTS;
+	this->speedAngle = MAX_SPEED_ANGLE / maxSpeed * speed;
+
+	if(this->speedAngle > MAX_SPEED_ANGLE)
+	{
+		this->speedAngle = MAX_SPEED_ANGLE;
+	}
+	else if(this->speedAngle < 0.0f)
+	{
+		this->speedAngle = 0.0f;
+	}
+}
+
+void Speedometer::setFuelPercentage(float fuelPercentage)
+{
+	if(fuelPercentage > 100.0f)
+	{
+		 fuelPercentage = 100.0f;
+	}
+	else if(fuelPercentage < 0.0f)
+	{
+		fuelPercentage = 0.0f;
+	}
+
+	this->fuelAngle = (MAX_FUEL_ANGLE - MIN_FUEL_ANGLE) * fuelPercentage / 100.0f;
+}
+
 void Speedometer::update(void)
 {
 }
@@ -382,8 +413,8 @@ void Speedometer::display(void)
 	drawCircle(vaoMainCircle, glm::vec3(MAIN_CIRCLE_X_TRANSLATION, MAIN_CIRCLE_Y_TRANSLATION, Z_TRANSLATION), color);
 	drawCircle(vaoLeftCircle, glm::vec3(LEFT_CIRCLE_X_TRANSLATION, LEFT_CIRCLE_Y_TRANSLATION, Z_TRANSLATION), color);
 
-	drawSpeedArrow(glm::vec3(MAIN_CIRCLE_X_TRANSLATION, 0.0f, Z_TRANSLATION), glm::vec3(1.0f, 1.0f, 1.0f), -200.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-	drawSpeedArrow(glm::vec3(LEFT_CIRCLE_X_TRANSLATION, LEFT_CIRCLE_Y_TRANSLATION, Z_TRANSLATION), glm::vec3(0.5f, 0.5f, 0.5f), -180.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	drawSpeedArrow(glm::vec3(MAIN_CIRCLE_X_TRANSLATION, 0.0f, Z_TRANSLATION), glm::vec3(1.0f, 1.0f, 1.0f), -this->speedAngle, glm::vec3(1.0f, 1.0f, 1.0f));
+	drawSpeedArrow(glm::vec3(LEFT_CIRCLE_X_TRANSLATION, LEFT_CIRCLE_Y_TRANSLATION, Z_TRANSLATION), glm::vec3(0.5f, 0.5f, 0.5f), -this->fuelAngle, glm::vec3(1.0f, 1.0f, 1.0f));
 
 	// The font renderer has its own program object, hence stop using current program.
 	glUseProgram(0);

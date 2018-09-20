@@ -19,6 +19,8 @@ WINDOWPLACEMENT wpPrev = { sizeof(WINDOWPLACEMENT) };
 RECT windowRect = {0, 0, 800, 600};
 
 Speedometer *speedometer = NULL;
+float currentSpeed = 0.0f;
+float currentFuelPercentage = 100.0f;
 
 bool isFullscreen = false;
 bool isActive = false;
@@ -163,15 +165,47 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
                 break;
 
                 case VK_UP:
+                    if(speedometer != NULL)
+                    {
+                        currentSpeed += 1.0f;
+                        speedometer->setSpeed(currentSpeed);
+                    }
                 break;
 
                 case VK_DOWN:
+                    if(speedometer != NULL)
+                    {
+                        currentSpeed -= 1.0f;
+                        speedometer->setSpeed(currentSpeed);
+                    }
                 break;
 
                 case VK_LEFT:
+                    if(speedometer != NULL)
+                    {
+                        currentFuelPercentage -= 1.0f;
+
+                        if(currentFuelPercentage < 0.0f)
+                        {
+                            currentFuelPercentage = 0.0f;
+                        }
+
+                        speedometer->setFuelPercentage(currentFuelPercentage);
+                    }
                 break;
 
                 case VK_RIGHT:
+                    if(speedometer != NULL)
+                    {
+                        currentFuelPercentage += 1.0f;
+
+                        if(currentFuelPercentage > 100.0f)
+                        {
+                            currentFuelPercentage = 100.0f;
+                        }
+
+                        speedometer->setFuelPercentage(currentFuelPercentage);
+                    }
                 break;
 
                 default:

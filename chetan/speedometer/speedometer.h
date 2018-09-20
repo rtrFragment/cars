@@ -16,6 +16,8 @@ public:
     void update(void);
     void display(void);
     void resize(int width, int height);
+    void setSpeed(float speed);
+    void setFuelPercentage(float fuelPercentage);
 
 private:
     enum
@@ -53,7 +55,9 @@ private:
     glm::mat4x4 perspectiveProjectionMatrix;
     glm::vec3 color;
 
-    int numberOfCirclePoints = 30000;
+    const int numberOfCirclePoints = 30000;
+    float speedAngle;
+    float fuelAngle;
 
     FontRenderer *fontRenderer = NULL;
     std::vector<TextData *> speedPoints;
