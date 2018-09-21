@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include <chrono>
 #include <gl/glew.h>
 #include <gl/gl.h>
 
@@ -53,7 +54,7 @@ void Speedometer::initialize(void)
 	initializeSpeedArrowBuffer();
 
 	perspectiveProjectionMatrix = glm::mat4x4();
-	color = glm::vec3(1.0f, 0.0f, 0.0f);
+	color = glm::vec3(1.0f, 1.0f, 1.0f);
 
 	loadGLTextures(&textureFlame, MAKEINTRESOURCE(FIRE_BMP));
 }
@@ -166,7 +167,6 @@ void Speedometer::initializeVertexShader(void)
 				logError("Vertex shader compilation log: %s\n", infoLog);
 				free(infoLog);
 				cleanUp();
-				exit(EXIT_FAILURE);
 			}
 		}
 	}
@@ -223,7 +223,6 @@ void Speedometer::initializeFragmentShader()
 				logError("Fragment shader compilation log: %s\n", infoLog);
 				free(infoLog);
 				cleanUp();
-				exit(EXIT_FAILURE);
 			}
 		}
 	}
@@ -265,7 +264,6 @@ void Speedometer::initializeShaderProgram(void)
 				logError("Shader program link log: %s\n", infoLog);
 				free(infoLog);
 				cleanUp();
-				exit(EXIT_FAILURE);
 			}
 		}
 	}
@@ -400,6 +398,13 @@ void Speedometer::setFuelPercentage(float fuelPercentage)
 
 void Speedometer::update(void)
 {
+	static std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::high_resolution_clock::now();
+    std::chrono::time_point<std::chrono::steady_clock> currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count() / 1000.0f;
+
+	color[0] = -cosf(time);
+	color[1] = -sinf(time);
+	color[2] = sinf(time);
 }
 
 void Speedometer::display(void)
