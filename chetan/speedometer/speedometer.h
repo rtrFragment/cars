@@ -77,6 +77,5 @@ private:
     void drawCircle(GLuint vao, glm::vec3 position, glm::vec3 color);
     void drawSpeedArrow(glm::vec3 position, glm::vec3 scale, GLfloat angle, glm::vec3 color);
     bool loadGLTextures(GLuint *texture, TCHAR resourceId[]);
-    GLint Speedometer::loadShader(const char* fileName, GLchar **shaderSourceCode);
     void cleanUp(void);
 };
