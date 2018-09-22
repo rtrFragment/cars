@@ -96,7 +96,16 @@ struct Model
 	std::vector<float> gv_textures;
 	std::vector<float> gv_normals;
 	int count_of_vertices;
-}Scene1_Gaurage_Body, Scene1_Gaurage_Outer_Light, Scene1_Gaurage_Inner_Upper_Middle_Light, Scene1_Gaurage_Inner_Upper_Side_Light, Scene1_Gaurage_Inner_Side_Light, Scene1_Mustang, Scene1_Left_Door, Scene1_Right_Door;
+};
+
+Model Scene1_Gaurage_Body;
+Model Scene1_Gaurage_Outer_Light;
+Model Scene1_Gaurage_Inner_Upper_Middle_Light;
+Model Scene1_Gaurage_Inner_Upper_Side_Light;
+Model Scene1_Gaurage_Inner_Side_Light;
+Model Scene1_Mustang;
+Model Scene1_Left_Door;
+Model Scene1_Right_Door;
 
 GLfloat Scene1_pointLight1[3] = { 3.899998f, -0.700000f, -8.899998f };
 GLfloat Scene1_pointLight2[3] = { 3.999998f, 2.100000f, -8.899998f };
@@ -1185,6 +1194,54 @@ void Uninitialize_Scene1(void)
 	{
 		glDeleteVertexArrays(1, &Scene1_Gaurage_Body.Vao);
 		Scene1_Gaurage_Body.Vao = 0;
+	}
+
+	if(Scene1_Gaurage_Body.Vao)
+	{
+		glDeleteVertexArrays(1, &Scene1_Gaurage_Body.Vao);
+		Scene1_Gaurage_Body.Vao = 0;
+	}
+
+	if(Scene1_Gaurage_Outer_Light.Vao)
+	{
+		glDeleteVertexArrays(1, &Scene1_Gaurage_Outer_Light.Vao);
+		Scene1_Gaurage_Outer_Light.Vao = 0;
+	}
+
+	if(Scene1_Gaurage_Inner_Upper_Middle_Light.Vao)
+	{
+		glDeleteVertexArrays(1, &Scene1_Gaurage_Inner_Upper_Middle_Light.Vao);
+		Scene1_Gaurage_Inner_Upper_Middle_Light.Vao = 0;
+	}
+
+	if(Scene1_Gaurage_Inner_Upper_Side_Light.Vao)
+	{
+		glDeleteVertexArrays(1, &Scene1_Gaurage_Inner_Upper_Side_Light.Vao);
+		Scene1_Gaurage_Inner_Upper_Side_Light.Vao = 0;
+	}
+
+	if(Scene1_Gaurage_Inner_Side_Light.Vao)
+	{
+		glDeleteVertexArrays(1, &Scene1_Gaurage_Inner_Side_Light.Vao);
+		Scene1_Gaurage_Inner_Side_Light.Vao = 0;
+	}
+
+	if(Scene1_Mustang.Vao)
+	{
+		glDeleteVertexArrays(1, &Scene1_Mustang.Vao);
+		Scene1_Mustang.Vao = 0;
+	}
+
+	if(Scene1_Left_Door.Vao)
+	{
+		glDeleteVertexArrays(1, &Scene1_Left_Door.Vao);
+		Scene1_Left_Door.Vao = 0;
+	}
+
+	if(Scene1_Right_Door.Vao)
+	{
+		glDeleteVertexArrays(1, &Scene1_Right_Door.Vao);
+		Scene1_Right_Door.Vao = 0;
 	}
 
 	if (Scene1_gVbo_Position)
