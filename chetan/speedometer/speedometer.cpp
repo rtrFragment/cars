@@ -402,9 +402,9 @@ void Speedometer::update(void)
     std::chrono::time_point<std::chrono::steady_clock> currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count() / 1000.0f;
 
-	color[0] = -cosf(time);
-	color[1] = -sinf(time);
-	color[2] = sinf(time);
+	color[0] = fabs(cosf(time));
+	color[1] = fabs(sinf(time));
+	color[2] = fabs(sinf(time));
 }
 
 void Speedometer::display(void)
