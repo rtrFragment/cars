@@ -49,9 +49,6 @@ FT_Error FontRenderer::initialize()
     initializeShaderProgram();
     initializeTextBuffers();
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     return 0;
 }
 
@@ -332,9 +329,11 @@ void FontRenderer::renderText(TextData *textData, glm::mat4 modelMatrix, glm::ma
 
         glBindTexture(GL_TEXTURE_2D, nextChar->textureId);
         glUniform1i(textureSamplerUniform, 0);
-
+		
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-
+		glDisable(GL_BLEND);
         // Now advance the cursors for next glyph, advance is number of 1/64 pixels
         // So bitshift by 6 to get value in pixels (2^6 = 64)
         xPosition += (nextChar->advance[0] >> 6) * textData->scale;
