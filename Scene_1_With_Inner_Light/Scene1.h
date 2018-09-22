@@ -34,6 +34,7 @@ bool Scene1_gbDoor_Open_Flag = false;
 bool Scene1_gbUpper_Middle_Light_On_Flag = false;
 bool Scene1_gbUpper_Side_Light_On_Flag = false;
 bool Scene1_gbInner_Side_Light_On_Flag = false;
+bool Scene1_Black_Out_Flag = false;
 
 struct Scene1_PointLight
 {
@@ -152,6 +153,8 @@ GLuint Scene1_gVbo_Position, Scene1_gVbo_Normal;
 
 GLuint Scene1_gModelMatrixUniform, Scene1_gViewMatrixUniform, Scene1_gProjectionMatrixUniform;
 GLuint Scene1_gLKeyPressedUniform;
+GLuint Scene1_blackOutColorUniform;
+GLuint Scene1_blackOutUniform;
 
 GLuint Scene1_Scene1_gViewPositionUniform;
 GLuint Scene1_gNumberOfLightsUniform;
@@ -159,6 +162,7 @@ GLuint Scene1_gNumberOfLightsUniform;
 glm::mat4 Scene1_gPerspectiveProjectionMatrix;
 
 glm::vec3 Scene1_gViewPosition = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 Scene1_blackOutColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
 GLfloat lastX = WIN_WIDTH / 2.0;
 GLfloat lastY = WIN_HEIGHT / 2.0;
@@ -191,7 +195,7 @@ void Scene1_loadPointLightAudio(void);
 void Scene1_loadDoorOpeningAudio(void);
 void Scene1_loadSpotLightAudio(void);
 void Scene1_initializeAudio(void);
-
+void Scene1_blackOut(void);
 
 void Init_Scene1(void)
 {
@@ -315,6 +319,8 @@ void Init_Scene1(void)
 		"uniform Material material;" \
 		"uniform vec3 u_light_position[34];" \
 		"uniform int u_number_of_lights;" \
+		"uniform vec3 u_black_out_color;" \
+		"uniform int u_black_out;" \
 
 		"out vec4 FragColor;" \
 
@@ -384,7 +390,14 @@ void Init_Scene1(void)
 		"{" \
 		"phong_ads_color = vec3(1.0f,1.0f,1.0f);" \
 		"}" \
-		"FragColor = vec4(phong_ads_color,1.0);" \
+		"if(u_black_out == 1)" \
+		"{" \
+		"	FragColor = vec4(phong_ads_color,1.0) * vec4(u_black_out_color, 1.0f);" \
+		"}" \
+		"else" \
+		"{" \
+		"	FragColor = vec4(phong_ads_color,1.0);" \
+		"}" \
 		"}";
 
 	glShaderSource(Scene1_gFragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
@@ -449,6 +462,8 @@ void Init_Scene1(void)
 	Scene1_gLKeyPressedUniform = glGetUniformLocation(Scene1_gShaderProgramObject, "u_lighting_enabled");
 
 	Scene1_gNumberOfLightsUniform = glGetUniformLocation(Scene1_gShaderProgramObject, "u_number_of_lights");
+	Scene1_blackOutColorUniform = glGetUniformLocation(Scene1_gShaderProgramObject, "u_black_out_color");
+	Scene1_blackOutUniform = glGetUniformLocation(Scene1_gShaderProgramObject, "u_black_out");
 
 	//Point Light Uniform
 	Scene1_pointLight.gLaUniform = glGetUniformLocation(Scene1_gShaderProgramObject, "pointlight.u_La");
@@ -768,6 +783,12 @@ void Display_Scene1(void)
 
 	if (gbLight == true)
 	{
+		if(Scene1_Black_Out_Flag == true)
+		{
+			glUniform3fv(Scene1_blackOutColorUniform, 1, glm::value_ptr(Scene1_blackOutColor));
+			glUniform1i(Scene1_blackOutUniform, 1);
+		}
+
 		if (Scene1_gbUpper_Middle_Light_On_Flag == true)
 			Scene1_giNumberOfLights = 24;
 		if (Scene1_gbUpper_Side_Light_On_Flag == true)
@@ -1007,10 +1028,11 @@ void Display_Scene1(void)
 
 void Update_Scene1(void)
 {
+	Scene1_camera_Z_counter++;
+
 	if (Scene1_camera_Z_counter < 600)
 	{
 		Scene1_camera.MoveCamera(CameraMoveOnZ, -0.06f, deltaTime);
-		Scene1_camera_Z_counter++;
 		if (Scene1_camera_Z_counter == 410)
 		{
 			Scene1_gbDoor_Open_Flag = true;
@@ -1038,6 +1060,11 @@ void Update_Scene1(void)
 			//Scene1_gbUpper_Middle_Light_On_Flag = false;
 		}
 	}
+	else if (Scene1_camera_Z_counter > 700 && Scene1_blackOutColor[0] > 0.0f)
+	{
+		Scene1_Black_Out_Flag = true;
+		Scene1_blackOut();
+	}
 
 	if (Scene1_gbDoor_Open_Flag == true)
 	{
@@ -1047,6 +1074,13 @@ void Update_Scene1(void)
 			gfScene1_Right_Door_Translate = gfScene1_Right_Door_Translate + 0.05f;
 		}
 	}
+}
+
+void Scene1_blackOut(void)
+{
+	Scene1_blackOutColor[0] -= 0.0075f;
+	Scene1_blackOutColor[1] -= 0.0075f;
+	Scene1_blackOutColor[2] -= 0.0075f;
 }
 
 void Scene1_initializeAudio(void)
