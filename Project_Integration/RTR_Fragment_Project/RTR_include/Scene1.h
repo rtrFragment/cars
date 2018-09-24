@@ -104,7 +104,6 @@ Model Scene1_Gaurage_Outer_Light;
 Model Scene1_Gaurage_Inner_Upper_Middle_Light;
 Model Scene1_Gaurage_Inner_Upper_Side_Light;
 Model Scene1_Gaurage_Inner_Side_Light;
-Model Scene1_Mustang;
 Model Scene1_Left_Door;
 Model Scene1_Right_Door;
 
@@ -214,8 +213,7 @@ void Init_Scene1(void)
 	//MessageBox(ghwnd, TEXT("After LoadMeshData 6"), TEXT("MSG"), MB_OK);
 	Scene1_Right_Door.count_of_vertices = LoadMeshData("RTR_resources/models/Gaurage/Right_Door.obj", Scene1_Right_Door.gv_vertices, Scene1_Right_Door.gv_textures, Scene1_Right_Door.gv_normals);
 	//MessageBox(ghwnd, TEXT("After LoadMeshData 6"), TEXT("MSG"), MB_OK);
-	Scene1_Mustang.count_of_vertices = LoadMeshData("RTR_resources/models/Mustang_GT/Mustang_GT_new.obj", Scene1_Mustang.gv_vertices, Scene1_Mustang.gv_textures, Scene1_Mustang.gv_normals);
-	//MessageBox(ghwnd, TEXT("After LoadMeshData 6"), TEXT("MSG"), MB_OK);
+	
 
 
 	//Vertex Shader
@@ -733,33 +731,6 @@ void initializeObjects(void)
 
 	glBindVertexArray(0);
 
-	/*****************VAO Scene1_Mustang*****************/
-	glGenVertexArrays(1, &Scene1_Mustang.Vao);
-	glBindVertexArray(Scene1_Mustang.Vao);
-
-	/*****************Scene1_Mustang Position****************/
-	glGenBuffers(1, &Scene1_gVbo_Position);
-	glBindBuffer(GL_ARRAY_BUFFER, Scene1_gVbo_Position);
-	glBufferData(GL_ARRAY_BUFFER, Scene1_Mustang.gv_vertices.size() * sizeof(float), &Scene1_Mustang.gv_vertices[0], GL_STATIC_DRAW);
-
-	glVertexAttribPointer(SCENE1_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-	glEnableVertexAttribArray(SCENE1_ATTRIBUTE_POSITION);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	/*****************Scene1_Mustang Normal****************/
-	glGenBuffers(1, &Scene1_gVbo_Normal);
-	glBindBuffer(GL_ARRAY_BUFFER, Scene1_gVbo_Normal);
-	glBufferData(GL_ARRAY_BUFFER, Scene1_Mustang.gv_normals.size() * sizeof(float), &Scene1_Mustang.gv_normals[0], GL_STATIC_DRAW);
-
-	glVertexAttribPointer(SCENE1_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-	glEnableVertexAttribArray(SCENE1_ATTRIBUTE_NORMAL);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glBindVertexArray(0);
 }
 
 void Display_Scene1(void)
@@ -922,31 +893,6 @@ void Display_Scene1(void)
 	glBindVertexArray(Scene1_Gaurage_Inner_Side_Light.Vao);
 
 	glDrawArrays(GL_TRIANGLES, 0, Scene1_Gaurage_Inner_Side_Light.count_of_vertices);
-
-	glBindVertexArray(0);
-
-	/*************Scene1_Mustang*************/
-
-	modelMatrix = glm::mat4(1.0f);
-	viewMatrix = glm::mat4(1.0f);
-	scaleMatrix = glm::mat4(1.0f);
-	rotationMatrix = glm::mat4(1.0f);
-
-	viewMatrix = Scene1_camera.getViewMatrix();
-
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(SCENE1_MODEL_X_TRANSLATE, SCENE1_MODEL_Y_TRANSLATE + 0.1f, SCENE1_MODEL_Z_TRANSLATE - 43.0f));
-
-	glUniformMatrix4fv(Scene1_gModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-	glUniformMatrix4fv(Scene1_gViewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-
-	glUniformMatrix4fv(Scene1_gProjectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(Scene1_gPerspectiveProjectionMatrix));
-
-	glUniform1i(Scene1_gLKeyPressedUniform, 1);
-
-	glBindVertexArray(Scene1_Mustang.Vao);
-
-	glDrawArrays(GL_TRIANGLES, 0, Scene1_Mustang.count_of_vertices);
 
 	glBindVertexArray(0);
 
@@ -1227,11 +1173,7 @@ void Uninitialize_Scene1(void)
 		Scene1_Gaurage_Inner_Side_Light.Vao = 0;
 	}
 
-	if(Scene1_Mustang.Vao)
-	{
-		glDeleteVertexArrays(1, &Scene1_Mustang.Vao);
-		Scene1_Mustang.Vao = 0;
-	}
+	
 
 	if(Scene1_Left_Door.Vao)
 	{
