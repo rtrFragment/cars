@@ -1,0 +1,31 @@
+Log File Created Successfully...
+In LoadSkyBoxShader 
+In loadCubemap....
+In LoadTGA : FileName : resources/RotateMirMar/right.tga
+In LoadTGA 100
+In LoadTGA 101
+In LoadTGA 102
+In LoadTGA : FileName : resources/RotateMirMar/left.tga
+In LoadTGA 100
+In LoadTGA 101
+In LoadTGA 102
+In LoadTGA : FileName : resources/RotateMirMar/new_up.tga
+In LoadTGA 100
+In LoadTGA 101
+In LoadTGA 102
+In LoadTGA : FileName : resources/RotateMirMar/dwn.tga
+In LoadTGA 100
+In LoadTGA 101
+In LoadTGA 102
+In LoadTGA : FileName : resources/RotateMirMar/front.tga
+In LoadTGA 100
+In LoadTGA 101
+In LoadTGA 102
+In LoadTGA : FileName : resources/RotateMirMar/bck.tga
+In LoadTGA 100
+In LoadTGA 101
+In LoadTGA 102
+In SimpleDepthShaderBuildNCompileShader 
+ End of SimpleDepthShaderBuildNCompileShader 
+ In GenerateDepthMap..
+Log File Closed Successfully
