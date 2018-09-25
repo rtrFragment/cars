@@ -261,10 +261,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			//lightPosition[1] = lightPosition[1] + 1.0f;
 			break;
 
-		case 0x50:
-			/*fopen_s(&gpFile, "Log.txt", "a+");
-			fprintf(gpFile, "Light Pos X : %f\t Y : %f\t Z : %f\n", lightPosition[0], lightPosition[1], lightPosition[2]);
-			fclose(gpFile);*/
+		case 0x50://p
+			fopen_s(&gpFile, "Log.txt", "a+");
+			//fprintf(gpFile, "Light Pos X : %f\t Y : %f\t Z : %f\n", lightPosition[0], lightPosition[1], lightPosition[2]);
+			fprintf(gpFile, "Light Pos X : %f\t Y : %f\t Z : %f\n", LIGHT_X_TRANSLATE, LIGHT_Y_TRANSLATE, LIGHT_Z_TRANSLATE);
+			fclose(gpFile);
 			break;
 		}
 		break;

@@ -16,6 +16,7 @@ Compenents Present in Scene 3
 2.Fog
 3.Low Poly Water
 ****/
+
 #include <C:\glm\glm.hpp>
 #include <C:\glm\gtc\matrix_transform.hpp>
 #include <C:\glm\gtc\type_ptr.hpp>
@@ -71,6 +72,7 @@ Shader g_Scene3_CityModelShader;
 Shader g_Scene3_GrassShader;
 Shader g_Scene3_SkyBoxShader;
 Shader g_Scene3_InstanceShader;
+Shader g_Scene3_DepthShader;
 
 
 
@@ -96,7 +98,6 @@ GLfloat lightAmbient[] = { 0.0f,0.0f,0.0f,1.0f };
 GLfloat lightDiffuse[] = { 1.0f,1.0f,1.0f,1.0f };
 GLfloat lightSpecular[] = { 1.0f,1.0f,1.0f,1.0f };
 //GLfloat lightPosition[] = { -324.0f,205.0f,-365.0f,0.0f };
-//glm::vec3 lightPosition = 
 
 GLfloat materialAmbient[] = { 0.25f,0.25f,0.25f,1.0f };
 GLfloat materialDiffuse[] = { 0.4f,0.4f,0.4f,1.0f };
@@ -145,7 +146,7 @@ float CITYLIGHT_Y_TRANSLATE = -1.0f;
 float CITYLIGHT_Z_TRANSLATE = -920.0f;
 
 //Bench Instancing
-const int g_Bench_InstanceCount = 6;
+const int g_Bench_InstanceCount = 8;
 void Scene3_initializeBenchInstancing(void);
 
 //Palm Tree
@@ -162,9 +163,6 @@ GLuint g_Scene3_CityModel_DepthMap;
 const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
 //SimpleDepthShader 
-GLuint gVertexShaderObjectSimpleDepthShader;
-GLuint gFragmentShaderObjectSimpleDepthShader;
-GLuint gShaderProgramObjectSimpleDepthShader;
 
 GLuint glightSpaceMatrixSimpleDepthShaderUniform;
 GLuint gmodelSimpleDepthShaderUniform;
@@ -183,7 +181,7 @@ float LIGHT_Z_TRANSLATE = -365.0f;
 */
 
 float LIGHT_X_TRANSLATE = 0.0f;
-float LIGHT_Y_TRANSLATE = 20.0f;
+float LIGHT_Y_TRANSLATE = 76.0f;
 float LIGHT_Z_TRANSLATE = 20.0f;
 
 
@@ -1042,9 +1040,15 @@ void Scene3_initializeBenchInstancing()
 	int index = 0;
 	float offset = 0.1f;
 
-	translations[0] = { 0.0f , 0.0f , -1000.0f };
-	translations[1] = { 0.0f , 0.0f, -200.0f };
-	translations[2] = { 0.0f, 0.0f , 1000.0f };
+	translations[0] = { 0.0f , 0.0f , -2000.0f };
+	translations[1] = { 0.0f , 0.0f, -4000.0f };
+	translations[2] = { 0.0f, 0.0f , 2000.0f };
+	translations[3] = { 0.0f , 0.0f, 4000.0f };
+	translations[4] = { 0.0f , 0.0f, 6000.0f };
+	translations[5] = { 0.0f , 0.0f, -6000.0f };
+	translations[6] = { 0.0f , 0.0f, 8000.0f };
+
+
 	//translations[3] = { 0.0f, 0.0f , 800.0f };
 
 	glGenBuffers(1, &g_Scene3_Vbo_Instance);
@@ -1380,9 +1384,9 @@ void Scene3_initializeCityModelWithShadow(void)
 		"viewer_vector = -eye_coordinates.xyz;" \
 		
 		//Shadow
-		"vec3 FragPos = vec3(u_model_matrix * vPosition);" \
-		"FragPosLightSpace = u_lightSpace_matrix * vec4(FragPos, 1.0);" \
-
+		//"vec3 FragPos = vec3(u_view_matrix*u_model_matrix * vPosition);"
+	//	"FragPosLightSpace = u_lightSpace_matrix * vec4(FragPos, 1.0);" 
+      	"FragPosLightSpace = u_lightSpace_matrix * eye_coordinates;" \
 		"}" \
 		"gl_Position = u_projection_matrix*u_view_matrix*u_model_matrix*vPosition;" \
 		"}";
@@ -1879,7 +1883,7 @@ void DrawCityModelWithShadowMap(void)
 	lightSpaceMatrix = lightProjection * lightView;
 
 	// render scene from light's point of view
-	glUseProgram(gShaderProgramObjectSimpleDepthShader);
+	glUseProgram(g_Scene3_DepthShader.gShaderProgramObject);
 
 	glUniformMatrix4fv(glightSpaceMatrixSimpleDepthShaderUniform, 1, GL_FALSE, &lightSpaceMatrix[0][0]);
 
@@ -2047,9 +2051,9 @@ void DrawInstancingShader()
 
 
 	modelMatrix = glm::mat4();
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(-200.0f, -3.0f, -600.0f));
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(-200.0f, -1.0f, -600.0f));
 
-	modelMatrix = glm::scale(modelMatrix, glm::vec3(0.003f));
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(0.01f));
 
 	glUniformMatrix4fv(g_Scene3_Instance_ModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
@@ -2086,7 +2090,7 @@ void Scene3_initializeDepthShader(void)
 	fclose(gpFile);
 
 	//VERTEX SHADER
-	gVertexShaderObjectSimpleDepthShader = glCreateShader(GL_VERTEX_SHADER);
+	g_Scene3_DepthShader.gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
 
 	const GLchar *vertextShaderSourceCodeSimpleDepthShader =
 		"#version 450" \
@@ -2099,26 +2103,26 @@ void Scene3_initializeDepthShader(void)
 		"gl_Position = lightSpaceMatrix * model * vec4(vPosition, 1.0);" \
 		"}";
 
-	glShaderSource(gVertexShaderObjectSimpleDepthShader, 1, (const GLchar **)&vertextShaderSourceCodeSimpleDepthShader, NULL);
+	glShaderSource(g_Scene3_DepthShader.gVertexShaderObject, 1, (const GLchar **)&vertextShaderSourceCodeSimpleDepthShader, NULL);
 
 	//compile shader
-	glCompileShader(gVertexShaderObjectSimpleDepthShader);
+	glCompileShader(g_Scene3_DepthShader.gVertexShaderObject);
 
 	GLint iInfoLogLength = 0;
 	GLint iShaderCompiledStatus = 0;
 	char *szInfoLog = NULL;
 
-	glGetShaderiv(gVertexShaderObjectSimpleDepthShader, GL_COMPILE_STATUS, &iShaderCompiledStatus);
+	glGetShaderiv(g_Scene3_DepthShader.gVertexShaderObject, GL_COMPILE_STATUS, &iShaderCompiledStatus);
 	if (iShaderCompiledStatus == GL_FALSE)
 	{
-		glGetShaderiv(gVertexShaderObjectSimpleDepthShader, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		glGetShaderiv(g_Scene3_DepthShader.gVertexShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
 		if (iInfoLogLength > 0)
 		{
 			szInfoLog = (char *)malloc(iInfoLogLength);
 			if (szInfoLog != NULL)
 			{
 				GLsizei written;
-				glGetShaderInfoLog(gVertexShaderObjectSimpleDepthShader, iInfoLogLength, &written, szInfoLog);
+				glGetShaderInfoLog(g_Scene3_DepthShader.gVertexShaderObject, iInfoLogLength, &written, szInfoLog);
 				fopen_s(&gpFile, "Log.txt", "a+");
 				fprintf(gpFile, "Vertex Shader SimpleDepthShader Compilation Log : %s\n", szInfoLog);
 				fclose(gpFile);
@@ -2130,7 +2134,7 @@ void Scene3_initializeDepthShader(void)
 	}
 
 	//FRAGMENT SHADER
-	gFragmentShaderObjectSimpleDepthShader = glCreateShader(GL_FRAGMENT_SHADER);
+	g_Scene3_DepthShader.gFragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
 
 	const GLchar *fragmentShaderSourceCodeSimpleDepthShader =
 		"#version 450" \
@@ -2139,21 +2143,21 @@ void Scene3_initializeDepthShader(void)
 		"{" \
 		"}";
 
-	glShaderSource(gFragmentShaderObjectSimpleDepthShader, 1, (const GLchar **)&fragmentShaderSourceCodeSimpleDepthShader, NULL);
+	glShaderSource(g_Scene3_DepthShader.gFragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCodeSimpleDepthShader, NULL);
 
-	glCompileShader(gFragmentShaderObjectSimpleDepthShader);
+	glCompileShader(g_Scene3_DepthShader.gFragmentShaderObject);
 
-	glGetShaderiv(gFragmentShaderObjectSimpleDepthShader, GL_COMPILE_STATUS, &iShaderCompiledStatus);
+	glGetShaderiv(g_Scene3_DepthShader.gFragmentShaderObject, GL_COMPILE_STATUS, &iShaderCompiledStatus);
 	if (iShaderCompiledStatus == GL_FALSE)
 	{
-		glGetShaderiv(gFragmentShaderObjectSimpleDepthShader, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		glGetShaderiv(g_Scene3_DepthShader.gFragmentShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
 		if (iInfoLogLength > 0)
 		{
 			szInfoLog = (char *)malloc(iInfoLogLength);
 			if (szInfoLog != NULL)
 			{
 				GLsizei written;
-				glGetShaderInfoLog(gFragmentShaderObjectSimpleDepthShader, iInfoLogLength, &written, szInfoLog);
+				glGetShaderInfoLog(g_Scene3_DepthShader.gFragmentShaderObject, iInfoLogLength, &written, szInfoLog);
 				fopen_s(&gpFile, "Log.txt", "a+");
 				fprintf(gpFile, "Fragment Shader SimpleDepthShader Compilation Log : %s\n", szInfoLog);
 				fclose(gpFile);
@@ -2166,27 +2170,27 @@ void Scene3_initializeDepthShader(void)
 	}
 
 	//Shader Program
-	gShaderProgramObjectSimpleDepthShader = glCreateProgram();
+	g_Scene3_DepthShader.gShaderProgramObject = glCreateProgram();
 
-	glAttachShader(gShaderProgramObjectSimpleDepthShader, gVertexShaderObjectSimpleDepthShader);
-	glAttachShader(gShaderProgramObjectSimpleDepthShader, gFragmentShaderObjectSimpleDepthShader);
+	glAttachShader(g_Scene3_DepthShader.gShaderProgramObject, g_Scene3_DepthShader.gVertexShaderObject);
+	glAttachShader(g_Scene3_DepthShader.gShaderProgramObject, g_Scene3_DepthShader.gFragmentShaderObject);
 
-	glBindAttribLocation(gShaderProgramObjectSimpleDepthShader, HAD_ATTRIBUTE_POSITION, "vPosition");
+	glBindAttribLocation(g_Scene3_DepthShader.gShaderProgramObject, HAD_ATTRIBUTE_POSITION, "vPosition");
 
-	glLinkProgram(gShaderProgramObjectSimpleDepthShader);
+	glLinkProgram(g_Scene3_DepthShader.gShaderProgramObject);
 
 	GLint iShaderProgramLinkStatus = 0;
-	glGetProgramiv(gShaderProgramObjectSimpleDepthShader, GL_LINK_STATUS, &iShaderProgramLinkStatus);
+	glGetProgramiv(g_Scene3_DepthShader.gShaderProgramObject, GL_LINK_STATUS, &iShaderProgramLinkStatus);
 	if (iShaderProgramLinkStatus == GL_FALSE)
 	{
-		glGetProgramiv(gShaderProgramObjectSimpleDepthShader, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		glGetProgramiv(g_Scene3_DepthShader.gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
 		if (iInfoLogLength>0)
 		{
 			szInfoLog = (char *)malloc(iInfoLogLength);
 			if (szInfoLog != NULL)
 			{
 				GLsizei written;
-				glGetProgramInfoLog(gShaderProgramObjectSimpleDepthShader, iInfoLogLength, &written, szInfoLog);
+				glGetProgramInfoLog(g_Scene3_DepthShader.gShaderProgramObject, iInfoLogLength, &written, szInfoLog);
 				fprintf(gpFile, "Shader Program Link SimpleDepthShader Log : %s\n", szInfoLog);
 				free(szInfoLog);
 				uninitialize(1);
@@ -2194,8 +2198,8 @@ void Scene3_initializeDepthShader(void)
 			}
 		}
 	}
-	glightSpaceMatrixSimpleDepthShaderUniform = glGetUniformLocation(gShaderProgramObjectSimpleDepthShader, "lightSpaceMatrix");
-	gmodelSimpleDepthShaderUniform = glGetUniformLocation(gShaderProgramObjectSimpleDepthShader, "model");
+	glightSpaceMatrixSimpleDepthShaderUniform = glGetUniformLocation(g_Scene3_DepthShader.gShaderProgramObject, "lightSpaceMatrix");
+	gmodelSimpleDepthShaderUniform = glGetUniformLocation(g_Scene3_DepthShader.gShaderProgramObject, "model");
 
 	fopen_s(&gpFile, "Log.txt", "a+");
 	fprintf(gpFile, "End of SimpleDepthShaderBuildNCompileShader \n ");
