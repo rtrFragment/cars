@@ -56,6 +56,13 @@ private:
     glm::vec3 color;
 
     const int numberOfCirclePoints = 30000;
+    const GLsizei viewportWidth = 400;
+	const GLsizei viewportHeight = 200;
+    GLsizei viewportX = 0;
+    GLsizei viewportY = 0;
+    GLsizei windowWidth = 0;
+    GLsizei windowHeight = 0;
+
     float speedAngle;
     float fuelAngle;
 
