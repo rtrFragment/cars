@@ -129,7 +129,7 @@ ALfloat AudioManager::getBufferLength(ALuint buffer)
 
     ALenum error =  alGetError();
 
-    if( != AL_NO_ERROR)
+    if(error != AL_NO_ERROR)
     {
         return 0.0f;
     }
