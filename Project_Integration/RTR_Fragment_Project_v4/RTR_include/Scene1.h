@@ -35,6 +35,7 @@ bool Scene1_gbDoor_Open_Flag = false;
 bool Scene1_gbUpper_Middle_Light_On_Flag = false;
 bool Scene1_gbUpper_Side_Light_On_Flag = false;
 bool Scene1_gbInner_Side_Light_On_Flag = false;
+bool Scene1_gbIgnition_Flag = false;
 
 struct Scene1_PointLight
 {
@@ -177,9 +178,12 @@ SoundSource *Scene1_soundSourceSpotLight1 = NULL;
 SoundSource *Scene1_soundSourceSpotLight2 = NULL;
 SoundSource *Scene1_soundSourceSpotLight3 = NULL;
 SoundSource *Scene1_soundSourceSpotLight4 = NULL;
+SoundSource *Scene1_soundSourceIgnition = NULL;
+
 ALuint Scene1_audioBufferIdPointLight = 0;
 ALuint Scene1_audioBufferIdDoorOpening = 0;
 ALuint Scene1_audioBufferIdSpotLight = 0;
+ALuint Scene1_audioBufferIdIgnition = 0;
 
 int Scene1_giNumberOfLights = 20;
 int Scene1_camera_Z_counter = 0;
@@ -189,10 +193,11 @@ GLfloat currentFrame = 0.0f, lastFrame = 0.0f;
 GLfloat gfScene1_Left_Door_Translate = 0.0f;
 GLfloat gfScene1_Right_Door_Translate = 0.0f;
 
+void Scene1_initializeAudio(void);
 void Scene1_loadPointLightAudio(void);
 void Scene1_loadDoorOpeningAudio(void);
 void Scene1_loadSpotLightAudio(void);
-void Scene1_initializeAudio(void);
+void Scene1_loadIgnitionAudio(void);
 
 
 void Init_Scene1(void)
@@ -1010,8 +1015,22 @@ void Update_Scene1(void)
 			Scene1_camera.MoveCamera(CameraMoveOnY, -0.003f, deltaTime);
 	}
 
-	if (Scene1_camera_Z_counter == 708)
-		gbScene1_BlackOut_Flag = true;
+	if (Scene1_camera_Z_counter >= 708 && Scene1_gbIgnition_Flag == false)
+	{
+		Scene1_gbIgnition_Flag = true;
+		Scene1_soundSourceIgnition->play(Scene1_audioBufferIdIgnition);
+	}
+
+	if (Scene1_camera_Z_counter >= 708 && Scene1_gbIgnition_Flag == true && Scene1_soundSourceIgnition->isPlaying())
+	{
+		ALfloat currentPosition = Scene1_soundSourceIgnition->getPlayPosition();
+		ALfloat totalPosition = Scene1_audioManager->getBufferLength(Scene1_audioBufferIdIgnition);
+
+		if ((totalPosition - currentPosition) <= 3.0f)
+		{
+			gbScene1_BlackOut_Flag = true;
+		}
+	}
 
 	if (Scene1_gbDoor_Open_Flag == true)
 	{
@@ -1038,6 +1057,7 @@ void Scene1_initializeAudio(void)
 		Scene1_loadPointLightAudio();
 		Scene1_loadDoorOpeningAudio();
 		Scene1_loadSpotLightAudio();
+		Scene1_loadIgnitionAudio();
 	//}
 }
 
@@ -1114,6 +1134,29 @@ void Scene1_loadSpotLightAudio(void)
 	Scene1_soundSourceSpotLight4 = new SoundSource();
 }
 
+void Scene1_loadIgnitionAudio(void)
+{
+	alGenBuffers(1, &Scene1_audioBufferIdIgnition);
+
+	ALenum error = alGetError();
+
+	if (error != AL_NO_ERROR)
+	{
+		logError("Not able to create ignition audio buffer, error code: %d\n", error);
+	}
+
+	error = AL_NO_ERROR;
+
+	ALboolean waveDataLoaded = Scene1_audioManager->loadWaveAudio("RTR_resources/audio/Ignition.wav", Scene1_audioBufferIdIgnition);
+
+	if (!waveDataLoaded)
+	{
+		logError("Not able to load ignitionaudio file.\n");
+	}
+
+	Scene1_soundSourceIgnition = new SoundSource();
+}
+
 void Uninitialize_Scene1(void)
 {
 	if (Scene1_soundSourcePointLight != NULL)
@@ -1152,9 +1195,16 @@ void Uninitialize_Scene1(void)
 		Scene1_soundSourceSpotLight4 = NULL;
 	}
 
+	if (Scene1_soundSourceIgnition != NULL)
+	{
+		delete Scene1_soundSourceIgnition;
+		Scene1_soundSourceIgnition = NULL;
+	}
+
 	alDeleteBuffers(1, &Scene1_audioBufferIdPointLight);
 	alDeleteBuffers(1, &Scene1_audioBufferIdDoorOpening);
 	alDeleteBuffers(1, &Scene1_audioBufferIdSpotLight);
+	alDeleteBuffers(1, &Scene1_audioBufferIdIgnition);
 
 	if (Scene1_audioManager != NULL)
 	{
