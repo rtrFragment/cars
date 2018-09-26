@@ -115,6 +115,28 @@ void AudioManager::setListenerVelocity(float x, float y, float z)
     alListener3f(AL_VELOCITY, x, y, z);
 }
 
+ALfloat AudioManager::getBufferLength(ALuint buffer)
+{
+    ALint size;
+    ALint bits;
+    ALint channels;
+    ALint freq;
+
+    alGetBufferi(buffer, AL_SIZE, &size);
+    alGetBufferi(buffer, AL_BITS, &bits);
+    alGetBufferi(buffer, AL_CHANNELS, &channels);
+    alGetBufferi(buffer, AL_FREQUENCY, &freq);
+
+    ALenum error =  alGetError();
+
+    if( != AL_NO_ERROR)
+    {
+        return 0.0f;
+    }
+
+    return (ALfloat)((ALuint)size / channels / (bits / 8)) / (ALfloat)freq;
+}
+
 void AudioManager::log(const char* message, ...)
 {
     if(logFile != NULL)

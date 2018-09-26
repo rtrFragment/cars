@@ -110,6 +110,13 @@ void SoundSource::loop(ALboolean loop)
     alSourcei(sourceId, AL_LOOPING, loop);
 }
 
+ALfloat SoundSource::getPlayPosition(ALuint sourceId)
+{
+    ALfloat position = 0.0f;
+    alGetSourcef(sourceId, AL_SEC_OFFSET, &position);
+    return position;
+}
+
 ALboolean SoundSource::isPlaying()
 {
     ALint playing = 0;
