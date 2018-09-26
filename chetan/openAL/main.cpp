@@ -26,6 +26,8 @@ ALboolean isPlaying(ALuint sourceId);
 ALboolean isPaused(ALuint sourceId);
 ALboolean isStoped(ALuint sourceId);
 ALboolean isLooping(ALuint sourceId);
+ALfloat getPlayPosition(ALuint sourceId);
+ALfloat getBufferLength(ALuint buffer);
 
 void play(ALuint sourceId, ALuint buffer);
 void pause(ALuint sourceId);
@@ -161,6 +163,7 @@ int main(int argc, char const *argv[])
         printf("y: set source y position\n");
         printf("z: set source z position\n");
         printf("n: switch to next audio\n");
+        printf("o: print playback position and total audio length\n");
 
         printf(":");
 
@@ -228,6 +231,10 @@ int main(int argc, char const *argv[])
                         printf("looping enabled\n");
                     }
 
+                break;
+
+                case 'o':
+                    printf("Play position %f / %f sec.\n", getPlayPosition(soundSourceId), getBufferLength(currentAudioBufferId));
                 break;
 
                 case 'x':
@@ -484,6 +491,30 @@ ALboolean isLooping(ALuint sourceId)
     alGetSourcei(sourceId, AL_LOOPING, &looping);
 
     return looping;
+}
+
+ALfloat getPlayPosition(ALuint sourceId)
+{
+    ALfloat position = 0.0f;
+    alGetSourcef(sourceId, AL_SEC_OFFSET, &position);
+    return position;
+}
+
+ALfloat getBufferLength(ALuint buffer)
+{
+    ALint size, bits, channels, freq;
+
+    alGetBufferi(buffer, AL_SIZE, &size);
+    alGetBufferi(buffer, AL_BITS, &bits);
+    alGetBufferi(buffer, AL_CHANNELS, &channels);
+    alGetBufferi(buffer, AL_FREQUENCY, &freq);
+
+    if(alGetError() != AL_NO_ERROR)
+    {
+        return 0.0f;
+    }
+
+    return (ALfloat)((ALuint)size/channels/(bits/8)) / (ALfloat)freq;
 }
 
 void log(const char* message, ...)
