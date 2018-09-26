@@ -19,6 +19,7 @@ class AudioManager
 
         void setListenerPosition(float x, float y, float z);
         void setListenerVelocity(float x, float y, float z);
+        ALfloat getBufferLength(ALuint buffer);
 
     private:
         CWaves *waveLoader = NULL;

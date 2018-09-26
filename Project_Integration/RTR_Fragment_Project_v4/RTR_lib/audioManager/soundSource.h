@@ -29,6 +29,7 @@ class SoundSource
         void stop();
         void loop(ALboolean loop);
         unsigned int playCount();
+        ALfloat getPlayPosition(ALuint sourceId);
 
         ALboolean isPlaying();
         ALboolean isPaused();
