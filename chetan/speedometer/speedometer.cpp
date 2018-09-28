@@ -94,7 +94,7 @@ void Speedometer::initializeSpeedPointText(void)
         textSpeedText->textPosition = glm::vec3(x, y, z);
         textSpeedText->scale = 0.003f;
 
-        fontRenderer->loadCharacters(textSpeedText->text, textSpeedText->textSize);
+        fontRenderer->loadCharacters(textSpeedText);
         speedPoints.push_back(textSpeedText);
     }
 }
@@ -120,7 +120,7 @@ void Speedometer::initializeFuelPointText(void)
         textFuelText->textPosition = glm::vec3(x, y, z);
         textFuelText->scale = 0.003f;
 
-        fontRenderer->loadCharacters(textFuelText->text, textFuelText->textSize);
+        fontRenderer->loadCharacters(textFuelText);
         fuelPoints.push_back(textFuelText);
     }
 }

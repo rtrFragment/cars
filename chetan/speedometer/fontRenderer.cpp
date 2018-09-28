@@ -49,14 +49,14 @@ FT_Error FontRenderer::initialize()
     initializeShaderProgram();
     initializeTextBuffers();
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     return 0;
 }
 
-void FontRenderer::loadCharacters(char *charactersToLoad, int numberOfCharacters)
+void FontRenderer::loadCharacters(TextData *textData)
 {
+    char *charactersToLoad = textData->text;
+    int numberOfCharacters = textData->textSize;
+
     for(int counter = 0; counter < numberOfCharacters; ++counter)
     {
         GLchar characterToLoad = charactersToLoad[counter];
@@ -103,6 +103,8 @@ void FontRenderer::loadCharacters(char *charactersToLoad, int numberOfCharacters
 
         characters[characterToLoad] = nextChar;
     }
+
+    calculateTextVertices(textData);
 }
 
 void FontRenderer::initializeVertexShader(void)
@@ -272,28 +274,10 @@ void FontRenderer::initializeTextBuffers(void)
     glBindVertexArray(0);
 }
 
-void FontRenderer::renderText(TextData *textData, glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 perspectiveProjectionMatrix)
+void FontRenderer::calculateTextVertices(TextData *textData)
 {
-    glUseProgram(shaderProgramObject);
-
-    // Pass modelMatrix to vertex shader in 'modelMatrix' variable defined in shader.
-    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-    // Pass viewMatrix to vertex shader in 'viewMatrix' variable defined in shader.
-    glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-
-    // Pass perspectiveProjectionMatrix to vertex shader in 'projectionMatrix' variable defined in shader.
-    glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
-
-    glUniform3fv(textColorUniform, 1, glm::value_ptr(textData->textColor));
-
-    // Now bind the VAO to which we want to use
-    glBindVertexArray(vao);
-
-    // Enable 0th texture
-    glActiveTexture(GL_TEXTURE0);
-
     GLfloat xPosition = textData->textPosition[0];
+    textData->vertices.clear();
 
     for(GLsizeiptr counter = 0; counter < textData->textSize; ++counter)
     {
@@ -304,46 +288,78 @@ void FontRenderer::renderText(TextData *textData, glm::mat4 modelMatrix, glm::ma
         GLfloat width = nextChar->size[0] * textData->scale;
         GLfloat height = nextChar->size[1] * textData->scale;
 
-        GLfloat vertices[18] = {
-            xPosition        , yPosition + height, textData->textPosition[2],
-            xPosition        , yPosition         , textData->textPosition[2],
-            xPosition + width, yPosition         , textData->textPosition[2],
-            xPosition        , yPosition + height, textData->textPosition[2],
-            xPosition + width, yPosition         , textData->textPosition[2],
-            xPosition + width, yPosition + height, textData->textPosition[2]
-        };
+        std::vector<GLfloat> vertices;
+        vertices.push_back(xPosition);
+        vertices.push_back(yPosition + height);
+        vertices.push_back(textData->textPosition[2]);
 
-        GLfloat textureCoordinates[12] = {
-            0.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            0.0f, 0.0f,
-            1.0f, 1.0f,
-            1.0f, 0.0f,
-        };
+        vertices.push_back(xPosition);
+        vertices.push_back(yPosition         );
+        vertices.push_back(textData->textPosition[2]);
 
+        vertices.push_back(xPosition + width);
+        vertices.push_back(yPosition);
+        vertices.push_back(textData->textPosition[2]);
+
+        vertices.push_back(xPosition);
+        vertices.push_back(yPosition + height);
+        vertices.push_back(textData->textPosition[2]);
+
+        vertices.push_back(xPosition + width);
+        vertices.push_back(yPosition         );
+        vertices.push_back(textData->textPosition[2]);
+
+        vertices.push_back(xPosition + width);
+        vertices.push_back(yPosition + height);
+        vertices.push_back(textData->textPosition[2]);
+
+        textData->vertices.push_back(vertices);
+
+        // Now advance the cursors for next glyph, advance is number of 1/64 pixels
+        // So bitshift by 6 to get value in pixels (2^6 = 64)
+        xPosition += (nextChar->advance[0] >> 6) * textData->scale;
+    }
+}
+
+void FontRenderer::renderText(TextData *textData, glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 perspectiveProjectionMatrix)
+{
+    glUseProgram(shaderProgramObject);
+
+    glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
+    glUniform3fv(textColorUniform, 1, glm::value_ptr(textData->textColor));
+
+    glBindVertexArray(vao);
+    glActiveTexture(GL_TEXTURE0);
+    drawLine(textData);
+    glBindVertexArray(0);
+    glUseProgram(0);
+}
+
+void FontRenderer::drawLine(TextData *textData)
+{
+    for(GLsizeiptr counter = 0; counter < textData->textSize; ++counter)
+    {
         glBindBuffer(GL_ARRAY_BUFFER, vboPosition);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER,  sizeof(GLfloat) * textData->vertices[counter].size(), textData->vertices[counter].data(), GL_DYNAMIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         glBindBuffer(GL_ARRAY_BUFFER, vboTexture);
         glBufferData(GL_ARRAY_BUFFER, sizeof(textureCoordinates), textureCoordinates, GL_DYNAMIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+        TextCharacter *nextChar = characters[textData->text[counter]];
         glBindTexture(GL_TEXTURE_2D, nextChar->textureId);
         glUniform1i(textureSamplerUniform, 0);
 
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        // Now advance the cursors for next glyph, advance is number of 1/64 pixels
-        // So bitshift by 6 to get value in pixels (2^6 = 64)
-        xPosition += (nextChar->advance[0] >> 6) * textData->scale;
+        glDisable(GL_BLEND);
     }
-
-    // unbind the vao
-    glBindVertexArray(0);
-
-    glUseProgram(0);
 }
 
 void FontRenderer::cleanUp(void)
