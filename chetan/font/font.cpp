@@ -282,7 +282,7 @@ void initialize(void)
     textToRender->textPosition = glm::vec3(-0.5f, 0.0f, -3.0f);
     textToRender->scale = 0.005f;
 
-    fontRenderer->loadCharacters(textToRender->text, textToRender->textSize);
+    fontRenderer->loadCharacters(textToRender);
 
     // This is required for DirectX
     resize(windowRect.right - windowRect.left, windowRect.bottom - windowRect.top);
