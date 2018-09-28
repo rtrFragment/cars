@@ -10,8 +10,6 @@
 #include <math.h>
 #include <string.h>
 #include <chrono>
-#include <gl/glew.h>
-#include <gl/gl.h>
 
 #define MAIN_CIRCLE_RADIUS 1.0f
 #define LEFT_CIRCLE_RADIUS 0.5f
@@ -56,12 +54,17 @@ void Speedometer::initialize(void)
     perspectiveProjectionMatrix = glm::mat4x4();
     color = glm::vec3(1.0f, 1.0f, 1.0f);
 
-    loadGLTextures(&textureFlame, MAKEINTRESOURCE(FIRE_BMP));
+    bool flameTestureLoaded = loadGLTextures(&textureFlame, MAKEINTRESOURCE(FIRE_BMP));
+
+	if (!flameTestureLoaded)
+	{
+		logError("Not able to load flame texture.");
+	}
 }
 
 void Speedometer::initializefontRenderer(void)
 {
-    fontRenderer = new FontRenderer("resources/fonts/ubuntuMono.ttf", 48);
+    fontRenderer = new FontRenderer("resources/fonts/arial.ttf", 48);
     FT_Error error = fontRenderer->initialize();
 
     if(error != 0)
