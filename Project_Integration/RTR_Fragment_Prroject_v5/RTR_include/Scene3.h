@@ -25,7 +25,7 @@ Compenents Present in Scene 3
 #include "../RTR_lib/speedometer/speedometer.h"
 
 #define MODEL_X_TRANSLATE		0.0f	//X-translation of MODEL
-#define MODEL_Y_TRANSLATE		-1.0f	//Y-translation of MODEL
+#define MODEL_Y_TRANSLATE		-1.1f	//Y-translation of MODEL
 #define MODEL_Z_TRANSLATE		-20.0f	//Z-translation of MODEL
 
 FRAG_Camera2::Camera Scene3_camera;
@@ -144,7 +144,7 @@ const int g_Bench_InstanceCount = 13;
 void Scene3_initializeBenchInstancing(void);
 
 //Palm Tree
-const int g_PalmTree_InstanceCount = 3;
+const int g_PalmTree_InstanceCount = 20;
 void Scene3_initializePalmTreeInstancing(void);
 
 
@@ -218,11 +218,11 @@ void Init_Scene3()
 	Scene3_initializeBenchInstancing();
 
 	//Palm Tree
-	/*std::vector<Mesh_Data> Scene3_MD_PalmTree;
-	LoadMeshData("RTR_resources/models/PalmTree/PalmTree.obj", g_Scene3_PalmTreeModel.gv_vertices, g_Scene3_PalmTreeModel.gv_textures, g_Scene3_PalmTreeModel.gv_normals, Scene3_MD_PalmTree, Scene3_chMtlPath);
+	std::vector<Mesh_Data> Scene3_MD_PalmTree;
+	LoadMeshData("RTR_resources/models/Tree_obj/Tree.obj", g_Scene3_PalmTreeModel.gv_vertices, g_Scene3_PalmTreeModel.gv_textures, g_Scene3_PalmTreeModel.gv_normals, Scene3_MD_PalmTree, Scene3_chMtlPath);
 	g_Scene3_PalmTreeModel.count_of_vertices = g_Scene3_PalmTreeModel.gv_vertices.size();
 
-	Scene3_initializePalmTreeInstancing();*/
+	Scene3_initializePalmTreeInstancing();
 
 	//Shadow
 	Scene3_initializeDepthShader();
@@ -245,8 +245,13 @@ GLuint g_Scene3_Texture_grass_orientation;
 GLuint g_Scene3_Texture_grass_bend;
 
 float GRASS_X_TRANSLATE = -204.0f;//-445.0f; //for actual grass
-float GRASS_Y_TRANSLATE = -1.0f;
+float GRASS_Y_TRANSLATE = -1.1f;
 float GRASS_Z_TRANSLATE = -700.0f;
+
+float GRASS_X_TRANSLATE1 = -50.0f;//-445.0f; //for actual grass
+float GRASS_Y_TRANSLATE1 = -2.0f;
+float GRASS_Z_TRANSLATE1 = -300.0f;
+
 
 void Scene3_initializeGrass(void)
 {
@@ -1139,11 +1144,16 @@ void Scene3_initializePalmTreeInstancing()
 	int index = 0;
 	float offset = 0.1f;
 
-	translations[0] = { 0.0f , 0.0f , -1000.0f };
+	for (int i = 0, z = -100; i < g_PalmTree_InstanceCount - 1; z = z + 10)
+	{
+		translations[i] = { 0.0f, 0.0f, z };
+		i++;
+	}
+	/*translations[0] = { 0.0f , 0.0f , -1000.0f };
 	translations[1] = { 0.0f , 0.0f, -200.0f };
 	translations[2] = { 0.0f, 0.0f , 1000.0f };
 	//translations[3] = { 0.0f, 0.0f , 800.0f };
-
+	*/
 	glGenBuffers(1, &g_Scene3_Vbo_Instance);
 	glBindBuffer(GL_ARRAY_BUFFER, g_Scene3_Vbo_Instance);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * g_PalmTree_InstanceCount, &translations[0], GL_STATIC_DRAW);
@@ -2133,6 +2143,22 @@ void DrawGrassInstancing(void)
 
 	glBindVertexArray(0);
 
+
+	modelMatrix = glm::mat4();
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(GRASS_X_TRANSLATE1, GRASS_Y_TRANSLATE1, GRASS_Z_TRANSLATE1));
+
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(0.25f, 0.25f, 0.25f));
+
+	MVPMatrix = g_Scene3_CityModel_PerspectiveProjectionMatrix * viewMatrix * modelMatrix;
+
+	glUniformMatrix4fv(g_Scene3_Grass_MVPMatrix, 1, GL_FALSE, glm::value_ptr(MVPMatrix));
+
+	glBindVertexArray(g_Scene3_GrassModel.Vao);
+
+	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 6, 1024 * 1024);
+
+	glBindVertexArray(0);
+
 	glUseProgram(0);
 
 }
@@ -2216,13 +2242,12 @@ void DrawInstancingShader()
 	glBindVertexArray(g_Scene3_BenchModel.Vao);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, g_Scene3_BenchModel.gv_vertices.size(), g_Bench_InstanceCount);
 	glBindVertexArray(0);
-	glUseProgram(0);
-
-	/*
+	
+	
 	modelMatrix = glm::mat4();
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(-200.0f, -3.0f, -800.0f));
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(-190.0f, -1.0f, -680.0f));
 
-	//modelMatrix = glm::scale(modelMatrix, glm::vec3(0.03f));
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 4.0f, 2.0f));
 
 	glUniformMatrix4fv(g_Scene3_Instance_ModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
@@ -2231,7 +2256,7 @@ void DrawInstancingShader()
 	glDrawArraysInstanced(GL_TRIANGLES, 0, g_Scene3_PalmTreeModel.gv_vertices.size(), g_PalmTree_InstanceCount);
 	glBindVertexArray(0);
 	glUseProgram(0);
-	*/
+	
 	
 }
 

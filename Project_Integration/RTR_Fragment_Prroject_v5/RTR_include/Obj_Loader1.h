@@ -4,6 +4,7 @@
 #include<stdio.h>
 #include<vector>
 #include<stdlib.h>
+#include"../RTR_lib/logger/logger.h"
 
 #define NR_POINT_COORDS			3	//Number of point coordinates
 #define NR_TEXTURE_COORDS		2	//Number of texture coordinates
@@ -57,7 +58,8 @@ void LoadMeshData(char *filename, std::vector<float> &vertices, std::vector<floa
 	fopen_s(&g_fp_meshfile, filename, "r");
 	if (!g_fp_meshfile)
 	{
-		//logError("File not found '%s'\n", filename);
+		logError("File not found '%s'\n", filename);
+		Logger::close();
 		exit(EXIT_FAILURE);
 	}
 	//Separator strings
