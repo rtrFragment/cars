@@ -277,6 +277,7 @@ void FontRenderer::initializeTextBuffers(void)
 void FontRenderer::calculateTextVertices(TextData *textData)
 {
     GLfloat xPosition = textData->textPosition[0];
+    textData->vertices.clear();
 
     for(GLsizeiptr counter = 0; counter < textData->textSize; ++counter)
     {
