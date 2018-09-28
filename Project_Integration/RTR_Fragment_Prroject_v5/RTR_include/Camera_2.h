@@ -54,7 +54,7 @@ namespace FRAG_Camera2
 
 		void ProcessKeyboard(Camera_Movement direction, float deltaTime)
 		{
-			float velocity = 0.7f * (deltaTime + 1.0f);
+			float velocity = 0.3f * (deltaTime + 1.0f);
 
 			if (direction == FORWARD)
 				Position += Front * velocity;
@@ -79,6 +79,28 @@ namespace FRAG_Camera2
 		glm::mat4 GetViewMatrix()
 		{
 			return glm::lookAt(Position, Position + Front, Up);
+		}
+
+		glm::vec3 GetCameraPosition()
+		{
+			return Position;
+		}
+
+		glm::vec3 GetFront()
+		{
+			return (Front);
+		}
+
+		void SetPosition(glm::vec3 Position)
+		{
+			this->Position = Position;
+			return;
+		}
+
+		void SetFront(glm::vec3 Front)
+		{
+			this->Front = Front;
+			return;
 		}
 
 		void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = false)

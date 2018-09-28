@@ -171,7 +171,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case VK_TAB:
-			
+
 			if (gbIsAKeyPressed == false)
 			{
 				gbAnimate = true;
@@ -204,13 +204,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_MOUSEMOVE:
-		if (g_scene3_bShowScene3)
+		/*if (g_scene3_bShowScene3)
 		{
 			xPos = GET_X_LPARAM(lParam);
 			yPos = GET_Y_LPARAM(lParam);
 			MouseMovement((double)xPos, (double)yPos);
 		}
-		 
+		*/
 		break;
 
 	case WM_DESTROY:
@@ -277,7 +277,7 @@ void initialize(void)
 
 	GLenum glew_error = glewInit();
 	if (glew_error != GLEW_OK)
-	{	
+	{
 		wglDeleteContext(ghrc);
 		ghrc = NULL;
 		ReleaseDC(ghwnd, ghdc);
@@ -297,7 +297,7 @@ void initialize(void)
 
 void MouseMovement(double xpos, double ypos)
 {
-	
+
 
 	if (FirstMouse)
 	{
@@ -334,7 +334,7 @@ void display(void)
 
 	if(g_scene1_bShowScene1==true)
 		Display_Scene1();
-	
+
 	if(g_scene2_bShowScene2==true)
 		Scene2_Display();
 
@@ -350,7 +350,7 @@ void update(void)
 
 	if (g_scene1_bShowScene1 == true)
 		Update_Scene1();
-	
+
 	if (g_scene2_bShowScene2 == true)
 		Scene2_Update();
 

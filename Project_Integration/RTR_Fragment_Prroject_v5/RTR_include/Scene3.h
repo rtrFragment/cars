@@ -71,7 +71,7 @@ Shader g_Scene3_DepthShader;
 //**********City Model******************
 
 
-//uniforms 
+//uniforms
 GLuint g_Scene3_CityModel_ModelMatrixUniform, g_Scene3_CityModel_ViewMatrixUniform, g_Scene3_CityModel_ProjectionMatrixUniform;
 GLuint g_Scene3_CityModel_LKeyPressedUniform;
 
@@ -156,7 +156,7 @@ GLuint g_Scene3_CityModel_DepthMap;
 
 const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
-//SimpleDepthShader 
+//SimpleDepthShader
 
 GLuint glightSpaceMatrixSimpleDepthShaderUniform;
 GLuint gmodelSimpleDepthShaderUniform;
@@ -178,6 +178,10 @@ float LIGHT_X_TRANSLATE = 0.0f;
 float LIGHT_Y_TRANSLATE = 76.0f;
 float LIGHT_Z_TRANSLATE = 20.0f;
 
+//Camera
+int gCameraNumber = 1;
+int giCameraMoves = 0;
+bool gbIsCameraSet = true;
 
 void Init_Scene3()
 {
@@ -189,7 +193,7 @@ void Init_Scene3()
 	LoadMaterialData(g_Scene3_CityModel.chMaterialFileName, g_Scene3_CityModel.gv_Material);
 
 	Rearrange_Material_Data(g_Scene3_CityModel.gv_Mesh_Data, g_Scene3_CityModel.gv_Material);
-	
+
 	g_Scene3_CityModel.count_of_vertices = g_Scene3_CityModel.gv_vertices.size();
 	//Scene3_initializeCityModel();
 	// For Shadow
@@ -230,6 +234,10 @@ void Init_Scene3()
 
 	speedometer = new Speedometer();
 	speedometer->initialize();
+
+	//Camera Position
+	Scene3_camera.SetPosition(glm::vec3(-16.799992f, 17.013103f, 438.898560f));
+	Scene3_camera.SetFront(glm::vec3(-0.000000f, 0.130526f, -0.991445f));
 }
 //********************GRASS**********************
 
@@ -584,7 +592,7 @@ void Scene3_initializeSkyBox(void)
 		"layout (location = 0) out vec4 color;" \
 		"void main(void)" \
 		"{" \
-		//"color = texture(tex_cubemap, vec3(fs_in.tc.x, -fs_in.tc.y, fs_in.tc.z));" 
+		//"color = texture(tex_cubemap, vec3(fs_in.tc.x, -fs_in.tc.y, fs_in.tc.z));"
 		"color = texture(tex_cubemap, fs_in.tc);" \
 		"}";
 
@@ -770,7 +778,7 @@ TextureImage* LoadTGA(TextureImage *texture, const char *filename, int num)     
 	/*fopen_s(&gpFile, "Log.txt", "a+");
 	fprintf(gpFile, "In LoadTGA 100\n");
 	fclose(gpFile);*/
-	
+
 	if (texture->width <= 0 ||                      // Is The Width Less Than Or Equal To Zero
 		texture->height <= 0 ||                      // Is The Height Less Than Or Equal To Zero
 		(header[4] != 24 && header[4] != 32))                   // Is The TGA 24 or 32 Bit?
@@ -839,7 +847,7 @@ void Scene3_initializeInstancingFeature()
 		"out vec3 light_direction;" \
 		"out vec3 viewer_vector;" \
 
-		//"uniform mat4 mvpMatrix;" 
+		//"uniform mat4 mvpMatrix;"
 		"void main(void)" \
 		"{" \
 		"if(u_lighting_enabled==1)" \
@@ -849,10 +857,10 @@ void Scene3_initializeInstancingFeature()
 		"light_direction = u_light_position-eye_coordinates.xyz;" \
 		"viewer_vector = -eye_coordinates.xyz;" \
 		"}" \
-		//	"gl_Position = u_projection_matrix*u_view_matrix*u_model_matrix*vPosition;" 
+		//	"gl_Position = u_projection_matrix*u_view_matrix*u_model_matrix*vPosition;"
 
-		//"gl_Position = mvpMatrix * vec4(aPos.x + aOffset.x, aPos.y, aPos.z + aOffset.y, 1.0f);" 
-		//"gl_Position = mvpMatrix * vec4(aPos + aOffset, 1.0f);" 
+		//"gl_Position = mvpMatrix * vec4(aPos.x + aOffset.x, aPos.y, aPos.z + aOffset.y, 1.0f);"
+		//"gl_Position = mvpMatrix * vec4(aPos + aOffset, 1.0f);"
 		"gl_Position = u_projection_matrix * u_view_matrix * u_model_matrix * vec4(vPosition.x + aOffset.x, vPosition.y + aOffset.y, vPosition.z + aOffset.z, 1.0f);" \
 		"}";
 	glShaderSource(g_Scene3_InstanceShader.gVertexShaderObject, 1, (const GLchar **)&vertextShaderSourceCode, NULL);
@@ -926,7 +934,7 @@ void Scene3_initializeInstancingFeature()
 		"}" \
 		"FragColor = vec4(phong_ads_color,1.0);" \
 
-		//		"FragColor = vec4(0.5f, 0.5f, 0.5f, 1.0);" 
+		//		"FragColor = vec4(0.5f, 0.5f, 0.5f, 1.0);"
 		"}";
 	glShaderSource(g_Scene3_InstanceShader.gFragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
 
@@ -1090,7 +1098,7 @@ void Scene3_initializeBenchInstancing()
 	translations[10] = { 0.0f , 0.0f, 10000.0f };
 	translations[11] = { 0.0f , 0.0f, 12500.0f };
 	translations[12] = { 0.0f , 0.0f, 15000.0f };
-	
+
 
 	//translations[3] = { 0.0f, 0.0f , 800.0f };
 
@@ -1424,10 +1432,10 @@ void Scene3_initializeCityModelWithShadow(void)
 		"uniform mat4 u_view_matrix;" \
 		"uniform mat4 u_projection_matrix;" \
 		"uniform int u_lighting_enabled;" \
-		//"uniform vec3 u_light_position;" 
+		//"uniform vec3 u_light_position;"
 		"out vec3 transformed_normals;" \
 		"out vec4 eye_coordinates;" \
-		//"out vec3 light_direction;" 
+		//"out vec3 light_direction;"
 		"out vec3 viewer_vector;" \
 		"out vec2 out_texture0_coord;" \
 		//Shadow
@@ -1440,12 +1448,12 @@ void Scene3_initializeCityModelWithShadow(void)
 		"{" \
 		"eye_coordinates = u_model_matrix*vPosition;" \
 		"transformed_normals = mat3(u_model_matrix)*vNormal;" \
-		//"light_direction = u_light_position-eye_coordinates.xyz;" 
+		//"light_direction = u_light_position-eye_coordinates.xyz;"
 		"viewer_vector = -eye_coordinates.xyz;" \
 
 		//Shadow
 		//"vec3 FragPos = vec3(u_view_matrix*u_model_matrix * vPosition);"
-	//	"FragPosLightSpace = u_lightSpace_matrix * vec4(FragPos, 1.0);" 
+	//	"FragPosLightSpace = u_lightSpace_matrix * vec4(FragPos, 1.0);"
 		"FragPosLightSpace = u_lightSpace_matrix * eye_coordinates;" \
 		"}" \
 		"gl_Position = u_projection_matrix*u_view_matrix*u_model_matrix*vPosition;" \
@@ -1488,7 +1496,7 @@ void Scene3_initializeCityModelWithShadow(void)
 		"#version 450" \
 		"\n" \
 		"in vec3 transformed_normals;" \
-		//"in vec3 light_direction;" 
+		//"in vec3 light_direction;"
 		"in vec3 viewer_vector;" \
 		"in vec4 eye_coordinates;" \
 		"in vec2 out_texture0_coord;" \
@@ -1521,7 +1529,7 @@ void Scene3_initializeCityModelWithShadow(void)
 		"float closestDepth = texture(shadowMap, projCoords.xy).r;"\
 		"float currentDepth = projCoords.z;" \
 		"vec3 normalized_transformed_normals = normalize(transformed_normals);" \
-		
+
 		"vec3 normalized_light_direction = normalize(light_direction);" \
 
 		"float bias = max(0.05 * (1.0 - dot(normalized_transformed_normals, normalized_light_direction)), 0.05);" \
@@ -1778,7 +1786,7 @@ void Uninitialize_BenchShader(void)
 
 void Uninitialize_InstanceShader(void)
 {
-	//Detach Shader 
+	//Detach Shader
 	glDetachShader(g_Scene3_InstanceShader.gShaderProgramObject, g_Scene3_InstanceShader.gVertexShaderObject);
 	glDetachShader(g_Scene3_InstanceShader.gShaderProgramObject, g_Scene3_InstanceShader.gFragmentShaderObject);
 
@@ -1804,7 +1812,7 @@ void Uninitialize_CityModelShader(void)
 		g_Scene3_CityModel.Vao = 0;
 	}
 
-	//Detach Shader 
+	//Detach Shader
 	glDetachShader(g_Scene3_CityModelShader.gShaderProgramObject, g_Scene3_CityModelShader.gVertexShaderObject);
 	glDetachShader(g_Scene3_CityModelShader.gShaderProgramObject, g_Scene3_CityModelShader.gFragmentShaderObject);
 
@@ -1831,7 +1839,7 @@ void Uninitialize_GrassShader()
 		g_Scene3_GrassModel.Vao = 0;
 	}
 
-	//Detach Shader 
+	//Detach Shader
 	glDetachShader(g_Scene3_GrassShader.gShaderProgramObject, g_Scene3_GrassShader.gVertexShaderObject);
 	glDetachShader(g_Scene3_GrassShader.gShaderProgramObject, g_Scene3_GrassShader.gFragmentShaderObject);
 
@@ -1859,7 +1867,7 @@ void Uninitialize_SkyBoxShader(void)
 		g_Scene3_SkyBoxModel.Vao = 0;
 	}
 
-	//Detach Shader 
+	//Detach Shader
 	glDetachShader(g_Scene3_SkyBoxShader.gShaderProgramObject, g_Scene3_SkyBoxShader.gVertexShaderObject);
 	glDetachShader(g_Scene3_SkyBoxShader.gShaderProgramObject, g_Scene3_SkyBoxShader.gFragmentShaderObject);
 
@@ -1880,11 +1888,144 @@ void Uninitialize_SkyBoxShader(void)
 
 void Scene3_Update()
 {
+	void updateCamera(void);
 	if (speedometer != NULL)
 	{
 		speedometer->update();
 	}
+	updateCamera();
 }
+
+
+//Camera Update Function
+
+void updateCamera(void)
+{
+	if (gCameraNumber == 1)
+	{
+		if (giCameraMoves < 470)
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime);
+		if (giCameraMoves > 600)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = false;
+			gCameraNumber++;
+		}
+	}
+	else if (gCameraNumber == 2)
+	{
+		if (gbIsCameraSet == false)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = true;
+			Scene3_camera.SetPosition(glm::vec3(-40.670250f, 10.522485f, 111.029778f));
+			Scene3_camera.SetFront(glm::vec3(0.687855f, 0.031497f, -0.722319f));
+		}
+
+		if (giCameraMoves < 700)
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime);
+
+		if (10 < giCameraMoves && giCameraMoves < 700)
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::LEFT, deltaTime);
+
+		if (giCameraMoves > 710)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = false;
+			gCameraNumber++;
+		}
+	}
+	else if (gCameraNumber == 3)
+	{
+		if (gbIsCameraSet == false)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = true;
+			Scene3_camera.SetPosition(glm::vec3(27.821997f, 17.694828f, -438.942352f));
+			Scene3_camera.SetFront(glm::vec3(-0.668179f, -0.327218f, 0.668181f));
+		}
+
+		if (giCameraMoves > 200)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = false;
+			gCameraNumber++;
+		}
+	}
+	else if (gCameraNumber == 4)
+	{
+		if (gbIsCameraSet == false)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = true;
+			Scene3_camera.SetPosition(glm::vec3(-181.042267f, 1.352625f, -574.238708f));
+			Scene3_camera.SetFront(glm::vec3(-0.017452f, -0.009599f, -0.999802f));
+		}
+		if (giCameraMoves < 550)
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime);
+		if (giCameraMoves > 550)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = false;
+			gCameraNumber++;
+		}
+	}
+	else if (gCameraNumber == 5)
+	{
+		if (gbIsCameraSet == false)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = true;
+			Scene3_camera.SetPosition(glm::vec3(-209.048843f, 13.932554f, -957.588501f));
+			Scene3_camera.SetFront(glm::vec3(0.654204f, -0.573577f, 0.492978f));
+		}
+
+		if (giCameraMoves > 400)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = false;
+			gCameraNumber++;
+		}
+	}
+	else if (gCameraNumber == 6)
+	{
+		if (gbIsCameraSet == false)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = true;
+			Scene3_camera.SetPosition(glm::vec3(44.806740f, 38.181431f, -1911.009033f));
+			Scene3_camera.SetFront(glm::vec3(-0.928555f, -0.364877f, 0.068192f));
+		}
+		if (giCameraMoves < 200)
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime);
+		if (giCameraMoves > 300)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = false;
+			gCameraNumber++;
+		}
+	}
+	else if (gCameraNumber == 7)
+	{
+		if (gbIsCameraSet == false)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = true;
+			Scene3_camera.SetPosition(glm::vec3(-37.416325f, 7.909022f, -2037.265991f));
+			Scene3_camera.SetFront(glm::vec3(-0.074943f, 0.031411f, -0.996693f));
+		}
+		if (giCameraMoves < 380)
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime);
+		if (giCameraMoves > 380)
+		{
+			giCameraMoves = 0;
+			gbIsCameraSet = false;
+			gCameraNumber++;
+		}
+	}
+	giCameraMoves++;
+}
+
 
 void Draw_Scene3(void);
 void DrawSkyBox(void);
@@ -1892,6 +2033,8 @@ void DrawCityModel(void);
 void DrawCityModelWithShadowMap(void);
 void DrawGrassInstancing(void);
 void DrawInstancingShader(void);
+void updateCamera(void);
+
 
 
 void Draw_Scene3(void)
@@ -1909,6 +2052,7 @@ void Draw_Scene3(void)
 	{
 		speedometer->display();
 	}
+
 }
 
 void Scene3_resize(int width, int height)
@@ -1917,6 +2061,7 @@ void Scene3_resize(int width, int height)
 	{
 		speedometer->resize(width, height);
 	}
+
 }
 
 void DrawSkyBox()
@@ -1979,7 +2124,7 @@ void DrawCityModel(void)
 
 	modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-	
+
 	viewMatrix = Scene3_camera.GetViewMatrix();
 
 	glUniformMatrix4fv(g_Scene3_CityModel_ModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
@@ -2067,7 +2212,7 @@ void DrawCityModelWithShadowMap(void)
 	}
 
 	glm::mat4 viewMatrix = glm::mat4();
-	
+
 	viewMatrix = Scene3_camera.GetViewMatrix();
 
 	glUniformMatrix4fv(g_Scene3_CityModel_ViewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
@@ -2242,8 +2387,8 @@ void DrawInstancingShader()
 	glBindVertexArray(g_Scene3_BenchModel.Vao);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, g_Scene3_BenchModel.gv_vertices.size(), g_Bench_InstanceCount);
 	glBindVertexArray(0);
-	
-	
+
+
 	modelMatrix = glm::mat4();
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(-190.0f, -1.0f, -680.0f));
 
@@ -2256,8 +2401,8 @@ void DrawInstancingShader()
 	glDrawArraysInstanced(GL_TRIANGLES, 0, g_Scene3_PalmTreeModel.gv_vertices.size(), g_PalmTree_InstanceCount);
 	glBindVertexArray(0);
 	glUseProgram(0);
-	
-	
+
+
 }
 
 //**************************SHADOW MAPPING*******************
@@ -2396,7 +2541,7 @@ void Scene3_GenerateDepthMap(void)
 	/*fopen_s(&gpFile, "Log.txt", "a+");
 	fprintf(gpFile, "In GenerateDepthMap..\n");
 	fclose(gpFile);*/
-	
+
 
 	//Create a framebuffer object for rendering depth map
 	glGenFramebuffers(1, &g_Scene3_CityModel_DepthMapFBO);
