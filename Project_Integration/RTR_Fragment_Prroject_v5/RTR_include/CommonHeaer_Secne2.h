@@ -3686,7 +3686,8 @@ void Scene2_Update(void)
 	/*** View Port 4 End   ***/
 
 	// Stop the Rendering of Scene 2 If Music is done playing
-	if (g_pSS_Scene2_SoundSource->isPlaying())
+	//if (g_pSS_Scene2_SoundSource->isPlaying())
+	if (g_scene2_bGoToScene3 == false)
 	{
 		// show Scene 2
 		g_scene2_bShowScene2 = true;
@@ -3696,6 +3697,7 @@ void Scene2_Update(void)
 		// stop scene 2
 		g_scene2_bShowScene2 = false;
 		g_scene3_bShowScene3 = true;
+		g_pSS_Scene2_SoundSource->stop();
 	}
 
 }

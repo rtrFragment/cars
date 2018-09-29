@@ -68,6 +68,10 @@ extern AudioManager *Scene1_audioManager = NULL;
 extern GLfloat currentWidth = 0;
 extern GLfloat currentHeight = 0;
 
+extern bool g_scene2_bGoToScene3 = false;
+
+
+
 void CommonHeader_InitializeAudioManager()
 {
 	Scene1_audioManager = new AudioManager();

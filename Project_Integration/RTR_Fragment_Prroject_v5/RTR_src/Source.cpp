@@ -114,7 +114,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		resize(LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_KEYDOWN:
-		if (GetAsyncKeyState(VK_DOWN))
+		/*if (GetAsyncKeyState(VK_DOWN))
 		{
 			Scene1_camera.MoveCamera(CameraMoveOnZ, 0.06f, deltaTime);
 			Scene1_camera_Z_counter--;
@@ -143,10 +143,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 			if (g_scene3_bShowScene3)
 			Scene3_camera.ProcessKeyboard(FRAG_Camera2::LEFT, deltaTime);
-		}
+		}*/
 		switch (wParam)
 		{
-		case 0x41:
+		/*case 0x41:
 			logInfo("Scene1_camera_Z_counter : %d\n", Scene1_camera_Z_counter);
 			break;
 
@@ -154,6 +154,34 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			Scene1_camera.MoveCamera(CameraMoveOnY, -0.1f, deltaTime);
 			break;
 
+		case VK_UP:
+			gfTranslate_Z= gfTranslate_Z - 10.0f;
+			break;
+
+		case VK_DOWN:
+			gfTranslate_Z= gfTranslate_Z + 10.0f;
+			break;
+
+		case VK_LEFT:
+			gfTranslate_X= gfTranslate_X - 10.0f;
+			break;
+
+		case VK_RIGHT:
+			gfTranslate_X= gfTranslate_X + 10.0f;
+			break;
+
+		case 0x41:
+			gfTranslate_Y = gfTranslate_Y - 1.0f;
+			break;
+
+		case 0x42:
+			gfTranslate_Y = gfTranslate_Y + 1.0f;
+			break;
+
+		case 0x50:
+			logInfo("\nHrishi : Translate X : %f Translate Y : %f Translate Z : %f\n", gfTranslate_X, gfTranslate_Y, gfTranslate_Z);
+			break;
+        */
 		case VK_ESCAPE:
 			gbIsEscapeKeyPressed = true;
 			break;
@@ -199,6 +227,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 				gbIsLKeyPressed = false;
 			}
 			//g_scene3_bShowScene3 = true;
+			break;
+
+		case VK_SPACE:
+			if ((g_scene2_bGoToScene3 == false) & (g_scene1_bShowScene1 == false))
+				g_scene2_bGoToScene3 = true;
 			break;
 
 		}
@@ -287,7 +320,7 @@ void initialize(void)
 	Init_Scene1();
 	Scene2_Initialize();
 	Init_Scene3();
-
+	
 	QueryPerformanceFrequency((LARGE_INTEGER*)&initFrequency);
 
 	QueryPerformanceCounter((LARGE_INTEGER*)&initTime);
@@ -339,7 +372,9 @@ void display(void)
 		Scene2_Display();
 
 	if (g_scene3_bShowScene3 == true)
+	{
 		Draw_Scene3();
+	}
 
 	SwapBuffers(ghdc);
 }
@@ -355,7 +390,9 @@ void update(void)
 		Scene2_Update();
 
 	if (g_scene3_bShowScene3 == true)
-		Scene3_Update();
+	{
+		Scene3_Update();	
+	}
 }
 
 float getTime(void)
@@ -378,7 +415,7 @@ void resize(int width, int height)
 	//if (g_scene2_bShowScene2 == true)
 	g_scene2_1_PerspectiveProjectionMatrix = glm::perspective(glm::radians(45.0f), (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
 
-	g_Scene3_CityModel_PerspectiveProjectionMatrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 10000.0f);
+	g_Scene3_Ocean_PerspectiveProjectionMatrix = g_Scene3_CityModel_PerspectiveProjectionMatrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 10000.0f);
 
 	Scene3_resize(width, height);
 }
@@ -422,7 +459,7 @@ void uninitialize(int i_Exit_Flag)
 	Uninitialize_Scene1();
 	Scene2_UnInitialize(i_Exit_Flag);
 	Uninitialize_Scene3();
-
+	
 	//Stray call to glUseProgram(0)
 	glUseProgram(0);
 

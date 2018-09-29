@@ -20,13 +20,12 @@ Compenents Present in Scene 3
 #pragma once
 
 #include "Common_Header.h"
-
 #include "Camera_2.h"
 #include "../RTR_lib/speedometer/speedometer.h"
 
-#define MODEL_X_TRANSLATE		0.0f	//X-translation of MODEL
-#define MODEL_Y_TRANSLATE		-1.1f	//Y-translation of MODEL
-#define MODEL_Z_TRANSLATE		-20.0f	//Z-translation of MODEL
+#define MODEL_X_TRANSLATE 0.0f   //X-translation of MODEL
+#define MODEL_Y_TRANSLATE -1.1f  //Y-translation of MODEL
+#define MODEL_Z_TRANSLATE -20.0f //Z-translation of MODEL
 
 FRAG_Camera2::Camera Scene3_camera;
 
@@ -38,6 +37,7 @@ enum
 	HAD_ATTRIBUTE_COLOR,
 	HAD_ATTRIBUTE_NORMAL,
 	HAD_ATTRIBUTE_TEXTURE0,
+	HAD_ATTRIBUTE_INDICES,
 };
 
 //FILE *gpFile;
@@ -52,7 +52,6 @@ Model g_Scene3_CityLightModel;
 Model g_Scene3_PalmTreeModel;
 Model g_Scene3_BenchModel;
 
-
 struct Shader
 {
 	GLuint gVertexShaderObject;
@@ -66,10 +65,7 @@ Shader g_Scene3_SkyBoxShader;
 Shader g_Scene3_InstanceShader;
 Shader g_Scene3_DepthShader;
 
-
-
 //**********City Model******************
-
 
 //uniforms
 GLuint g_Scene3_CityModel_ModelMatrixUniform, g_Scene3_CityModel_ViewMatrixUniform, g_Scene3_CityModel_ProjectionMatrixUniform;
@@ -88,16 +84,15 @@ glm::mat4 g_Scene3_CityModel_PerspectiveProjectionMatrix;
 bool g_Scene3_Light = true;
 
 //Light Values
-GLfloat g_Scene3_lightAmbient[] = { 0.0f,0.0f,0.0f,1.0f };
-GLfloat g_Scene3_lightDiffuse[] = { 1.0f,1.0f,1.0f,1.0f };
-GLfloat g_Scene3_lightSpecular[] = { 1.0f,1.0f,1.0f,1.0f };
+GLfloat g_Scene3_lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
+GLfloat g_Scene3_lightDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+GLfloat g_Scene3_lightSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
 //GLfloat lightPosition[] = { -324.0f,205.0f,-365.0f,0.0f };
 
-GLfloat g_Scene3_materialAmbient[] = { 0.25f,0.25f,0.25f,1.0f };
-GLfloat g_Scene3_materialDiffuse[] = { 0.4f,0.4f,0.4f,1.0f };
-GLfloat g_Scene3_materialSpecular[] = { 0.774597f,0.774597f,0.774597f,1.0f };
+GLfloat g_Scene3_materialAmbient[] = {0.25f, 0.25f, 0.25f, 1.0f};
+GLfloat g_Scene3_materialDiffuse[] = {0.4f, 0.4f, 0.4f, 1.0f};
+GLfloat g_Scene3_materialSpecular[] = {0.774597f, 0.774597f, 0.774597f, 1.0f};
 GLfloat g_Scene3_materialShininess = 0.6f * 128.0f;
-
 
 //Functions
 //init, uninit, draw
@@ -110,19 +105,18 @@ void Scene3_initializeGrass(void);
 void Scene3_initializeSkyBox(void);
 unsigned int loadCubemap(std::vector<std::string> faces);
 
-typedef struct                                      // Create A Structure
+typedef struct // Create A Structure
 {
-	GLubyte *imageData;                             // Image Data (Up To 32 Bits)
-	GLuint  bpp;                                    // Image Color Depth In Bits Per Pixel
-	GLuint  width;                                  // Image Width
-	GLuint  height;                                 // Image Height
-	GLuint  texID;                                  // Texture ID Used To Select A Texture
+	GLubyte *imageData; // Image Data (Up To 32 Bits)
+	GLuint bpp;			// Image Color Depth In Bits Per Pixel
+	GLuint width;		// Image Width
+	GLuint height;		// Image Height
+	GLuint texID;		// Texture ID Used To Select A Texture
 } TextureImage;
 
-TextureImage    textures[6];
+TextureImage textures[6];
 
-TextureImage* LoadTGA(TextureImage *texture, const char *filename, int num);
-
+TextureImage *LoadTGA(TextureImage *texture, const char *filename, int num);
 
 //Instancing
 GLuint g_Scene3_Instance_ModelMatrixUniform, g_Scene3_Instance_ViewMatrixUniform, g_Scene3_Instance_ProjectionMatrixUniform;
@@ -146,7 +140,6 @@ void Scene3_initializeBenchInstancing(void);
 //Palm Tree
 const int g_PalmTree_InstanceCount = 20;
 void Scene3_initializePalmTreeInstancing(void);
-
 
 //***********Shadow***************
 GLuint g_Scene3_CityModel_LightSpaceMatrixUniform;
@@ -183,8 +176,36 @@ int gCameraNumber = 1;
 int giCameraMoves = 0;
 bool gbIsCameraSet = true;
 
+/******* Low Poly Ocean Start *******/
+const int VERTEX_COUNT = 100;
+const float OCEAN_SIZE = 0.11f;
+
+GLuint g_Scene3_Ocean_VertexShaderObject;
+GLuint g_Scene3_Ocean_GeometryShaderObject;
+GLuint g_Scene3_Ocean_FragmentShaderObject;
+GLuint g_Scene3_Ocean_ShaderProgramObject;
+
+GLuint g_Scene3_Ocean_VertexArrayObject;
+GLuint g_Scene3_Ocean_VertexBufferObject;
+GLuint g_Scene3_Ocean_VertexBufferObject_Indices;
+
+GLuint g_Scene3_Ocean_Uniform_ModelMatrix, g_Scene3_Ocean_Uniform_ViewMatrix, g_Scene3_Ocean_Uniform_ProjectionMatrix;
+GLuint g_Scene3_Ocean_Uniform_Time, g_Scene3_Ocean_Uniform_Camera_Position;
+
+GLfloat g_Scene3_Ocean_U_Time = 0.0f;
+
+GLfloat g_Scene3_Ocean_MeshVertices[2 * VERTEX_COUNT * VERTEX_COUNT];
+GLuint g_Scene3_Ocean_shIndices[6 * (VERTEX_COUNT - 1) * (VERTEX_COUNT - 1)];
+
+GLfloat fRotation_Angle = 0.0f;
+
+glm::mat4 g_Scene3_Ocean_PerspectiveProjectionMatrix;
+
+/******* Low Poly Ocean End   *******/
+
 void Init_Scene3()
 {
+	void Scene3_Ocean_Initialize(void);
 	std::vector<Mesh_Data> Scene3_MD_City;
 	char Scene3_chMtlPath[256];
 
@@ -238,6 +259,8 @@ void Init_Scene3()
 	//Camera Position
 	Scene3_camera.SetPosition(glm::vec3(-16.799992f, 17.013103f, 438.898560f));
 	Scene3_camera.SetFront(glm::vec3(-0.000000f, 0.130526f, -0.991445f));
+
+	Scene3_Ocean_Initialize();
 }
 //********************GRASS**********************
 
@@ -246,20 +269,18 @@ void Init_Scene3()
 GLuint g_Scene3_Grass_MVPMatrix;
 GLuint g_Scene3_Grass_Rotation;
 
-
 GLuint g_Scene3_Texture_grass_color;
 GLuint g_Scene3_Texture_grass_length;
 GLuint g_Scene3_Texture_grass_orientation;
 GLuint g_Scene3_Texture_grass_bend;
 
-float GRASS_X_TRANSLATE = -204.0f;//-445.0f; //for actual grass
+float GRASS_X_TRANSLATE = -204.0f; //-445.0f; //for actual grass
 float GRASS_Y_TRANSLATE = -1.1f;
 float GRASS_Z_TRANSLATE = -700.0f;
 
-float GRASS_X_TRANSLATE1 = -50.0f;//-445.0f; //for actual grass
+float GRASS_X_TRANSLATE1 = -50.0f; //-445.0f; //for actual grass
 float GRASS_Y_TRANSLATE1 = -2.0f;
 float GRASS_Z_TRANSLATE1 = -300.0f;
-
 
 void Scene3_initializeGrass(void)
 {
@@ -269,95 +290,93 @@ void Scene3_initializeGrass(void)
 	g_Scene3_GrassShader.gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
 
 	const GLchar *vertexShaderSourceCode =
-		"#version 450" \
-		"\n" \
-		// Incoming per vertex position:
-		"in vec4 vVertex;" \
+		"#version 450"
+		"\n" // Incoming per vertex position:
+		"in vec4 vVertex;"
 
 		// Output varyings:
-		"out vec4 color;"\
+		"out vec4 color;"
 
-		"uniform mat4 mvpMatrix;"\
-		"uniform float rotation_increment;"\
+		"uniform mat4 mvpMatrix;"
+		"uniform float rotation_increment;"
 
-		"layout(binding = 0) uniform sampler1D grass_palette_texture;"\
-		"layout(binding = 1) uniform sampler2D grass_length_texture;"\
-		"layout(binding = 2) uniform sampler2D grass_orientation_texture;"\
-		"layout(binding = 3) uniform sampler2D grass_color_texture;"\
-		"layout(binding = 4) uniform sampler2D grass_bend_texture;"\
+		"layout(binding = 0) uniform sampler1D grass_palette_texture;"
+		"layout(binding = 1) uniform sampler2D grass_length_texture;"
+		"layout(binding = 2) uniform sampler2D grass_orientation_texture;"
+		"layout(binding = 3) uniform sampler2D grass_color_texture;"
+		"layout(binding = 4) uniform sampler2D grass_bend_texture;"
 
-		"int random(int seed, int iterations)"\
-		"{"\
-		"int value = seed;"\
+		"int random(int seed, int iterations)"
+		"{"
+		"int value = seed;"
 		"int n;"
 
-		"for (n = 0; n < iterations; n++)"\
-		"{"\
-		"value = ((value >> 7) ^ (value << 9)) * 15485863;"\
-		"}"\
+		"for (n = 0; n < iterations; n++)"
+		"{"
+		"value = ((value >> 7) ^ (value << 9)) * 15485863;"
+		"}"
 
-		"return(value);"\
-		"}"\
+		"return(value);"
+		"}"
 
-		"vec4 random_vector(int seed)"\
-		"{"\
-		"int r = random(gl_InstanceID, 4);"\
-		"int g = random(r, 2);"\
-		"int b = random(g, 2);"\
-		"int a = random(b, 2);"\
+		"vec4 random_vector(int seed)"
+		"{"
+		"int r = random(gl_InstanceID, 4);"
+		"int g = random(r, 2);"
+		"int b = random(g, 2);"
+		"int a = random(b, 2);"
 
-		"return(vec4(float(r & 0x3FF) / 1024.0,"\
-		"float(g & 0x3FF) / 1024.0,"\
-		"float(b & 0x3FF) / 1024.0,"\
-		"float(a & 0x3FF) / 1024.0));"\
-		"}"\
+		"return(vec4(float(r & 0x3FF) / 1024.0,"
+		"float(g & 0x3FF) / 1024.0,"
+		"float(b & 0x3FF) / 1024.0,"
+		"float(a & 0x3FF) / 1024.0));"
+		"}"
 
-		"mat4 construct_rotation_matrix(float angle)"\
-		"{"\
-		"float st = sin(angle + rotation_increment);"\
-		"float ct = cos(angle + rotation_increment);"\
+		"mat4 construct_rotation_matrix(float angle)"
+		"{"
+		"float st = sin(angle + rotation_increment);"
+		"float ct = cos(angle + rotation_increment);"
 
-		"return(mat4(vec4(ct, 0.0, st, 0.0),"\
-		"vec4(0.0, 1.0, 0.0, 0.0),"\
-		"vec4(-st, 0.0, ct, 0.0),"\
-		"vec4(0.0, 0.0, 0.0, 1.0)));"\
-		"}"\
+		"return(mat4(vec4(ct, 0.0, st, 0.0),"
+		"vec4(0.0, 1.0, 0.0, 0.0),"
+		"vec4(-st, 0.0, ct, 0.0),"
+		"vec4(0.0, 0.0, 0.0, 1.0)));"
+		"}"
 
-		"void main(void)"\
-		"{"\
-		"vec4 offset = vec4(float(gl_InstanceID >> 10) - 512.0,"\
-		"0.0f,"\
-		"float(gl_InstanceID & 0x3FF) - 512.0,"\
-		"0.0f);"\
+		"void main(void)"
+		"{"
+		"vec4 offset = vec4(float(gl_InstanceID >> 10) - 512.0,"
+		"0.0f,"
+		"float(gl_InstanceID & 0x3FF) - 512.0,"
+		"0.0f);"
 
-		"int number_1 = random(gl_InstanceID, 3);"\
-		"int number_2 = random(number_1, 2);"\
+		"int number_1 = random(gl_InstanceID, 3);"
+		"int number_2 = random(number_1, 2);"
 
-		"offset += vec4(float(number_1 & 0xFF) / 256.0,"\
-		"0.0f,"\
-		"float(number_2 & 0xFF) / 256.0,"\
-		"0.0f);"\
+		"offset += vec4(float(number_1 & 0xFF) / 256.0,"
+		"0.0f,"
+		"float(number_2 & 0xFF) / 256.0,"
+		"0.0f);"
 
 		//float angle = float(random(number_2, 2) & 0x3FF) / 1024.0;
 
-		"vec2 texcoord = offset.xz / 1024.0 + vec2(0.5);"\
+		"vec2 texcoord = offset.xz / 1024.0 + vec2(0.5);"
 
 		// float bend_factor = float(random(number_2, 7) & 0x3FF) / 1024.0;
-		"float bend_factor = texture(grass_bend_texture, texcoord).r * 2.0;"\
-		"float bend_amount = cos(vVertex.y);"\
+		"float bend_factor = texture(grass_bend_texture, texcoord).r * 2.0;"
+		"float bend_amount = cos(vVertex.y);"
 
-		"float angle = texture(grass_orientation_texture, texcoord).r * 2.0 * 3.141592;"\
-		"mat4 rot = construct_rotation_matrix(angle);"\
-		"vec4 position = (rot * (vVertex + vec4(0.0, 0.0, bend_amount * bend_factor, 0.0))) + offset;"\
+		"float angle = texture(grass_orientation_texture, texcoord).r * 2.0 * 3.141592;"
+		"mat4 rot = construct_rotation_matrix(angle);"
+		"vec4 position = (rot * (vVertex + vec4(0.0, 0.0, bend_amount * bend_factor, 0.0))) + offset;"
 
-		"position *= vec4(1.0, texture(grass_length_texture, texcoord).r * 0.9 + 0.3, 1.0, 1.0);"\
+		"position *= vec4(1.0, texture(grass_length_texture, texcoord).r * 0.9 + 0.3, 1.0, 1.0);"
 
-		"gl_Position = mvpMatrix * position;"\
-		// (rot * position);
+		"gl_Position = mvpMatrix * position;" // (rot * position);
 
 		// color = vec4(random_vector(gl_InstanceID).xyz * vec3(0.1, 0.5, 0.1) + vec3(0.1, 0.4, 0.1), 1.0);
 		// color = texture(grass_orientation_texture, texcoord);
-		"color = texture(grass_palette_texture, texture(grass_color_texture, texcoord).r) + vec4(random_vector(gl_InstanceID).xyz * vec3(0.1, 0.5, 0.1), 1.0);"\
+		"color = texture(grass_palette_texture, texture(grass_color_texture, texcoord).r) + vec4(random_vector(gl_InstanceID).xyz * vec3(0.1, 0.5, 0.1), 1.0);"
 		"}";
 
 	glShaderSource(g_Scene3_GrassShader.gVertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
@@ -393,16 +412,16 @@ void Scene3_initializeGrass(void)
 	g_Scene3_GrassShader.gFragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
 
 	const GLchar *fragmentShaderSourceCode =
-		"#version 450" \
-		"\n" \
+		"#version 450"
+		"\n"
 
-		"in vec4 color;"\
+		"in vec4 color;"
 
-		"out vec4 output_color;"\
+		"out vec4 output_color;"
 
-		"void main(void)"\
-		"{"\
-		"output_color = color;"\
+		"void main(void)"
+		"{"
+		"output_color = color;"
 		"}";
 
 	glShaderSource(g_Scene3_GrassShader.gFragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
@@ -415,7 +434,7 @@ void Scene3_initializeGrass(void)
 		glGetShaderiv(g_Scene3_GrassShader.gFragmentShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
 		if (iInfoLogLength > 0)
 		{
-			szInfoLog = (char*)malloc(iInfoLogLength);
+			szInfoLog = (char *)malloc(iInfoLogLength);
 			if (szInfoLog != NULL)
 			{
 				GLsizei written;
@@ -480,16 +499,14 @@ void Scene3_initializeGrass(void)
 	glActiveTexture(GL_TEXTURE4);
 	g_Scene3_Texture_grass_bend = load("resources/Grass/grass_bend.ktx", 0);
 
-
 	static const GLfloat grass_blade[] =
-	{
-		-0.3f, 0.0f,
-		0.3f, 0.0f,
-		-0.20f, 1.0f,
-		0.1f, 1.3f,
-		-0.05f, 2.3f,
-		0.0f, 3.3f
-	};
+		{
+			-0.3f, 0.0f,
+			0.3f, 0.0f,
+			-0.20f, 1.0f,
+			0.1f, 1.3f,
+			-0.05f, 2.3f,
+			0.0f, 3.3f};
 
 	glGenVertexArrays(1, &g_Scene3_GrassModel.Vao);
 	glBindVertexArray(g_Scene3_GrassModel.Vao);
@@ -498,10 +515,8 @@ void Scene3_initializeGrass(void)
 	glBindBuffer(GL_ARRAY_BUFFER, g_Scene3_Vbo_Position);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(grass_blade), grass_blade, GL_STATIC_DRAW);
 
-
 	glVertexAttribPointer(HAD_ATTRIBUTE_POSITION, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(HAD_ATTRIBUTE_POSITION);
-
 }
 
 //***********************SKYBOX***********************
@@ -509,7 +524,6 @@ GLuint g_Scene3_SkyBox_ProjectionUniform;
 GLuint g_Scene3_SkyBox_ModelMatrixUniform;
 GLuint g_Scene3_SkyBox_ViewUniform;
 GLuint g_Scene3_SkyBox_Uniform;
-
 
 GLuint g_Scene3_CubemapTexture;
 
@@ -525,27 +539,26 @@ void Scene3_initializeSkyBox(void)
 	g_Scene3_SkyBoxShader.gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
 
 	const GLchar *vertextShaderSourceCodeSkyBox =
-		"#version 460" \
-		"\n" \
-		"out VS_OUT" \
-		"{" \
-		"vec3    tc;" \
-		"} vs_out;" \
-		"uniform mat4 model_matrix;" \
-		"uniform mat4 view_matrix;" \
-		"void main(void)" \
-		"{" \
-		"vec3[4] vertices = vec3[4](vec3(-1.0, -1.0, 1.0)," \
-		"vec3(1.0, -1.0, 1.0)," \
-		"vec3(-1.0, 1.0, 1.0)," \
-		"vec3(1.0, 1.0, 1.0)); "\
+		"#version 460"
+		"\n"
+		"out VS_OUT"
+		"{"
+		"vec3    tc;"
+		"} vs_out;"
+		"uniform mat4 model_matrix;"
+		"uniform mat4 view_matrix;"
+		"void main(void)"
+		"{"
+		"vec3[4] vertices = vec3[4](vec3(-1.0, -1.0, 1.0),"
+		"vec3(1.0, -1.0, 1.0),"
+		"vec3(-1.0, 1.0, 1.0),"
+		"vec3(1.0, 1.0, 1.0)); "
 
-		"vs_out.tc = mat3(view_matrix * model_matrix) * vertices[gl_VertexID];" \
-		"gl_Position = vec4(vertices[gl_VertexID], 1.0);" \
+		"vs_out.tc = mat3(view_matrix * model_matrix) * vertices[gl_VertexID];"
+		"gl_Position = vec4(vertices[gl_VertexID], 1.0);"
 		"}";
 
-
-	glShaderSource(g_Scene3_SkyBoxShader.gVertexShaderObject, 1, (const GLchar**)&vertextShaderSourceCodeSkyBox, NULL);
+	glShaderSource(g_Scene3_SkyBoxShader.gVertexShaderObject, 1, (const GLchar **)&vertextShaderSourceCodeSkyBox, NULL);
 
 	//compile shader
 	glCompileShader(g_Scene3_SkyBoxShader.gVertexShaderObject);
@@ -570,7 +583,6 @@ void Scene3_initializeSkyBox(void)
 				fclose(gpFile);*/
 				logError("Vertex Shader Compilation Log : %s\n", szInfoLog);
 
-
 				free(szInfoLog);
 				uninitialize(1);
 				exit(0);
@@ -582,18 +594,17 @@ void Scene3_initializeSkyBox(void)
 	g_Scene3_SkyBoxShader.gFragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
 
 	const GLchar *fragmentShaderSourceCodeSkyBox =
-		"#version 460"\
-		"\n" \
-		"uniform samplerCube tex_cubemap;" \
-		"in VS_OUT" \
-		"{" \
-		"vec3    tc;" \
-		"} fs_in;" \
-		"layout (location = 0) out vec4 color;" \
-		"void main(void)" \
-		"{" \
-		//"color = texture(tex_cubemap, vec3(fs_in.tc.x, -fs_in.tc.y, fs_in.tc.z));"
-		"color = texture(tex_cubemap, fs_in.tc);" \
+		"#version 460"
+		"\n"
+		"uniform samplerCube tex_cubemap;"
+		"in VS_OUT"
+		"{"
+		"vec3    tc;"
+		"} fs_in;"
+		"layout (location = 0) out vec4 color;"
+		"void main(void)"
+		"{" //"color = texture(tex_cubemap, vec3(fs_in.tc.x, -fs_in.tc.y, fs_in.tc.z));"
+		"color = texture(tex_cubemap, fs_in.tc);"
 		"}";
 
 	glShaderSource(g_Scene3_SkyBoxShader.gFragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCodeSkyBox, NULL);
@@ -611,11 +622,10 @@ void Scene3_initializeSkyBox(void)
 			{
 				GLsizei written;
 				glGetShaderInfoLog(g_Scene3_SkyBoxShader.gFragmentShaderObject, iInfoLogLength, &written, szInfoLog);
-			/*	fopen_s(&gpFile, "Log.txt", "a+");
+				/*	fopen_s(&gpFile, "Log.txt", "a+");
 				fprintf(gpFile, "Fragment Shader Compilation Log : %s\n", szInfoLog);
 				fclose(gpFile);*/
 				logError("Fragment Shader Compilation Log : %s\n", szInfoLog);
-
 
 				free(szInfoLog);
 				uninitialize(1);
@@ -642,7 +652,7 @@ void Scene3_initializeSkyBox(void)
 	if (iShaderProgramLinkStatus == GL_FALSE)
 	{
 		glGetProgramiv(g_Scene3_SkyBoxShader.gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
-		if (iInfoLogLength>0)
+		if (iInfoLogLength > 0)
 		{
 			szInfoLog = (char *)malloc(iInfoLogLength);
 			if (szInfoLog != NULL)
@@ -653,7 +663,6 @@ void Scene3_initializeSkyBox(void)
 				fprintf(gpFile, "Shader Program Link Log : %s\n", szInfoLog);
 				fclose(gpFile);*/
 				logError("Shader Program Link Log : %s\n", szInfoLog);
-
 
 				free(szInfoLog);
 				uninitialize(1);
@@ -666,13 +675,11 @@ void Scene3_initializeSkyBox(void)
 	g_Scene3_SkyBox_ViewUniform = glGetUniformLocation(g_Scene3_SkyBoxShader.gShaderProgramObject, "view_matrix");
 	g_Scene3_SkyBox_Uniform = glGetUniformLocation(g_Scene3_SkyBoxShader.gShaderProgramObject, "tex_cubemap");
 
-
 	glGenVertexArrays(1, &g_Scene3_SkyBoxModel.Vao);
 	glBindVertexArray(g_Scene3_SkyBoxModel.Vao);
 	glBindVertexArray(0);
 
-	std::vector<std::string> Faces
-	{
+	std::vector<std::string> Faces{
 		"RTR_resources/models/RotateMirMar/right.tga",
 		"RTR_resources/models/RotateMirMar/left.tga",
 		"RTR_resources/models/RotateMirMar/new_up.tga",
@@ -682,7 +689,6 @@ void Scene3_initializeSkyBox(void)
 	};
 
 	g_Scene3_CubemapTexture = loadCubemap(Faces);
-
 }
 
 unsigned int loadCubemap(std::vector<std::string> faces)
@@ -691,7 +697,7 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 	fprintf(gpFile, "In loadCubemap....\n");
 	fclose(gpFile);*/
 	logError("In loadCubemap....\n");
-	TextureImage* LoadTGA(TextureImage *texture, const char *filename, int i);
+	TextureImage *LoadTGA(TextureImage * texture, const char *filename, int i);
 	bool returnType = false;
 
 	unsigned int textureID;
@@ -701,7 +707,7 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 	int width, height, nrChannels;
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
-		TextureImage* textureIm = LoadTGA(&textures[i], faces[i].c_str(), i);
+		TextureImage *textureIm = LoadTGA(&textures[i], faces[i].c_str(), i);
 		if (textureIm->imageData)
 		{
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, textureIm->width, textureIm->height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureIm->imageData);
@@ -722,11 +728,10 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);*/
 
-
 	return textureID;
 }
 
-TextureImage* LoadTGA(TextureImage *texture, const char *filename, int num)                 // Loads A TGA File Into Memory
+TextureImage *LoadTGA(TextureImage *texture, const char *filename, int num) // Loads A TGA File Into Memory
 {
 	void _check_gl_error();
 
@@ -735,33 +740,33 @@ TextureImage* LoadTGA(TextureImage *texture, const char *filename, int num)     
 	fclose(gpFile);*/
 	logInfo("In LoadTGA : FileName : %s\n", filename);
 
-	GLubyte     TGAheader[12] = { 0,0,2,0,0,0,0,0,0,0,0,0 };           // Uncompressed TGA Header
-	GLubyte     TGAcompare[12];                         // Used To Compare TGA Header
-	GLubyte     header[6];                          // First 6 Useful Bytes From The Header
-	GLuint      bytesPerPixel;                          // Holds Number Of Bytes Per Pixel Used In The TGA File
-	GLuint      imageSize;                          // Used To Store The Image Size When Setting Aside Ram
-	GLuint      temp;                               // Temporary Variable
-	GLuint      type = GL_RGBA;                           // Set The Default GL Mode To RBGA (32 BPP)
+	GLubyte TGAheader[12] = {0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Uncompressed TGA Header
+	GLubyte TGAcompare[12];										  // Used To Compare TGA Header
+	GLubyte header[6];											  // First 6 Useful Bytes From The Header
+	GLuint bytesPerPixel;										  // Holds Number Of Bytes Per Pixel Used In The TGA File
+	GLuint imageSize;											  // Used To Store The Image Size When Setting Aside Ram
+	GLuint temp;												  // Temporary Variable
+	GLuint type = GL_RGBA;										  // Set The Default GL Mode To RBGA (32 BPP)
 	FILE *file = NULL;
-	fopen_s(&file, filename, "rb");                     // Open The TGA File
+	fopen_s(&file, filename, "rb"); // Open The TGA File
 
-	if (file == NULL ||                               // Does File Even Exist?
-		fread(TGAcompare, 1, sizeof(TGAcompare), file) != sizeof(TGAcompare) ||  // Are There 12 Bytes To Read?
-		memcmp(TGAheader, TGAcompare, sizeof(TGAheader)) != 0 ||  // Does The Header Match What We Want?
-		fread(header, 1, sizeof(header), file) != sizeof(header))            // If So Read Next 6 Header Bytes
+	if (file == NULL ||															// Does File Even Exist?
+		fread(TGAcompare, 1, sizeof(TGAcompare), file) != sizeof(TGAcompare) || // Are There 12 Bytes To Read?
+		memcmp(TGAheader, TGAcompare, sizeof(TGAheader)) != 0 ||				// Does The Header Match What We Want?
+		fread(header, 1, sizeof(header), file) != sizeof(header))				// If So Read Next 6 Header Bytes
 	{
 		/*fopen_s(&gpFile, "Log.txt", "a+");
 		fprintf(gpFile, "Does File EVen Exist..\n");
 		fclose(gpFile);*/
 		logInfo("Does File EVen Exist..\n");
 
-		if (file == NULL)                           // Did The File Even Exist? *Added Jim Strong*
+		if (file == NULL) // Did The File Even Exist? *Added Jim Strong*
 		{
 			/*fopen_s(&gpFile, "Log.txt", "a+");
 			fprintf(gpFile, "No..File Not Exists..\n");
 			fclose(gpFile);*/
 			logError("No..File Not Exists..\n");
-			return NULL;                           // Return False
+			return NULL; // Return False
 		}
 		else
 		{
@@ -769,61 +774,61 @@ TextureImage* LoadTGA(TextureImage *texture, const char *filename, int num)     
 			fprintf(gpFile, "Any Other thing Failed\n");
 			fclose(gpFile);*/
 			logError("Any Other thing Failed\n");
-			fclose(file);                           // If Anything Failed, Close The File
-			return NULL;                           // Return False
+			fclose(file); // If Anything Failed, Close The File
+			return NULL;  // Return False
 		}
 	}
-	texture->width = header[1] * 256 + header[0];                   // Determine The TGA Width  (highbyte*256+lowbyte)
-	texture->height = header[3] * 256 + header[2];                   // Determine The TGA Height (highbyte*256+lowbyte)
+	texture->width = header[1] * 256 + header[0];  // Determine The TGA Width  (highbyte*256+lowbyte)
+	texture->height = header[3] * 256 + header[2]; // Determine The TGA Height (highbyte*256+lowbyte)
 	/*fopen_s(&gpFile, "Log.txt", "a+");
 	fprintf(gpFile, "In LoadTGA 100\n");
 	fclose(gpFile);*/
 
-	if (texture->width <= 0 ||                      // Is The Width Less Than Or Equal To Zero
-		texture->height <= 0 ||                      // Is The Height Less Than Or Equal To Zero
-		(header[4] != 24 && header[4] != 32))                   // Is The TGA 24 or 32 Bit?
+	if (texture->width <= 0 ||				  // Is The Width Less Than Or Equal To Zero
+		texture->height <= 0 ||				  // Is The Height Less Than Or Equal To Zero
+		(header[4] != 24 && header[4] != 32)) // Is The TGA 24 or 32 Bit?
 	{
 		/*fopen_s(&gpFile, "Log.txt", "a+");
 		fprintf(gpFile, "In LoadTGA 1\n");
 		fclose(gpFile);*/
-		fclose(file);                               // If Anything Failed, Close The File
-		return NULL;                               // Return False
+		fclose(file); // If Anything Failed, Close The File
+		return NULL;  // Return False
 	}
-	texture->bpp = header[4];                            // Grab The TGA's Bits Per Pixel (24 or 32)
-	bytesPerPixel = texture->bpp / 8;                        // Divide By 8 To Get The Bytes Per Pixel
-	imageSize = texture->width*texture->height*bytesPerPixel;           // Calculate The Memory Required For The TGA Data
-	texture->imageData = (GLubyte *)malloc(imageSize);             // Reserve Memory To Hold The TGA Data
-/*	fopen_s(&gpFile, "Log.txt", "a+");
+	texture->bpp = header[4];										// Grab The TGA's Bits Per Pixel (24 or 32)
+	bytesPerPixel = texture->bpp / 8;								// Divide By 8 To Get The Bytes Per Pixel
+	imageSize = texture->width * texture->height * bytesPerPixel;   // Calculate The Memory Required For The TGA Data
+	texture->imageData = (GLubyte *)malloc(imageSize);				// Reserve Memory To Hold The TGA Data
+																	/*	fopen_s(&gpFile, "Log.txt", "a+");
 	fprintf(gpFile, "In LoadTGA 101\n");
 	fclose(gpFile);*/
-	if (texture->imageData == NULL ||                      // Does The Storage Memory Exist?
-		fread(texture->imageData, 1, imageSize, file) != imageSize)        // Does The Image Size Match The Memory Reserved?
+	if (texture->imageData == NULL ||								// Does The Storage Memory Exist?
+		fread(texture->imageData, 1, imageSize, file) != imageSize) // Does The Image Size Match The Memory Reserved?
 	{
-	/*	fopen_s(&gpFile, "Log.txt", "a+");
+		/*	fopen_s(&gpFile, "Log.txt", "a+");
 		fprintf(gpFile, "In LoadTGA 500\n");
 		fclose(gpFile);*/
-		if (texture->imageData != NULL)                     // Was Image Data Loaded
+		if (texture->imageData != NULL) // Was Image Data Loaded
 		{
-		/*	fopen_s(&gpFile, "Log.txt", "a+");
+			/*	fopen_s(&gpFile, "Log.txt", "a+");
 			fprintf(gpFile, "In LoadTGA 501\n");
 			fclose(gpFile);*/
-			free(texture->imageData);                    // If So, Release The Image Data
+			free(texture->imageData); // If So, Release The Image Data
 		}
-		fclose(file);                               // Close The File
-		return NULL;                               // Return False
+		fclose(file); // Close The File
+		return NULL;  // Return False
 	}
 	/*fopen_s(&gpFile, "Log.txt", "a+");
 	fprintf(gpFile, "In LoadTGA 102\n");
 	fclose(gpFile);*/
-	for (GLuint i = 0; i<int(imageSize); i += bytesPerPixel)              // Loop Through The Image Data
-	{   // Swaps The 1st And 3rd Bytes ('R'ed and 'B'lue)
+	for (GLuint i = 0; i < int(imageSize); i += bytesPerPixel) // Loop Through The Image Data
+	{														   // Swaps The 1st And 3rd Bytes ('R'ed and 'B'lue)
 
-		temp = texture->imageData[i];                      // Temporarily Store The Value At Image Data 'i'
-		texture->imageData[i] = texture->imageData[i + 2];            // Set The 1st Byte To The Value Of The 3rd Byte
-		texture->imageData[i + 2] = temp;                    // Set The 3rd Byte To The Value In 'temp' (1st Byte Value)
+		temp = texture->imageData[i];					   // Temporarily Store The Value At Image Data 'i'
+		texture->imageData[i] = texture->imageData[i + 2]; // Set The 1st Byte To The Value Of The 3rd Byte
+		texture->imageData[i + 2] = temp;				   // Set The 3rd Byte To The Value In 'temp' (1st Byte Value)
 	}
 
-	return texture;                                    // Texture Building Went Ok, Return True
+	return texture; // Texture Building Went Ok, Return True
 }
 
 void Scene3_initializeInstancingFeature()
@@ -833,35 +838,34 @@ void Scene3_initializeInstancingFeature()
 	g_Scene3_InstanceShader.gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
 
 	const GLchar *vertextShaderSourceCode =
-		"#version 400" \
-		"\n" \
-		"layout(location = 0) in vec3 vPosition;" \
-		"layout(location = 1) in vec3 vNormal;" \
-		"layout(location = 2) in vec3 aOffset;" \
-		"uniform mat4 u_model_matrix;" \
-		"uniform mat4 u_view_matrix;" \
-		"uniform mat4 u_projection_matrix;" \
-		"uniform int u_lighting_enabled;" \
-		"uniform vec3 u_light_position;" \
-		"out vec3 transformed_normals;" \
-		"out vec3 light_direction;" \
-		"out vec3 viewer_vector;" \
+		"#version 400"
+		"\n"
+		"layout(location = 0) in vec3 vPosition;"
+		"layout(location = 1) in vec3 vNormal;"
+		"layout(location = 2) in vec3 aOffset;"
+		"uniform mat4 u_model_matrix;"
+		"uniform mat4 u_view_matrix;"
+		"uniform mat4 u_projection_matrix;"
+		"uniform int u_lighting_enabled;"
+		"uniform vec3 u_light_position;"
+		"out vec3 transformed_normals;"
+		"out vec3 light_direction;"
+		"out vec3 viewer_vector;"
 
 		//"uniform mat4 mvpMatrix;"
-		"void main(void)" \
-		"{" \
-		"if(u_lighting_enabled==1)" \
-		"{" \
-		"vec4 eye_coordinates = u_view_matrix*u_model_matrix* vec4(vPosition, 1.0);" \
-		"transformed_normals = mat3(u_view_matrix*u_model_matrix)*vNormal;" \
-		"light_direction = u_light_position-eye_coordinates.xyz;" \
-		"viewer_vector = -eye_coordinates.xyz;" \
-		"}" \
-		//	"gl_Position = u_projection_matrix*u_view_matrix*u_model_matrix*vPosition;"
+		"void main(void)"
+		"{"
+		"if(u_lighting_enabled==1)"
+		"{"
+		"vec4 eye_coordinates = u_view_matrix*u_model_matrix* vec4(vPosition, 1.0);"
+		"transformed_normals = mat3(u_view_matrix*u_model_matrix)*vNormal;"
+		"light_direction = u_light_position-eye_coordinates.xyz;"
+		"viewer_vector = -eye_coordinates.xyz;"
+		"}" //	"gl_Position = u_projection_matrix*u_view_matrix*u_model_matrix*vPosition;"
 
 		//"gl_Position = mvpMatrix * vec4(aPos.x + aOffset.x, aPos.y, aPos.z + aOffset.y, 1.0f);"
 		//"gl_Position = mvpMatrix * vec4(aPos + aOffset, 1.0f);"
-		"gl_Position = u_projection_matrix * u_view_matrix * u_model_matrix * vec4(vPosition.x + aOffset.x, vPosition.y + aOffset.y, vPosition.z + aOffset.z, 1.0f);" \
+		"gl_Position = u_projection_matrix * u_view_matrix * u_model_matrix * vec4(vPosition.x + aOffset.x, vPosition.y + aOffset.y, vPosition.z + aOffset.z, 1.0f);"
 		"}";
 	glShaderSource(g_Scene3_InstanceShader.gVertexShaderObject, 1, (const GLchar **)&vertextShaderSourceCode, NULL);
 
@@ -898,41 +902,41 @@ void Scene3_initializeInstancingFeature()
 	g_Scene3_InstanceShader.gFragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
 
 	const GLchar *fragmentShaderSourceCode =
-		"#version 400" \
-		"\n" \
-		"in vec3 transformed_normals;" \
-		"in vec3 light_direction;" \
-		"in vec3 viewer_vector;" \
-		"out vec4 FragColor;" \
-		"uniform vec3 u_La;" \
-		"uniform vec3 u_Ld;" \
-		"uniform vec3 u_Ls;" \
-		"uniform vec3 u_Ka;" \
-		"uniform vec3 u_Kd;" \
-		"uniform vec3 u_Ks;" \
-		"uniform float u_material_shininess;" \
-		"uniform int u_lighting_enabled;" \
+		"#version 400"
+		"\n"
+		"in vec3 transformed_normals;"
+		"in vec3 light_direction;"
+		"in vec3 viewer_vector;"
+		"out vec4 FragColor;"
+		"uniform vec3 u_La;"
+		"uniform vec3 u_Ld;"
+		"uniform vec3 u_Ls;"
+		"uniform vec3 u_Ka;"
+		"uniform vec3 u_Kd;"
+		"uniform vec3 u_Ks;"
+		"uniform float u_material_shininess;"
+		"uniform int u_lighting_enabled;"
 
-		"void main()" \
-		"{" \
-		"vec3 phong_ads_color;" \
-		"if(u_lighting_enabled == 1)" \
-		"{" \
-		"vec3 normalized_transformed_normals = normalize(transformed_normals);" \
-		"vec3 normalized_light_direction = normalize(light_direction);" \
-		"vec3 normalized_viewer_vector = normalize(viewer_vector);" \
-		"vec3 ambient = u_La * u_Ka;" \
-		"float tn_dot_ld = max(dot(normalized_transformed_normals,normalized_light_direction),0.0);" \
-		"vec3 diffuse = u_Ld * u_Kd * tn_dot_ld;" \
-		"vec3 reflection_vector = reflect(-normalized_light_direction,normalized_transformed_normals);" \
-		"vec3 specular = u_Ls * u_Ks * pow(max(dot(reflection_vector,normalized_viewer_vector),0.0),u_material_shininess);" \
-		"phong_ads_color = ambient + diffuse + specular;" \
-		"}" \
-		"else" \
-		"{" \
-		"phong_ads_color = vec3(1.0f,1.0f,1.0f);" \
-		"}" \
-		"FragColor = vec4(phong_ads_color,1.0);" \
+		"void main()"
+		"{"
+		"vec3 phong_ads_color;"
+		"if(u_lighting_enabled == 1)"
+		"{"
+		"vec3 normalized_transformed_normals = normalize(transformed_normals);"
+		"vec3 normalized_light_direction = normalize(light_direction);"
+		"vec3 normalized_viewer_vector = normalize(viewer_vector);"
+		"vec3 ambient = u_La * u_Ka;"
+		"float tn_dot_ld = max(dot(normalized_transformed_normals,normalized_light_direction),0.0);"
+		"vec3 diffuse = u_Ld * u_Kd * tn_dot_ld;"
+		"vec3 reflection_vector = reflect(-normalized_light_direction,normalized_transformed_normals);"
+		"vec3 specular = u_Ls * u_Ks * pow(max(dot(reflection_vector,normalized_viewer_vector),0.0),u_material_shininess);"
+		"phong_ads_color = ambient + diffuse + specular;"
+		"}"
+		"else"
+		"{"
+		"phong_ads_color = vec3(1.0f,1.0f,1.0f);"
+		"}"
+		"FragColor = vec4(phong_ads_color,1.0);"
 
 		//		"FragColor = vec4(0.5f, 0.5f, 0.5f, 1.0);"
 		"}";
@@ -970,7 +974,7 @@ void Scene3_initializeInstancingFeature()
 
 	glAttachShader(g_Scene3_InstanceShader.gShaderProgramObject, g_Scene3_InstanceShader.gFragmentShaderObject);
 	glBindAttribLocation(g_Scene3_InstanceShader.gShaderProgramObject, 0, "vPosition"); //aOffset
-	glBindAttribLocation(g_Scene3_InstanceShader.gShaderProgramObject, 1, "vNormal"); //aOffset
+	glBindAttribLocation(g_Scene3_InstanceShader.gShaderProgramObject, 1, "vNormal");   //aOffset
 
 	glBindAttribLocation(g_Scene3_InstanceShader.gShaderProgramObject, 2, "aOffset");
 
@@ -981,7 +985,7 @@ void Scene3_initializeInstancingFeature()
 	if (iShaderProgramLinkStatus == GL_FALSE)
 	{
 		glGetProgramiv(g_Scene3_InstanceShader.gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
-		if (iInfoLogLength>0)
+		if (iInfoLogLength > 0)
 		{
 			szInfoLog = (char *)malloc(iInfoLogLength);
 			if (szInfoLog != NULL)
@@ -1018,8 +1022,6 @@ void Scene3_initializeInstancingFeature()
 	g_Scene3_Instance_KsUniform = glGetUniformLocation(g_Scene3_InstanceShader.gShaderProgramObject, "u_Ks");
 
 	g_Scene3_Instance_MaterialShininessUniform = glGetUniformLocation(g_Scene3_InstanceShader.gShaderProgramObject, "u_material_shininess");
-
-
 }
 
 void Scene3_initializeCityLightInstancing()
@@ -1029,20 +1031,19 @@ void Scene3_initializeCityLightInstancing()
 	int index = 0;
 	float offset = 0.1f;
 
-	translations[0] = { 0.0f , 0.0f , -140.0f };
-	translations[1] = { 0.0f , 0.0f, -100.0f };
-	translations[2] = { 0.0f, 0.0f , -60.0f };
-	translations[3] = { 0.0f, 0.0f , -20.0f };
-	translations[4] = { 0.0f , 0.0f , 20.0f };
-	translations[5] = { 0.0f , 0.0f, 60.0f };
-	translations[6] = { 0.0f, 0.0f , 100.0f };
-	translations[7] = { 0.0f, 0.0f , 140.0f };
+	translations[0] = {0.0f, 0.0f, -140.0f};
+	translations[1] = {0.0f, 0.0f, -100.0f};
+	translations[2] = {0.0f, 0.0f, -60.0f};
+	translations[3] = {0.0f, 0.0f, -20.0f};
+	translations[4] = {0.0f, 0.0f, 20.0f};
+	translations[5] = {0.0f, 0.0f, 60.0f};
+	translations[6] = {0.0f, 0.0f, 100.0f};
+	translations[7] = {0.0f, 0.0f, 140.0f};
 
 	glGenBuffers(1, &g_Scene3_Vbo_Instance);
 	glBindBuffer(GL_ARRAY_BUFFER, g_Scene3_Vbo_Instance);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * g_CityLight_InstanceCount, &translations[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 
 	glGenVertexArrays(1, &g_Scene3_CityLightModel.Vao);
 	glBindVertexArray(g_Scene3_CityLightModel.Vao);
@@ -1056,7 +1057,6 @@ void Scene3_initializeCityLightInstancing()
 	glEnableVertexAttribArray(HAD_ATTRIBUTE_POSITION);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-
 	glGenBuffers(1, &g_Scene3_Vbo_Normal);
 	glBindBuffer(GL_ARRAY_BUFFER, g_Scene3_Vbo_Normal);
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
@@ -1066,16 +1066,14 @@ void Scene3_initializeCityLightInstancing()
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-
 	glBindBuffer(GL_ARRAY_BUFFER, g_Scene3_Vbo_Instance);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glVertexAttribDivisor(2, 1);// tell OpenGL this is an instanced vertex attribute.
+	glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
 
 	glBindVertexArray(0);
-
 }
 
 void Scene3_initializeBenchInstancing()
@@ -1085,20 +1083,19 @@ void Scene3_initializeBenchInstancing()
 	int index = 0;
 	float offset = 0.1f;
 
-	translations[0] = { 0.0f , 0.0f, -15000.0f };
-	translations[1] = { 0.0f , 0.0f, -12500.0f };
-	translations[2] = { 0.0f , 0.0f, -10000.0f };
-	translations[3] = { 0.0f , 0.0f, -7500.0f };
-	translations[4] = { 0.0f , 0.0f, -5000.0f };
-	translations[5] = { 0.0f , 0.0f , -2500.0f };
-	translations[6] = { 0.0f , 0.0f , 0.0f };
-	translations[7] = { 0.0f, 0.0f , 2500.0f };
-	translations[8] = { 0.0f , 0.0f, 5000.0f };
-	translations[9] = { 0.0f , 0.0f, 7500.0f };
-	translations[10] = { 0.0f , 0.0f, 10000.0f };
-	translations[11] = { 0.0f , 0.0f, 12500.0f };
-	translations[12] = { 0.0f , 0.0f, 15000.0f };
-
+	translations[0] = {0.0f, 0.0f, -15000.0f};
+	translations[1] = {0.0f, 0.0f, -12500.0f};
+	translations[2] = {0.0f, 0.0f, -10000.0f};
+	translations[3] = {0.0f, 0.0f, -7500.0f};
+	translations[4] = {0.0f, 0.0f, -5000.0f};
+	translations[5] = {0.0f, 0.0f, -2500.0f};
+	translations[6] = {0.0f, 0.0f, 0.0f};
+	translations[7] = {0.0f, 0.0f, 2500.0f};
+	translations[8] = {0.0f, 0.0f, 5000.0f};
+	translations[9] = {0.0f, 0.0f, 7500.0f};
+	translations[10] = {0.0f, 0.0f, 10000.0f};
+	translations[11] = {0.0f, 0.0f, 12500.0f};
+	translations[12] = {0.0f, 0.0f, 15000.0f};
 
 	//translations[3] = { 0.0f, 0.0f , 800.0f };
 
@@ -1106,7 +1103,6 @@ void Scene3_initializeBenchInstancing()
 	glBindBuffer(GL_ARRAY_BUFFER, g_Scene3_Vbo_Instance);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * g_Bench_InstanceCount, &translations[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 
 	glGenVertexArrays(1, &g_Scene3_BenchModel.Vao);
 	glBindVertexArray(g_Scene3_BenchModel.Vao);
@@ -1136,11 +1132,11 @@ void Scene3_initializeBenchInstancing()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, g_Scene3_Vbo_Instance);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glVertexAttribDivisor(2, 1);// tell OpenGL this is an instanced vertex attribute.
+	glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
 
 	glBindVertexArray(0);
 }
@@ -1154,7 +1150,7 @@ void Scene3_initializePalmTreeInstancing()
 
 	for (int i = 0, z = -100; i < g_PalmTree_InstanceCount - 1; z = z + 10)
 	{
-		translations[i] = { 0.0f, 0.0f, z };
+		translations[i] = {0.0f, 0.0f, z};
 		i++;
 	}
 	/*translations[0] = { 0.0f , 0.0f , -1000.0f };
@@ -1166,7 +1162,6 @@ void Scene3_initializePalmTreeInstancing()
 	glBindBuffer(GL_ARRAY_BUFFER, g_Scene3_Vbo_Instance);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * g_PalmTree_InstanceCount, &translations[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 
 	glGenVertexArrays(1, &g_Scene3_PalmTreeModel.Vao);
 	glBindVertexArray(g_Scene3_PalmTreeModel.Vao);
@@ -1196,14 +1191,13 @@ void Scene3_initializePalmTreeInstancing()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, g_Scene3_Vbo_Instance);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glVertexAttribDivisor(2, 1);// tell OpenGL this is an instanced vertex attribute.
+	glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
 
 	glBindVertexArray(0);
-
 }
 
 void Scene3_initializeCityModel(void)
@@ -1213,28 +1207,28 @@ void Scene3_initializeCityModel(void)
 	g_Scene3_CityModelShader.gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
 
 	const GLchar *vertexShaderSourceCode =
-		"#version 450" \
-		"\n" \
-		"in vec4 vPosition;" \
-		"in vec3 vNormal;" \
-		"uniform mat4 u_model_matrix;" \
-		"uniform mat4 u_view_matrix;" \
-		"uniform mat4 u_projection_matrix;" \
-		"uniform int u_lighting_enabled;" \
-		"uniform vec4 u_light_position;" \
-		"out vec3 transformed_normals;" \
-		"out vec3 light_direction;" \
-		"out vec3 viewer_vector;" \
-		"void main(void)" \
-		"{" \
-		"if(u_lighting_enabled==1)" \
-		"{" \
-		"vec4 eye_coordinates = u_model_matrix*vPosition;" \
-		"transformed_normals = mat3(u_model_matrix)*vNormal;" \
-		"light_direction = vec3(u_light_position)-eye_coordinates.xyz;" \
-		"viewer_vector = -eye_coordinates.xyz;" \
-		"}" \
-		"gl_Position = u_projection_matrix*u_view_matrix*u_model_matrix*vPosition;" \
+		"#version 450"
+		"\n"
+		"in vec4 vPosition;"
+		"in vec3 vNormal;"
+		"uniform mat4 u_model_matrix;"
+		"uniform mat4 u_view_matrix;"
+		"uniform mat4 u_projection_matrix;"
+		"uniform int u_lighting_enabled;"
+		"uniform vec4 u_light_position;"
+		"out vec3 transformed_normals;"
+		"out vec3 light_direction;"
+		"out vec3 viewer_vector;"
+		"void main(void)"
+		"{"
+		"if(u_lighting_enabled==1)"
+		"{"
+		"vec4 eye_coordinates = u_model_matrix*vPosition;"
+		"transformed_normals = mat3(u_model_matrix)*vNormal;"
+		"light_direction = vec3(u_light_position)-eye_coordinates.xyz;"
+		"viewer_vector = -eye_coordinates.xyz;"
+		"}"
+		"gl_Position = u_projection_matrix*u_view_matrix*u_model_matrix*vPosition;"
 		"}";
 
 	glShaderSource(g_Scene3_CityModelShader.gVertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
@@ -1255,7 +1249,7 @@ void Scene3_initializeCityModel(void)
 			{
 				GLsizei written;
 				glGetShaderInfoLog(g_Scene3_CityModelShader.gVertexShaderObject, iInfoLogLength, &written, szInfoLog);
-			/*	fopen_s(&gpFile, "Log.txt", "a+");
+				/*	fopen_s(&gpFile, "Log.txt", "a+");
 				fprintf(gpFile, "Vertex Shader Compilation Log : %s\n", szInfoLog);
 				fclose(gpFile);*/
 				logError("Vertex Shader Compilation Log : %s\n", szInfoLog);
@@ -1270,40 +1264,40 @@ void Scene3_initializeCityModel(void)
 	g_Scene3_CityModelShader.gFragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
 
 	const GLchar *fragmentShaderSourceCode =
-		"#version 450" \
-		"\n" \
-		"in vec3 transformed_normals;" \
-		"in vec3 light_direction;" \
-		"in vec3 viewer_vector;" \
-		"out vec4 FragColor;" \
-		"uniform vec3 u_La;" \
-		"uniform vec3 u_Ld;" \
-		"uniform vec3 u_Ls;" \
-		"uniform vec3 u_Ka;" \
-		"uniform vec3 u_Kd;" \
-		"uniform vec3 u_Ks;" \
-		"uniform float u_material_shininess;" \
-		"uniform int u_lighting_enabled;" \
-		"void main(void)" \
-		"{" \
-		"vec3 phong_ads_color;" \
-		"if(u_lighting_enabled == 1)" \
-		"{" \
-		"vec3 normalized_transformed_normals = normalize(transformed_normals);" \
-		"vec3 normalized_light_direction = normalize(light_direction);" \
-		"vec3 normalized_viewer_vector = normalize(viewer_vector);" \
-		"vec3 ambient = u_La * u_Ka;" \
-		"float tn_dot_ld = max(dot(normalized_transformed_normals,normalized_light_direction),0.0);" \
-		"vec3 diffuse = u_Ld * u_Kd * tn_dot_ld;" \
-		"vec3 reflection_vector = reflect(-normalized_light_direction,normalized_transformed_normals);" \
-		"vec3 specular = u_Ls * u_Ks * pow(max(dot(reflection_vector,normalized_viewer_vector),0.0),u_material_shininess);" \
-		"phong_ads_color = ambient + diffuse + specular;" \
-		"}" \
-		"else" \
-		"{" \
-		"phong_ads_color = vec3(1.0f,1.0f,1.0f);" \
-		"}" \
-		"FragColor = vec4(phong_ads_color,1.0);" \
+		"#version 450"
+		"\n"
+		"in vec3 transformed_normals;"
+		"in vec3 light_direction;"
+		"in vec3 viewer_vector;"
+		"out vec4 FragColor;"
+		"uniform vec3 u_La;"
+		"uniform vec3 u_Ld;"
+		"uniform vec3 u_Ls;"
+		"uniform vec3 u_Ka;"
+		"uniform vec3 u_Kd;"
+		"uniform vec3 u_Ks;"
+		"uniform float u_material_shininess;"
+		"uniform int u_lighting_enabled;"
+		"void main(void)"
+		"{"
+		"vec3 phong_ads_color;"
+		"if(u_lighting_enabled == 1)"
+		"{"
+		"vec3 normalized_transformed_normals = normalize(transformed_normals);"
+		"vec3 normalized_light_direction = normalize(light_direction);"
+		"vec3 normalized_viewer_vector = normalize(viewer_vector);"
+		"vec3 ambient = u_La * u_Ka;"
+		"float tn_dot_ld = max(dot(normalized_transformed_normals,normalized_light_direction),0.0);"
+		"vec3 diffuse = u_Ld * u_Kd * tn_dot_ld;"
+		"vec3 reflection_vector = reflect(-normalized_light_direction,normalized_transformed_normals);"
+		"vec3 specular = u_Ls * u_Ks * pow(max(dot(reflection_vector,normalized_viewer_vector),0.0),u_material_shininess);"
+		"phong_ads_color = ambient + diffuse + specular;"
+		"}"
+		"else"
+		"{"
+		"phong_ads_color = vec3(1.0f,1.0f,1.0f);"
+		"}"
+		"FragColor = vec4(phong_ads_color,1.0);"
 		"}";
 
 	glShaderSource(g_Scene3_CityModelShader.gFragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
@@ -1316,7 +1310,7 @@ void Scene3_initializeCityModel(void)
 		glGetShaderiv(g_Scene3_CityModelShader.gFragmentShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
 		if (iInfoLogLength > 0)
 		{
-			szInfoLog = (char*)malloc(iInfoLogLength);
+			szInfoLog = (char *)malloc(iInfoLogLength);
 			if (szInfoLog != NULL)
 			{
 				GLsizei written;
@@ -1423,41 +1417,37 @@ void Scene3_initializeCityModelWithShadow(void)
 	g_Scene3_CityModelShader.gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
 
 	const GLchar *vertexShaderSourceCode =
-		"#version 450" \
-		"\n" \
-		"in vec4 vPosition;" \
-		"in vec3 vNormal;" \
-		"in vec2 vTexture0_Coord;" \
-		"uniform mat4 u_model_matrix;" \
-		"uniform mat4 u_view_matrix;" \
-		"uniform mat4 u_projection_matrix;" \
-		"uniform int u_lighting_enabled;" \
-		//"uniform vec3 u_light_position;"
-		"out vec3 transformed_normals;" \
-		"out vec4 eye_coordinates;" \
-		//"out vec3 light_direction;"
-		"out vec3 viewer_vector;" \
-		"out vec2 out_texture0_coord;" \
-		//Shadow
-		"uniform mat4 u_lightSpace_matrix;" \
-		"out vec4 FragPosLightSpace;" \
+		"#version 450"
+		"\n"
+		"in vec4 vPosition;"
+		"in vec3 vNormal;"
+		"in vec2 vTexture0_Coord;"
+		"uniform mat4 u_model_matrix;"
+		"uniform mat4 u_view_matrix;"
+		"uniform mat4 u_projection_matrix;"
+		"uniform int u_lighting_enabled;" //"uniform vec3 u_light_position;"
+		"out vec3 transformed_normals;"
+		"out vec4 eye_coordinates;" //"out vec3 light_direction;"
+		"out vec3 viewer_vector;"
+		"out vec2 out_texture0_coord;" //Shadow
+		"uniform mat4 u_lightSpace_matrix;"
+		"out vec4 FragPosLightSpace;"
 
-		"void main(void)" \
-		"{" \
-		"if(u_lighting_enabled==1)" \
-		"{" \
-		"eye_coordinates = u_model_matrix*vPosition;" \
-		"transformed_normals = mat3(u_model_matrix)*vNormal;" \
-		//"light_direction = u_light_position-eye_coordinates.xyz;"
-		"viewer_vector = -eye_coordinates.xyz;" \
+		"void main(void)"
+		"{"
+		"if(u_lighting_enabled==1)"
+		"{"
+		"eye_coordinates = u_model_matrix*vPosition;"
+		"transformed_normals = mat3(u_model_matrix)*vNormal;" //"light_direction = u_light_position-eye_coordinates.xyz;"
+		"viewer_vector = -eye_coordinates.xyz;"
 
 		//Shadow
 		//"vec3 FragPos = vec3(u_view_matrix*u_model_matrix * vPosition);"
-	//	"FragPosLightSpace = u_lightSpace_matrix * vec4(FragPos, 1.0);"
-		"FragPosLightSpace = u_lightSpace_matrix * eye_coordinates;" \
-		"}" \
-		"gl_Position = u_projection_matrix*u_view_matrix*u_model_matrix*vPosition;" \
-		"out_texture0_coord = vTexture0_Coord;" \
+		//	"FragPosLightSpace = u_lightSpace_matrix * vec4(FragPos, 1.0);"
+		"FragPosLightSpace = u_lightSpace_matrix * eye_coordinates;"
+		"}"
+		"gl_Position = u_projection_matrix*u_view_matrix*u_model_matrix*vPosition;"
+		"out_texture0_coord = vTexture0_Coord;"
 		"}";
 
 	glShaderSource(g_Scene3_CityModelShader.gVertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
@@ -1493,103 +1483,97 @@ void Scene3_initializeCityModelWithShadow(void)
 	g_Scene3_CityModelShader.gFragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
 
 	const GLchar *fragmentShaderSourceCode =
-		"#version 450" \
-		"\n" \
-		"in vec3 transformed_normals;" \
-		//"in vec3 light_direction;"
-		"in vec3 viewer_vector;" \
-		"in vec4 eye_coordinates;" \
-		"in vec2 out_texture0_coord;" \
-		"out vec4 FragColor;" \
-		"uniform vec3 u_La;" \
-		"uniform vec3 u_Ld;" \
-		"uniform vec3 u_Ls;" \
-		"uniform vec3 u_Ka;" \
-		"uniform vec3 u_Kd;" \
-		"uniform vec3 u_Ks;" \
-		"uniform float u_material_shininess;" \
-		"uniform int u_lighting_enabled;" \
-		"uniform vec3 u_light_position;"\
-		"uniform float u_alpha;" \
-		"uniform sampler2D u_texture0_sampler;"\
-		"uniform int u_is_texture;" \
-		"vec4 Final_Texture;" \
-		"vec4 Temp_Output;" \
-		//Shadow
-		"in vec4 FragPosLightSpace;" \
-		"uniform sampler2D shadowMap;" \
+		"#version 450"
+		"\n"
+		"in vec3 transformed_normals;" //"in vec3 light_direction;"
+		"in vec3 viewer_vector;"
+		"in vec4 eye_coordinates;"
+		"in vec2 out_texture0_coord;"
+		"out vec4 FragColor;"
+		"uniform vec3 u_La;"
+		"uniform vec3 u_Ld;"
+		"uniform vec3 u_Ls;"
+		"uniform vec3 u_Ka;"
+		"uniform vec3 u_Kd;"
+		"uniform vec3 u_Ks;"
+		"uniform float u_material_shininess;"
+		"uniform int u_lighting_enabled;"
+		"uniform vec3 u_light_position;"
+		"uniform float u_alpha;"
+		"uniform sampler2D u_texture0_sampler;"
+		"uniform int u_is_texture;"
+		"vec4 Final_Texture;"
+		"vec4 Temp_Output;" //Shadow
+		"in vec4 FragPosLightSpace;"
+		"uniform sampler2D shadowMap;"
 
-		"float ShadowCalculation(vec4 fragPosLightSpace, vec3 light_direction)" \
-		"{" \
-		//Perpective Divide
-		"vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;" \
-		//transform it into [0,1] range
-		"projCoords = projCoords * 0.5 + 0.5;" \
-		//calculate closest depth from light perspective using projCoords as coordinates
-		"float closestDepth = texture(shadowMap, projCoords.xy).r;"\
-		"float currentDepth = projCoords.z;" \
-		"vec3 normalized_transformed_normals = normalize(transformed_normals);" \
+		"float ShadowCalculation(vec4 fragPosLightSpace, vec3 light_direction)"
+		"{"																 //Perpective Divide
+		"vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;" //transform it into [0,1] range
+		"projCoords = projCoords * 0.5 + 0.5;"							 //calculate closest depth from light perspective using projCoords as coordinates
+		"float closestDepth = texture(shadowMap, projCoords.xy).r;"
+		"float currentDepth = projCoords.z;"
+		"vec3 normalized_transformed_normals = normalize(transformed_normals);"
 
-		"vec3 normalized_light_direction = normalize(light_direction);" \
+		"vec3 normalized_light_direction = normalize(light_direction);"
 
-		"float bias = max(0.05 * (1.0 - dot(normalized_transformed_normals, normalized_light_direction)), 0.05);" \
-		"float shadow = 0.0;" \
-		"vec2 texelSize = 1.0 / textureSize(shadowMap, 0);" \
-		"for(int x = -1; x <= 1; ++x)" \
-		"{" \
-		"for(int y = -1; y <= 1; ++y)" \
-		"{" \
-		"float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;" \
-		"shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;" \
-		"}" \
-		"}" \
-		"shadow /= 9.0;" \
-		"if(projCoords.z > 1.0)" \
-		"shadow = 0.0;" \
-		"return shadow;"\
-		"}" \
+		"float bias = max(0.05 * (1.0 - dot(normalized_transformed_normals, normalized_light_direction)), 0.05);"
+		"float shadow = 0.0;"
+		"vec2 texelSize = 1.0 / textureSize(shadowMap, 0);"
+		"for(int x = -1; x <= 1; ++x)"
+		"{"
+		"for(int y = -1; y <= 1; ++y)"
+		"{"
+		"float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;"
+		"shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;"
+		"}"
+		"}"
+		"shadow /= 9.0;"
+		"if(projCoords.z > 1.0)"
+		"shadow = 0.0;"
+		"return shadow;"
+		"}"
 
-
-		"void main(void)" \
-		"{" \
-		"vec3 phong_ads_color;" \
-		"if(u_lighting_enabled == 1)" \
-		"{" \
-		"vec3 normalized_transformed_normals = normalize(transformed_normals);" \
-		"vec3 temp_light_position = u_light_position;" \
-		"for(int i = 0; i < 2; i++)" \
-		"{" \
-		"vec3 light_direction = temp_light_position-eye_coordinates.xyz;"\
-		"temp_light_position[2] -= 400;" \
-		"temp_light_position[1] = 200;" \
-		"vec3 normalized_light_direction = normalize(light_direction);" \
-		"vec3 normalized_viewer_vector = normalize(viewer_vector);" \
-		"vec3 ambient = u_La * u_Ka;" \
-		"float tn_dot_ld = max(dot(normalized_transformed_normals,normalized_light_direction),0.0);" \
-		"vec3 diffuse = u_Ld * u_Kd * tn_dot_ld;" \
-		"vec3 reflection_vector = reflect(-normalized_light_direction,normalized_transformed_normals);" \
-		"vec3 specular = u_Ls * u_Ks * pow(max(dot(reflection_vector,normalized_viewer_vector),0.0),u_material_shininess);" \
+		"void main(void)"
+		"{"
+		"vec3 phong_ads_color;"
+		"if(u_lighting_enabled == 1)"
+		"{"
+		"vec3 normalized_transformed_normals = normalize(transformed_normals);"
+		"vec3 temp_light_position = u_light_position;"
+		"for(int i = 0; i < 2; i++)"
+		"{"
+		"vec3 light_direction = temp_light_position-eye_coordinates.xyz;"
+		"temp_light_position[2] -= 400;"
+		"temp_light_position[1] = 200;"
+		"vec3 normalized_light_direction = normalize(light_direction);"
+		"vec3 normalized_viewer_vector = normalize(viewer_vector);"
+		"vec3 ambient = u_La * u_Ka;"
+		"float tn_dot_ld = max(dot(normalized_transformed_normals,normalized_light_direction),0.0);"
+		"vec3 diffuse = u_Ld * u_Kd * tn_dot_ld;"
+		"vec3 reflection_vector = reflect(-normalized_light_direction,normalized_transformed_normals);"
+		"vec3 specular = u_Ls * u_Ks * pow(max(dot(reflection_vector,normalized_viewer_vector),0.0),u_material_shininess);"
 
 		//Shadow
-		"float shadow = ShadowCalculation(FragPosLightSpace, light_direction);" \
+		"float shadow = ShadowCalculation(FragPosLightSpace, light_direction);"
 
-		"phong_ads_color += ambient +  (1.0 - shadow) * (diffuse + specular);" \
-		"}" \
-		"}" \
-		"else" \
-		"{" \
-		"phong_ads_color = vec3(1.0f,1.0f,1.0f);" \
-		"}" \
-		"if(u_is_texture == 1)" \
-		"{" \
-		"Final_Texture = texture(u_texture0_sampler,out_texture0_coord);" \
-		"Temp_Output = vec4(phong_ads_color,u_alpha) * Final_Texture;" \
-		"FragColor = Temp_Output;" \
-		"}" \
-		"else" \
-		"{" \
-		"FragColor = vec4(phong_ads_color,u_alpha);" \
-		"}" \
+		"phong_ads_color += ambient +  (1.0 - shadow) * (diffuse + specular);"
+		"}"
+		"}"
+		"else"
+		"{"
+		"phong_ads_color = vec3(1.0f,1.0f,1.0f);"
+		"}"
+		"if(u_is_texture == 1)"
+		"{"
+		"Final_Texture = texture(u_texture0_sampler,out_texture0_coord);"
+		"Temp_Output = vec4(phong_ads_color,u_alpha) * Final_Texture;"
+		"FragColor = Temp_Output;"
+		"}"
+		"else"
+		"{"
+		"FragColor = vec4(phong_ads_color,u_alpha);"
+		"}"
 		"}";
 
 	glShaderSource(g_Scene3_CityModelShader.gFragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
@@ -1602,7 +1586,7 @@ void Scene3_initializeCityModelWithShadow(void)
 		glGetShaderiv(g_Scene3_CityModelShader.gFragmentShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
 		if (iInfoLogLength > 0)
 		{
-			szInfoLog = (char*)malloc(iInfoLogLength);
+			szInfoLog = (char *)malloc(iInfoLogLength);
 			if (szInfoLog != NULL)
 			{
 				GLsizei written;
@@ -1687,7 +1671,6 @@ void Scene3_initializeCityModelWithShadow(void)
 
 	g_Scene3_CityModel_TextureActiveUniform = glGetUniformLocation(g_Scene3_CityModelShader.gShaderProgramObject, "u_is_texture");
 
-
 	//VAO
 	glGenVertexArrays(1, &g_Scene3_CityModel.Vao);
 	glBindVertexArray(g_Scene3_CityModel.Vao);
@@ -1716,7 +1699,6 @@ void Scene3_initializeCityModelWithShadow(void)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
-
 }
 
 void Uninitialize_Scene3(void);
@@ -1728,9 +1710,9 @@ void Uninitialize_BenchShader(void);
 void Uninitialize_InstanceShader(void);
 void Uninitialize_PalmTreeShader(void);
 
-
 void Uninitialize_Scene3()
 {
+	void Scene3_Ocean_UnInitialize(void);
 	if (speedometer != NULL)
 	{
 		delete speedometer;
@@ -1764,6 +1746,8 @@ void Uninitialize_Scene3()
 	Uninitialize_SkyBoxShader();
 
 	Uninitialize_CityModelShader();
+
+	Scene3_Ocean_UnInitialize();
 }
 
 void Uninitialize_CityLightShader(void)
@@ -1804,6 +1788,11 @@ void Uninitialize_InstanceShader(void)
 	//Stray call to glUseProgram(0)
 	glUseProgram(0);
 }
+
+void Uninitialize_PalmTreeShader(void)
+{
+}
+
 void Uninitialize_CityModelShader(void)
 {
 	if (g_Scene3_CityModel.Vao)
@@ -1856,7 +1845,6 @@ void Uninitialize_GrassShader()
 
 	//Stray call to glUseProgram(0)
 	glUseProgram(0);
-
 }
 
 void Uninitialize_SkyBoxShader(void)
@@ -1889,13 +1877,16 @@ void Uninitialize_SkyBoxShader(void)
 void Scene3_Update()
 {
 	void updateCamera(void);
+	void Scene3_Ocean_Update(void);
+
 	if (speedometer != NULL)
 	{
 		speedometer->update();
 	}
 	updateCamera();
-}
 
+	Scene3_Ocean_Update();
+}
 
 //Camera Update Function
 
@@ -1912,6 +1903,7 @@ void updateCamera(void)
 			gCameraNumber++;
 		}
 	}
+	//Comment all below this for camera facing ocean Start
 	else if (gCameraNumber == 2)
 	{
 		if (gbIsCameraSet == false)
@@ -2023,9 +2015,9 @@ void updateCamera(void)
 			gCameraNumber++;
 		}
 	}
+	//Comment all above this for camera facing ocean End
 	giCameraMoves++;
 }
-
 
 void Draw_Scene3(void);
 void DrawSkyBox(void);
@@ -2035,10 +2027,9 @@ void DrawGrassInstancing(void);
 void DrawInstancingShader(void);
 void updateCamera(void);
 
-
-
 void Draw_Scene3(void)
 {
+	void Scene3_Ocean_Display(void);
 	DrawSkyBox();
 
 	DrawCityModel();
@@ -2053,6 +2044,7 @@ void Draw_Scene3(void)
 		speedometer->display();
 	}
 
+	Scene3_Ocean_Display();
 }
 
 void Scene3_resize(int width, int height)
@@ -2061,14 +2053,12 @@ void Scene3_resize(int width, int height)
 	{
 		speedometer->resize(width, height);
 	}
-
 }
 
 void DrawSkyBox()
 {
 	glm::mat4 modelMatrix = glm::mat4();
 	glm::mat4 viewMatrix = glm::mat4();
-
 
 	glUseProgram(g_Scene3_SkyBoxShader.gShaderProgramObject);
 	glDisable(GL_DEPTH_TEST);
@@ -2124,7 +2114,6 @@ void DrawCityModel(void)
 
 	modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-
 	viewMatrix = Scene3_camera.GetViewMatrix();
 
 	glUniformMatrix4fv(g_Scene3_CityModel_ModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
@@ -2142,7 +2131,7 @@ void DrawCityModel(void)
 
 void DrawCityModelWithShadowMap(void)
 {
-	void RenderCity(GLuint &NewModel);
+	void RenderCity(GLuint & NewModel);
 	//Render Depth Map
 
 	glm::vec3 lightPos(LIGHT_X_TRANSLATE, LIGHT_Y_TRANSLATE, LIGHT_Z_TRANSLATE);
@@ -2204,7 +2193,6 @@ void DrawCityModelWithShadowMap(void)
 		glUniform3fv(g_Scene3_CityModel_KsUniform, 1, g_Scene3_materialSpecular);
 		glUniform1f(g_Scene3_CityModel_MaterialShininessUniform, g_Scene3_materialShininess);
 		glUniformMatrix4fv(g_Scene3_CityModel_LightSpaceMatrixUniform, 1, GL_FALSE, &lightSpaceMatrix[0][0]);
-
 	}
 	else
 	{
@@ -2234,8 +2222,6 @@ void RenderCity(GLuint &NewModel)
 	modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	glUniformMatrix4fv(NewModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-
 
 	glBindVertexArray(g_Scene3_CityModel.Vao);
 	//glDrawArrays(GL_TRIANGLES, 0, g_Scene3_CityModel.gv_vertices.size());
@@ -2288,7 +2274,6 @@ void DrawGrassInstancing(void)
 
 	glBindVertexArray(0);
 
-
 	modelMatrix = glm::mat4();
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(GRASS_X_TRANSLATE1, GRASS_Y_TRANSLATE1, GRASS_Z_TRANSLATE1));
 
@@ -2305,7 +2290,6 @@ void DrawGrassInstancing(void)
 	glBindVertexArray(0);
 
 	glUseProgram(0);
-
 }
 
 void DrawInstancingShader()
@@ -2359,7 +2343,7 @@ void DrawInstancingShader()
 	modelMatrix = glm::mat4();
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(2.4f, -1.3f, -270.0f));
 
-//	modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 0.5f, 1.0f));
+	//	modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 0.5f, 1.0f));
 
 	glUniformMatrix4fv(g_Scene3_Instance_ModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
@@ -2375,7 +2359,6 @@ void DrawInstancingShader()
 	glDrawArraysInstanced(GL_TRIANGLES, 0, g_Scene3_CityLightModel.gv_vertices.size(), 6);
 	glBindVertexArray(0);
 
-
 	modelMatrix = glm::mat4();
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(-200.0f, -1.0f, -700.0f));
 
@@ -2387,7 +2370,6 @@ void DrawInstancingShader()
 	glBindVertexArray(g_Scene3_BenchModel.Vao);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, g_Scene3_BenchModel.gv_vertices.size(), g_Bench_InstanceCount);
 	glBindVertexArray(0);
-
 
 	modelMatrix = glm::mat4();
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(-190.0f, -1.0f, -680.0f));
@@ -2401,8 +2383,6 @@ void DrawInstancingShader()
 	glDrawArraysInstanced(GL_TRIANGLES, 0, g_Scene3_PalmTreeModel.gv_vertices.size(), g_PalmTree_InstanceCount);
 	glBindVertexArray(0);
 	glUseProgram(0);
-
-
 }
 
 //**************************SHADOW MAPPING*******************
@@ -2419,14 +2399,14 @@ void Scene3_initializeDepthShader(void)
 	g_Scene3_DepthShader.gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
 
 	const GLchar *vertextShaderSourceCodeSimpleDepthShader =
-		"#version 450" \
-		"\n" \
-		"layout (location = 0) in vec3 vPosition;" \
-		"uniform mat4 lightSpaceMatrix;" \
-		"uniform mat4 model;" \
-		"void main()" \
-		"{" \
-		"gl_Position = lightSpaceMatrix * model * vec4(vPosition, 1.0);" \
+		"#version 450"
+		"\n"
+		"layout (location = 0) in vec3 vPosition;"
+		"uniform mat4 lightSpaceMatrix;"
+		"uniform mat4 model;"
+		"void main()"
+		"{"
+		"gl_Position = lightSpaceMatrix * model * vec4(vPosition, 1.0);"
 		"}";
 
 	glShaderSource(g_Scene3_DepthShader.gVertexShaderObject, 1, (const GLchar **)&vertextShaderSourceCodeSimpleDepthShader, NULL);
@@ -2465,10 +2445,10 @@ void Scene3_initializeDepthShader(void)
 	g_Scene3_DepthShader.gFragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
 
 	const GLchar *fragmentShaderSourceCodeSimpleDepthShader =
-		"#version 450" \
-		"\n" \
-		"void main(void)" \
-		"{" \
+		"#version 450"
+		"\n"
+		"void main(void)"
+		"{"
 		"}";
 
 	glShaderSource(g_Scene3_DepthShader.gFragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCodeSimpleDepthShader, NULL);
@@ -2486,7 +2466,7 @@ void Scene3_initializeDepthShader(void)
 			{
 				GLsizei written;
 				glGetShaderInfoLog(g_Scene3_DepthShader.gFragmentShaderObject, iInfoLogLength, &written, szInfoLog);
-			/*	fopen_s(&gpFile, "Log.txt", "a+");
+				/*	fopen_s(&gpFile, "Log.txt", "a+");
 				fprintf(gpFile, "Fragment Shader SimpleDepthShader Compilation Log : %s\n", szInfoLog);
 				fclose(gpFile);*/
 				logError("Fragment Shader SimpleDepthShader Compilation Log : %s\n", szInfoLog);
@@ -2512,7 +2492,7 @@ void Scene3_initializeDepthShader(void)
 	if (iShaderProgramLinkStatus == GL_FALSE)
 	{
 		glGetProgramiv(g_Scene3_DepthShader.gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
-		if (iInfoLogLength>0)
+		if (iInfoLogLength > 0)
 		{
 			szInfoLog = (char *)malloc(iInfoLogLength);
 			if (szInfoLog != NULL)
@@ -2533,7 +2513,6 @@ void Scene3_initializeDepthShader(void)
 	/*fopen_s(&gpFile, "Log.txt", "a+");
 	fprintf(gpFile, "End of SimpleDepthShaderBuildNCompileShader \n ");
 	fclose(gpFile);*/
-
 }
 
 void Scene3_GenerateDepthMap(void)
@@ -2541,7 +2520,6 @@ void Scene3_GenerateDepthMap(void)
 	/*fopen_s(&gpFile, "Log.txt", "a+");
 	fprintf(gpFile, "In GenerateDepthMap..\n");
 	fclose(gpFile);*/
-
 
 	//Create a framebuffer object for rendering depth map
 	glGenFramebuffers(1, &g_Scene3_CityModel_DepthMapFBO);
@@ -2558,7 +2536,7 @@ void Scene3_GenerateDepthMap(void)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	float borderColor[] = {1.0, 1.0, 1.0, 1.0};
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 	// attach depth texture as FBO's depth buffer
@@ -2569,3 +2547,400 @@ void Scene3_GenerateDepthMap(void)
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
+/******* Low Poly Ocean Start *******/
+
+void Scene3_Ocean_Initialize(void)
+{
+	void Scene3_Ocean_UnInitialize(void);
+
+	// Shader Information End
+	// Sam :  All Shaders Code Start
+
+	//***** Vertex Shader *****
+	//Create Shader
+	g_Scene3_Ocean_VertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
+
+	// give source code to shader
+	const GLchar *vertexShaderSourceCode = "#version 460 core"
+										   "\n"
+										   "in vec2 vPosition;"
+										   "uniform float u_time;"
+										   "const float PI = 3.1415926535897932384626433832795;"
+										   "const float amplitude = 0.04f;"
+										   "float GenerateHeight()"
+										   "{"
+										   "	float component1 = sin(2.0f * PI * u_time + ( 16.0f *vPosition.x) )  * amplitude;"
+										   "	float component2 = cos(2.0f * PI * u_time + ( 8.0f * vPosition.x * vPosition.y) ) * amplitude;"
+										   "	return (component1 + component2);"
+										   "}"
+										   "void main (void)"
+										   "{"
+										   "	float height = GenerateHeight();"
+										   "	gl_Position =  vec4(vPosition.x,height,vPosition.y,1.0f);"
+										   "}";
+	glShaderSource(g_Scene3_Ocean_VertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
+	// (u_projection_matrix * u_view_matrix * u_model_matrix) *
+	// Compile Source Code
+	glCompileShader(g_Scene3_Ocean_VertexShaderObject);
+	GLint iInfoLogLength = 0;
+	GLint iShaderCompileStatus = 0;
+	char *szInfoLog = NULL;
+	glGetShaderiv(g_Scene3_Ocean_VertexShaderObject, GL_COMPILE_STATUS, &iShaderCompileStatus);
+	if (iShaderCompileStatus == GL_FALSE)
+	{
+		glGetShaderiv(g_Scene3_Ocean_VertexShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		if (iInfoLogLength > 0)
+		{
+			szInfoLog = (char *)malloc(iInfoLogLength);
+			if (szInfoLog != NULL)
+			{
+				GLsizei written;
+				glGetShaderInfoLog(g_Scene3_Ocean_VertexShaderObject, GL_INFO_LOG_LENGTH, &written, szInfoLog);
+				//fprintf_s(gp_File, "Error : Vertex Shader Compilation Log : %s \n", szInfoLog);
+				free(szInfoLog);
+				Scene3_Ocean_UnInitialize();
+				exit(EXIT_FAILURE);
+			}
+		}
+	}
+
+	//***** Geometry Shader *****
+	//Create Shader
+	g_Scene3_Ocean_GeometryShaderObject = glCreateShader(GL_GEOMETRY_SHADER);
+
+	// give source code to shader
+	const GLchar *geometryShaderSourceCode =
+		"#version 460 core"
+		"\n"
+		"layout(triangles) in;"
+		"layout(triangle_strip,max_vertices=3) out;"
+		"out vec3 finalColor;"
+
+		"uniform mat4 u_model_matrix;"
+		"uniform mat4 u_view_matrix;"
+		"uniform mat4 u_projection_matrix;"
+		"uniform vec3 u_Camera_Position ;"
+
+		"const vec3 LightDirection= vec3(0.4f,-1.0f,0.8f);"
+		"const vec3 normalizedLightDirection = normalize( LightDirection ) ;"
+		"const vec3 waterColor = vec3(0.2f,0.4f,0.45f);"
+		"const vec3 lightColor = vec3(1.0f,0.6f,0.6f);"
+		"const float reflection = 0.5f;"
+		"const float shininess = 14.0f;"
+		"const float ambientLight = 0.3f;"
+
+		"const float PI = 3.1415926535897932384626433832795;"
+
+		"vec3 CalculateTriangleNormal()"
+		"{"
+		"	vec3 v3Tangent = gl_in[1].gl_Position.xyz - gl_in[0].gl_Position.xyz;"
+		"	vec3 v3BiTangent = gl_in[2].gl_Position.xyz - gl_in[0].gl_Position.xyz;"
+		"	vec3 v3Normal = cross(v3Tangent,v3BiTangent);"
+		"	return normalize(v3Normal) ;"
+		"}"
+
+		"vec3 CalculateSpecular(vec4 v4WorldPosition,vec3 v3Normal)"
+		"{"
+		"	vec3 ViewerVector = normalize(u_Camera_Position - v4WorldPosition.xyz);"
+		"	vec3 ReflectedLightDirection = reflect(normalizedLightDirection,v3Normal);"
+		"	float specularFactor = dot(ReflectedLightDirection,ViewerVector);"
+		"	specularFactor = max(pow(specularFactor,shininess),0.0f);"
+		"	return (lightColor * specularFactor * reflection);"
+		"}"
+
+		"void main (void)"
+		"{"
+		"	vec3 normal = CalculateTriangleNormal();"
+		"	float fBrightness = max(dot(-normalizedLightDirection,normal),ambientLight); "
+		"	vec3 color = waterColor * fBrightness;"
+
+		"	vec4 worldPosition = gl_in[0].gl_Position;"
+		"	gl_Position = u_projection_matrix * u_view_matrix * u_model_matrix * worldPosition;"
+		"	finalColor = color + CalculateSpecular(worldPosition,normal);"
+		"	EmitVertex();"
+
+		"	worldPosition = gl_in[1].gl_Position;"
+		"	gl_Position = u_projection_matrix * u_view_matrix * u_model_matrix * worldPosition;"
+		"	finalColor = color + CalculateSpecular(worldPosition,normal);"
+		"	EmitVertex();"
+
+		"	worldPosition = gl_in[2].gl_Position;"
+		"	gl_Position = u_projection_matrix * u_view_matrix * u_model_matrix * worldPosition;"
+		"	finalColor = color + CalculateSpecular(worldPosition,normal);"
+		"	EmitVertex();"
+
+		"	EndPrimitive();"
+		"}";
+	glShaderSource(g_Scene3_Ocean_GeometryShaderObject, 1, (const GLchar **)&geometryShaderSourceCode, NULL);
+
+	// Compile Source Code
+	glCompileShader(g_Scene3_Ocean_GeometryShaderObject);
+	iInfoLogLength = 0;
+	iShaderCompileStatus = 0;
+	szInfoLog = NULL;
+	glGetShaderiv(g_Scene3_Ocean_GeometryShaderObject, GL_COMPILE_STATUS, &iShaderCompileStatus);
+	if (iShaderCompileStatus == GL_FALSE)
+	{
+		glGetShaderiv(g_Scene3_Ocean_GeometryShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		if (iInfoLogLength > 0)
+		{
+			szInfoLog = (char *)malloc(iInfoLogLength);
+			if (szInfoLog != NULL)
+			{
+				GLsizei written;
+				glGetShaderInfoLog(g_Scene3_Ocean_GeometryShaderObject, GL_INFO_LOG_LENGTH, &written, szInfoLog);
+				//fprintf_s(gp_File, "Error : Geometry Shader Compilation Log : %s \n", szInfoLog);
+				free(szInfoLog);
+				Scene3_Ocean_UnInitialize();
+				exit(EXIT_FAILURE);
+			}
+		}
+	}
+
+	//***** Fragment Shader *****
+	g_Scene3_Ocean_FragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
+
+	const GLchar *fragmentShaderSourceCode = "#version 460 core"
+											 "\n"
+											 "out vec4 FragColor;"
+											 "in vec3 finalColor;"
+											 "void main (void)"
+											 "{"
+											 "	FragColor = vec4(finalColor,1.0f);"
+											 "}";
+	glShaderSource(g_Scene3_Ocean_FragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
+	// 0.2f,0.4f,0.45f
+	// Compile Source Code
+	glCompileShader(g_Scene3_Ocean_FragmentShaderObject);
+	iInfoLogLength = 0;
+	iShaderCompileStatus = 0;
+	szInfoLog = NULL;
+	glGetShaderiv(g_Scene3_Ocean_FragmentShaderObject, GL_COMPILE_STATUS, &iShaderCompileStatus);
+	if (iShaderCompileStatus == GL_FALSE)
+	{
+		glGetShaderiv(g_Scene3_Ocean_FragmentShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		if (iInfoLogLength > 0)
+		{
+			szInfoLog = (char *)malloc(iInfoLogLength);
+			if (szInfoLog != NULL)
+			{
+				GLsizei written;
+				glGetShaderInfoLog(g_Scene3_Ocean_FragmentShaderObject, GL_INFO_LOG_LENGTH, &written, szInfoLog);
+				//fprintf_s(gp_File, "Error : Fragment Shader Compilation Log : %s \n", szInfoLog);
+				free(szInfoLog);
+				Scene3_Ocean_UnInitialize();
+				exit(EXIT_FAILURE);
+			}
+		}
+	}
+
+	//***** Shader Program *****
+	// Create
+	g_Scene3_Ocean_ShaderProgramObject = glCreateProgram();
+	// Attach Vertex Shader
+	glAttachShader(g_Scene3_Ocean_ShaderProgramObject, g_Scene3_Ocean_VertexShaderObject);
+	// Attach Fragment Shader
+	glAttachShader(g_Scene3_Ocean_ShaderProgramObject, g_Scene3_Ocean_GeometryShaderObject);
+	// Attach Fragment Shader
+	glAttachShader(g_Scene3_Ocean_ShaderProgramObject, g_Scene3_Ocean_FragmentShaderObject);
+	// pre-link Program object with Vertex Sahder position attribute
+	glBindAttribLocation(g_Scene3_Ocean_ShaderProgramObject, HAD_ATTRIBUTE_POSITION, "vPosition");
+	// link Shader
+	glLinkProgram(g_Scene3_Ocean_ShaderProgramObject);
+
+	GLint iShaderProgramLinkStatus = 0;
+	glGetProgramiv(g_Scene3_Ocean_ShaderProgramObject, GL_LINK_STATUS, &iShaderProgramLinkStatus);
+	szInfoLog = NULL;
+	iInfoLogLength = 0;
+	if (iShaderProgramLinkStatus == GL_FALSE)
+	{
+		glGetProgramiv(g_Scene3_Ocean_ShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		if (iInfoLogLength > 0)
+		{
+			szInfoLog = (char *)malloc(iInfoLogLength);
+			if (szInfoLog != NULL)
+			{
+				GLsizei written = 0;
+				glGetShaderInfoLog(g_Scene3_Ocean_ShaderProgramObject, GL_INFO_LOG_LENGTH, &written, szInfoLog);
+				//fprintf_s(gp_File, "Error : Shader Program Link Log : %s \n", szInfoLog);
+				free(szInfoLog);
+				Scene3_Ocean_UnInitialize();
+				exit(EXIT_FAILURE);
+			}
+		}
+	}
+
+	g_Scene3_Ocean_Uniform_ModelMatrix = glGetUniformLocation(g_Scene3_Ocean_ShaderProgramObject, "u_model_matrix");
+	g_Scene3_Ocean_Uniform_ViewMatrix = glGetUniformLocation(g_Scene3_Ocean_ShaderProgramObject, "u_view_matrix");
+	g_Scene3_Ocean_Uniform_ProjectionMatrix = glGetUniformLocation(g_Scene3_Ocean_ShaderProgramObject, "u_projection_matrix");
+	g_Scene3_Ocean_Uniform_Time = glGetUniformLocation(g_Scene3_Ocean_ShaderProgramObject, "u_time");
+	g_Scene3_Ocean_Uniform_Camera_Position = glGetUniformLocation(g_Scene3_Ocean_ShaderProgramObject, "u_Camera_Position");
+	// **** Verttices, Colors, Shader Attribs, Vbo, Vao Initializations ****
+
+	int iIndex = 0;
+	for (int i = 0; i < VERTEX_COUNT; i++)
+	{
+		for (int j = 0; j < VERTEX_COUNT; j++)
+		{
+			g_Scene3_Ocean_MeshVertices[iIndex++] = j * OCEAN_SIZE;
+			g_Scene3_Ocean_MeshVertices[iIndex++] = -i * OCEAN_SIZE;
+		}
+	}
+
+	iIndex = 0;
+	int iFaceCount = 0;
+
+	for (int i = 0, j = 0; j < (6 * (VERTEX_COUNT - 1) * (VERTEX_COUNT - 1)); i++, j += 6)
+	{
+		int topRight = VERTEX_COUNT + i + 1;
+		int bottomleft = i;
+		int bottomRight = i + 1;
+		int topLeft = VERTEX_COUNT + i;
+
+		g_Scene3_Ocean_shIndices[j] = topRight;
+		g_Scene3_Ocean_shIndices[j + 1] = bottomleft;
+		g_Scene3_Ocean_shIndices[j + 2] = bottomRight;
+
+		g_Scene3_Ocean_shIndices[j + 3] = topRight;
+		g_Scene3_Ocean_shIndices[j + 4] = topLeft;
+		g_Scene3_Ocean_shIndices[j + 5] = bottomleft;
+
+		iFaceCount += 2;
+		if ((iFaceCount / ((VERTEX_COUNT - 1) * 2)) == 1)
+		{
+			i += 1;
+			iFaceCount = 0;
+		}
+	}
+
+	// vao creation and binding
+	glGenVertexArrays(1, &g_Scene3_Ocean_VertexArrayObject);
+	glBindVertexArray(g_Scene3_Ocean_VertexArrayObject);
+
+	//vbo creation and binding
+	glGenBuffers(1, &g_Scene3_Ocean_VertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, g_Scene3_Ocean_VertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, ARRAYSIZE(g_Scene3_Ocean_MeshVertices), g_Scene3_Ocean_MeshVertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(HAD_ATTRIBUTE_POSITION, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(HAD_ATTRIBUTE_POSITION);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glGenBuffers(1, &g_Scene3_Ocean_VertexBufferObject_Indices);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_Scene3_Ocean_VertexBufferObject_Indices);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (sizeof(GLuint)) * (6 * (VERTEX_COUNT - 1) * (VERTEX_COUNT - 1)), g_Scene3_Ocean_shIndices, GL_STATIC_DRAW);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, ARRAYSIZE(g_Scene3_Ocean_shIndices), g_Scene3_Ocean_shIndices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
+
+	glBindVertexArray(0);
+
+	// Sam :  All Shaders Code End
+
+	g_Scene3_Ocean_PerspectiveProjectionMatrix = glm::mat4(1.0f);
+}
+
+GLfloat gfTranslate_X = 0.0f, gfTranslate_Y = 0.0f, gfTranslate_Z = 0.0f;
+void Scene3_Ocean_Display(void)
+{
+
+	glUseProgram(g_Scene3_Ocean_ShaderProgramObject);
+
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	glm::mat4 viewMatrix = glm::mat4(1.0f);
+	glm::mat4 scaleMatrix = glm::mat4(1.0f);
+	glm::mat4 rotationMatrix = glm::mat4(1.0f);
+
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(-280.0f, -4.0f, 136.0f));
+
+	rotationMatrix = glm::rotate(rotationMatrix, glm::radians(0.0f), glm::vec3(-400.0f, -200.0f, 1.0f));
+	scaleMatrix = glm::scale(modelMatrix, glm::vec3(100.0f, 1.0f, 200.0f));
+
+	modelMatrix = modelMatrix * rotationMatrix;
+	modelMatrix = modelMatrix * scaleMatrix;
+	viewMatrix = Scene3_camera.GetViewMatrix();
+
+	glUniformMatrix4fv(g_Scene3_Ocean_Uniform_ModelMatrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+	glUniformMatrix4fv(g_Scene3_Ocean_Uniform_ViewMatrix, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+	glUniformMatrix4fv(g_Scene3_Ocean_Uniform_ProjectionMatrix, 1, GL_FALSE, glm::value_ptr(g_Scene3_Ocean_PerspectiveProjectionMatrix));
+
+	glUniform1f(g_Scene3_Ocean_Uniform_Time, g_Scene3_Ocean_U_Time);
+	glm::vec3 CameraPos = Scene3_camera.GetCameraPostion();
+	glUniform3f(g_Scene3_Ocean_Uniform_Camera_Position, CameraPos.x, CameraPos.y, CameraPos.z);
+
+	glBindVertexArray(g_Scene3_Ocean_VertexArrayObject);
+	glBindBuffer(GL_ARRAY_BUFFER, g_Scene3_Ocean_VertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, _ARRAYSIZE(g_Scene3_Ocean_MeshVertices), g_Scene3_Ocean_MeshVertices, GL_DYNAMIC_DRAW);
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_Scene3_Ocean_VertexBufferObject_Indices); //g_Scene3_Ocean_MeshVertices
+	glDrawElements(GL_TRIANGLES, (6 * (VERTEX_COUNT - 1) * (VERTEX_COUNT - 1)), GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLES, sizeof(GLushort) * (6 * (VERTEX_COUNT - 1)*(VERTEX_COUNT - 1)), GL_UNSIGNED_SHORT, 0);
+	// 58806
+
+	glBindBuffer(GL_ARRAY_BUFFER, NULL);
+	glBindVertexArray(0);
+
+	glUseProgram(0);
+}
+
+void Scene3_Ocean_Update(void)
+{
+	fRotation_Angle = fRotation_Angle + 0.1f;
+
+	if (fRotation_Angle >= 360.0f)
+	{
+		fRotation_Angle = 0.0f;
+	}
+
+	g_Scene3_Ocean_U_Time = g_Scene3_Ocean_U_Time + 0.005f;
+}
+
+void Scene3_Ocean_UnInitialize(void)
+{
+	if (g_Scene3_Ocean_VertexArrayObject)
+	{
+		glDeleteVertexArrays(1, &g_Scene3_Ocean_VertexArrayObject);
+		g_Scene3_Ocean_VertexArrayObject = 0;
+	}
+
+	if (g_Scene3_Ocean_VertexBufferObject)
+	{
+		glDeleteBuffers(1, &g_Scene3_Ocean_VertexBufferObject);
+		g_Scene3_Ocean_VertexBufferObject = 0;
+	}
+
+	glDetachShader(g_Scene3_Ocean_ShaderProgramObject, g_Scene3_Ocean_VertexShaderObject);
+	glDetachShader(g_Scene3_Ocean_ShaderProgramObject, g_Scene3_Ocean_GeometryShaderObject);
+	glDetachShader(g_Scene3_Ocean_ShaderProgramObject, g_Scene3_Ocean_FragmentShaderObject);
+
+	if (g_Scene3_Ocean_VertexShaderObject)
+	{
+		glDeleteShader(g_Scene3_Ocean_VertexShaderObject);
+		g_Scene3_Ocean_VertexShaderObject = 0;
+	}
+
+	if (g_Scene3_Ocean_GeometryShaderObject)
+	{
+		glDeleteShader(g_Scene3_Ocean_GeometryShaderObject);
+		g_Scene3_Ocean_GeometryShaderObject = 0;
+	}
+
+	if (g_Scene3_Ocean_FragmentShaderObject)
+	{
+		glDeleteShader(g_Scene3_Ocean_FragmentShaderObject);
+		g_Scene3_Ocean_FragmentShaderObject = 0;
+	}
+
+	if (g_Scene3_Ocean_ShaderProgramObject)
+	{
+		glDeleteProgram(g_Scene3_Ocean_ShaderProgramObject);
+		g_Scene3_Ocean_ShaderProgramObject = 0;
+	}
+
+	//glUseProgram(0);
+}
+
+/******* Low Poly Ocean End   *******/
