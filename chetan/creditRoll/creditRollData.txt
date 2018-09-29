@@ -1,59 +1,91 @@
-Lorem Ipsum
+References
 -----
-Lorem ipsum dolor sit amet,
-consectetur adipiscing elit
-Maecenas sodales tortor dolor.
-Aliquam velit leo, lacinia quis
-neque eget, accumsan rhoncus risus.
-In lobortis commodo felis eu eleifend.
-Proin auctor sit amet nisl nec dictum.
-Ut sit amet nulla gravida, commodo
-odio ut, tristique dui.
-Pellentesque et tortor et ante porta
-fringilla ac a velit.
+Books
 -----
-Cras efficitur velit et ex bibendum,
-vitae laoreet erat tristique.
-Sed et auctor tellus.
-Curabitur vel diam sed mi convallis
-luctus et et lacus.
-Vestibulum ullamcorper pulvinar lorem.
-Phasellus vel arcu vitae leo dapibus
-finibus eget at felis.
-Etiam arcu felis, finibus vel sapien ac,
-viverra ultrices leo.
-Nunc laoreet nunc justo.
+OpenGL Programming Guide
+-
+Dave Shreiner
+Graham Sellers
+John M Kessenich
 -----
-Duis vel viverra nisl
-Phasellus laoreet sem at odio condimentum,
-vel pretium elit efficitur.
-Donec in augue id lectus accumsan egestas
-in sed odio.
-Fusce vel erat pellentesque,
-mollis odio sed,
-dignissim sem.
-Aliquam varius et leo ac hendrerit.
-Nam convallis tincidunt est,
-quis sodales tortor eleifend id.
-Mauris placerat mauris nec ante varius,
-efficitur interdum est ullamcorper.
-In posuere porttitor mi,
-non tempus risus maximus sed.
-Mauris dapibus ultricies lorem a faucibus.
-Nulla congue quis turpis eu ullamcorper.
+OpenGL Shading Language
+-
+Randi J Rost
+Bill Licea-Kane
 -----
-Donec lacinia tincidunt nisl non dapibus
-In vitae nisi quis nisl faucibus
-tincidunt et non dolor.
-Etiam suscipit imperdiet turpis et pharetra.
-Etiam venenatis aliquet feugiat.
-Integer non efficitur risus.
-Phasellus lorem dui,
-cursus tincidunt aliquam sed,
-bibendum sit amet quam.
-Pellentesque id libero sed sem malesuada
-cursus faucibus at sapien.
-Donec eget feugiat dui,
-quis accumsan massa.
-Pellentesque placerat sollicitudin
-neque eu fermentum.
+Texturing and Modeling
+-
+David S Ebert
+-----
+OpenGL Super Bible
+-
+Graham Sellers
+Richard S Wright,Jr.
+Nocholas Haemel
+-----
+Real Time Rendering
+-
+Tomas Moller
+Naty Hoffman
+Eric Haines
+-----
+Third Party Libraries:
+-
+GLEW
+GLM
+SOIL
+FREETYPE
+OpenAL
+-----
+Soundtracks
+-
+Lamborghini Evolution 2018
+Rains of Castamere (Game of Thrones)
+In the End-Instrumental (Linkin Park)
+Danza Kudur o(Fast and Furious 5)
+-----
+Soundtracks Sources
+-
+http://soundbible.com
+https://www.youtube.com
+-----
+Websites
+-
+https://www.youtube.com/channel/UCUkRj4qoT1bsWpE_C8lZYoQ
+https://learnopengl.com
+http://nehe.gamedev.net
+https://www.freetype.org
+https://github.com/openglsuperbible/sb7code
+-----
+3D Models:
+-
+https://free3d.com/3d-models
+https://www.turbosquid.com
+https://www.blendswap.com
+-----
+Textures
+-
+https://www.textures.com
+https://www.shutterstock.com
+-----
+Modeling Softwares
+-
+Blender
+3DS Max
+Cinema 4d
+-----
+Code Editors
+-
+Microsoft Visual Studio
+Visual Studio Code
+Sublime Text Editor
+-----
+Audio Editing Softwares
+-
+Audacity
+-----
+Special Thanks To
+-
+Radhika Madam for Blender tutorials
+Yogeshwar Sir for Mathematical Guidance.
+RTR group leaders and Participants for all support.

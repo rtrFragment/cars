@@ -34,12 +34,14 @@ void CreditRoll::initialize(void)
 
     loadGLTextures(&texturePreview, MAKEINTRESOURCE(LAST_SCENE_BMP));
     loadGLTextures(&textureNewspaper, MAKEINTRESOURCE(NEWSPAPER_BMP));
+    loadCreditRollTitle();
     loadCreditRoll();
+    loadGroupMembers();
 }
 
 void CreditRoll::initializefontRenderer(void)
 {
-    fontRenderer = new FontRenderer("resources/fonts/ubuntuMono.ttf", 78);
+    fontRenderer = new FontRenderer("resources/fonts/times.ttf", 78);
     FT_Error error = fontRenderer->initialize();
 
     if(error != 0)
@@ -106,6 +108,7 @@ void CreditRoll::initializeFragmentShader()
     const GLchar *fragmentShaderCode = "#version 450 core" \
         "\n" \
         "in vec2 outVertexTextureCoordinate0;" \
+        "uniform float fadeInOutColor;" \
         "\n" \
         "out vec4 fragmentColor;" \
         "\n" \
@@ -113,7 +116,7 @@ void CreditRoll::initializeFragmentShader()
         "\n" \
         "void main(void)" \
         "{" \
-        "   fragmentColor = texture(textureSampler0, outVertexTextureCoordinate0);" \
+        "   fragmentColor = texture(textureSampler0, outVertexTextureCoordinate0) * vec4(fadeInOutColor, fadeInOutColor, fadeInOutColor, fadeInOutColor);" \
         "}";
 
     glShaderSource(fragmentShaderObject, 1, (const char**)&fragmentShaderCode, NULL);
@@ -191,18 +194,16 @@ void CreditRoll::initializeShaderProgram()
     viewMatrixUniform = glGetUniformLocation(shaderProgramObject, "viewMatrix");
     projectionMatrixUniform = glGetUniformLocation(shaderProgramObject, "projectionMatrix");
     textureSamplerUniform = glGetUniformLocation(shaderProgramObject, "textureSampler0");
+    fadeInOutColorUniform = glGetUniformLocation(shaderProgramObject, "fadeInOutColor");
 }
 
 void CreditRoll::initializePreviewRectBuffer()
 {
-    const GLfloat startPoint = creditRollEndPosition + 0.2f;
-    const GLfloat rectHeight = 2.75f;
-
     const GLfloat previewRectVertices[] = {
-        -0.25f, startPoint, 0.0f,
-        -5.75f, startPoint, 0.0f,
-        -5.75f, startPoint - rectHeight, 0.0f,
-        -0.25f, startPoint - rectHeight, 0.0f
+        -0.25f, previewRectStartPoint, 0.0f,
+        -5.75f, previewRectStartPoint, 0.0f,
+        -5.75f, previewRectStartPoint - previewRectHeight, 0.0f,
+        -0.25f, previewRectStartPoint - previewRectHeight, 0.0f
     };
 
     const GLfloat previewRectTextureCoordinates[] = {
@@ -284,36 +285,66 @@ void CreditRoll::initializeBuffers(void)
 
 void CreditRoll::loadCreditRoll()
 {
+    loadTextDataFromFile("creditRollData.txt", glm::vec3(0.0f, 0.0f, -6.0f), creditRollTextData);
+}
+
+void CreditRoll::loadCreditRollTitle()
+{
+    creditRollTitleTextData = generateTextData("REAL TIME RENDERING", glm::vec3(-4.5f, 2.5f, -6.0f));
+    creditRollTitleTextData->scale = 0.01f;
+    fontRenderer->loadCharacters(creditRollTitleTextData);
+
+    creditRollDateTextData = generateTextData("30th September, 2018", glm::vec3(-1.15f, 2.2f, -6.0f));
+    fontRenderer->loadCharacters(creditRollDateTextData);
+}
+
+void CreditRoll::loadGroupMembers()
+{
+    glm::vec3 textPosition = glm::vec3(-5.75f, previewRectStartPoint - previewRectHeight - 0.5f, -6.0f);
+    loadTextDataFromFile("groupMembersColumn1.txt", textPosition, groupMembersTextData);
+
+    textPosition = glm::vec3(-2.75f, previewRectStartPoint - previewRectHeight - 0.5f, -6.0f);
+    loadTextDataFromFile("groupMembersColumn2.txt", textPosition, groupMembersTextData);
+}
+
+void CreditRoll::loadTextDataFromFile(char * fileName, glm::vec3 textPosition, std::vector<TextData *> &textDataList)
+{
     char *data = NULL;
     char *context = NULL;
     char *nextLine = NULL;
     char *sep = "\n";
-    int dataLength = readFile("creditRollData.txt", &data);
+    int dataLength = readFile(fileName, &data);
+    int column = 0;
 
     if(dataLength > 0)
     {
         nextLine = strtok_s(data, sep, &context);
 
-        glm::vec3 textPosition = glm::vec3(0.0f, 0.0f, -6.0f);
-
         if(nextLine != NULL)
         {
-            TextData *nextLineText  = generateTextData(nextLine, textPosition);
-            fontRenderer->loadCharacters(nextLineText);
-            creditRollTextData.push_back(nextLineText);
-            textPosition[1] -= (2.0f * nextLineText->rectSize.height);
+            TextData *nextLineText = NULL;
+
+            if(strlen(nextLine) > 0)
+            {
+                nextLineText = generateTextData(nextLine, textPosition);
+                fontRenderer->loadCharacters(nextLineText);
+                textDataList.push_back(nextLineText);
+                textPosition[1] -= (2.0f * nextLineText->rectSize.height);
+            }
 
             while((nextLine = strtok_s(NULL, "\n", &context)) != NULL)
             {
-                if(strcmp(paragraphSeparator, nextLine) == 0)
+                logInfo("Line: %s\n", nextLine);
+
+                if(strcmp(paragraphSeparator, nextLine) == 0 && strlen(nextLine) > 0)
                 {
                     textPosition[1] -= (2.0f * nextLineText->rectSize.height);
                 }
-                else
+                else if(strlen(nextLine) > 0)
                 {
                     TextData *nextLineText  = generateTextData(nextLine, textPosition);
                     fontRenderer->loadCharacters(nextLineText);
-                    creditRollTextData.push_back(nextLineText);
+                    textDataList.push_back(nextLineText);
                     textPosition[1] -= (2.0f * nextLineText->rectSize.height);
                 }
             }
@@ -336,10 +367,9 @@ TextData* CreditRoll::generateTextData(char *line, glm::vec3 position)
 
     nextLineText->text = (char *)malloc(sizeof(char *) * lineSize);
     strcpy(nextLineText->text, line);
-    logInfo("Line: %s\n", nextLineText->text);
 
     nextLineText->textSize = lineSize;
-    nextLineText->textColor = glm::vec3(0.1f, 0.1f, 0.1f);
+    nextLineText->textColor = glm::vec3(0.0f, 0.0f, 0.0f);
     nextLineText->textPosition = position;
     nextLineText->scale = 0.003f;
 
@@ -348,14 +378,46 @@ TextData* CreditRoll::generateTextData(char *line, glm::vec3 position)
 
 void CreditRoll::update(void)
 {
-    creditRollTranslation[1] += creditRollTranslationFactor;
+    if(fadeInOutColor <= 1.0f && fadeInFlag == false)
+    {
+        fadeIn();
+    }
+    else
+    {
+        fadeInFlag = true;
+        creditRollTranslation[1] += creditRollTranslationFactor;
+
+        TextData *lastCreditTextData = creditRollTextData[creditRollTextData.size() - 1];
+        GLfloat lastCreditTextDataPosition = lastCreditTextData->textPosition[1] + creditRollTranslation[1];
+
+        if((lastCreditTextDataPosition > creditRollEndPosition) && fadeInOutColor >= 0.0f)
+        {
+            fadeOut();
+        }
+    }
+}
+
+void CreditRoll::fadeIn()
+{
+    fadeInOutColor += 0.002f;
+    logInfo("fadeIn fadeInOutColor: %f\n", fadeInOutColor);
+}
+
+void CreditRoll::fadeOut()
+{
+    fadeInOutColor -= 0.002f;
+    previewTextureFadeOutColor -= 0.002f;
+
+    logInfo("previewTextureFadeOutColor %f fadeInOutColor: %f\n", previewTextureFadeOutColor, fadeInOutColor);
 }
 
 void CreditRoll::display(void)
 {
     drawNewspaper();
     drawPreview();
+    drawCreditRollTitle();
     drawCreditRoll();
+    drawGroupMembers();
 }
 
 void CreditRoll::drawPreview()
@@ -370,6 +432,7 @@ void CreditRoll::drawPreview()
     glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
     glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
     glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
+    glUniform1f(fadeInOutColorUniform, previewTextureFadeOutColor);
 
     glBindVertexArray(vaoPreviewRect);
     glActiveTexture(GL_TEXTURE0);
@@ -388,11 +451,12 @@ void CreditRoll::drawNewspaper()
     glm::mat4 viewMatrix = glm::mat4(1.0f);
     glm::mat4 modelMatrix = glm::mat4(1.0f);
 
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, -6.1f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, -6.0f));
 
     glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
     glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
     glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(perspectiveProjectionMatrix));
+    glUniform1f(fadeInOutColorUniform, fadeInOutColor);
 
     glBindVertexArray(vaoNewspaper);
     glActiveTexture(GL_TEXTURE0);
@@ -404,6 +468,18 @@ void CreditRoll::drawNewspaper()
     glUseProgram(0);
 }
 
+void CreditRoll::drawCreditRollTitle()
+{
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+
+    creditRollTitleTextData->textColor[0] *= fadeInOutColor;
+    creditRollTitleTextData->textColor[1] *= fadeInOutColor;
+    creditRollTitleTextData->textColor[2] *= fadeInOutColor;
+    fontRenderer->renderText(creditRollTitleTextData, modelMatrix, viewMatrix, perspectiveProjectionMatrix);
+    fontRenderer->renderText(creditRollDateTextData, modelMatrix, viewMatrix, perspectiveProjectionMatrix);
+}
+
 void CreditRoll::drawCreditRoll()
 {
     glm::mat4 viewMatrix = glm::mat4(1.0f);
@@ -413,12 +489,29 @@ void CreditRoll::drawCreditRoll()
 
     for(int counter = 0; counter < creditRollTextData.size(); ++counter)
     {
-        GLfloat currentPossition = creditRollTextData[counter]->textPosition[1] + creditRollTranslation[1];
+        TextData *nextTextData = creditRollTextData[counter];
+        GLfloat currentPosition = nextTextData->textPosition[1] + creditRollTranslation[1];
 
-        if(currentPossition < creditRollEndPosition)
+        if(currentPosition < creditRollEndPosition)
         {
-            fontRenderer->renderText(creditRollTextData[counter], modelMatrix, viewMatrix, perspectiveProjectionMatrix);
+            fontRenderer->renderText(nextTextData, modelMatrix, viewMatrix, perspectiveProjectionMatrix);
         }
+    }
+}
+
+void CreditRoll::drawGroupMembers()
+{
+    glm::mat4 viewMatrix = glm::mat4(1.0f);
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+
+    for(int counter = 0; counter < groupMembersTextData.size(); ++counter)
+    {
+        TextData *nextTextData = groupMembersTextData[counter];
+        nextTextData->textColor[0] *= fadeInOutColor;
+        nextTextData->textColor[1] *= fadeInOutColor;
+        nextTextData->textColor[2] *= fadeInOutColor;
+
+        fontRenderer->renderText(groupMembersTextData[counter], modelMatrix, viewMatrix, perspectiveProjectionMatrix);
     }
 }
 
@@ -477,8 +570,9 @@ int CreditRoll::readFile(const char* fileName, char **data)
 	fseek(dataFile, 0, SEEK_END);
 	long dataLength = ftell(dataFile);
 	fseek(dataFile, 0, SEEK_SET);
+    logInfo("dataLength %d\n", dataLength);
 	textData = (char *)malloc(sizeof(char *) * (dataLength + 1));
-	memset((void *)textData, 0, sizeof(textData));
+	memset((void *)textData, 0, sizeof(char *) * dataLength);
 
 	if (textData != NULL)
 	{
@@ -495,6 +589,16 @@ int CreditRoll::readFile(const char* fileName, char **data)
 
 void CreditRoll::cleanUp(void)
 {
+    creditRollTitleTextData->vertices.clear();
+    free(creditRollTitleTextData->text);
+    free(creditRollTitleTextData);
+    creditRollTitleTextData = NULL;
+
+    creditRollDateTextData->vertices.clear();
+    free(creditRollDateTextData->text);
+    free(creditRollDateTextData);
+    creditRollDateTextData = NULL;
+
     for(int counter = 0; counter < creditRollTextData.size(); ++counter)
     {
         if(creditRollTextData[counter] != NULL)
@@ -507,6 +611,19 @@ void CreditRoll::cleanUp(void)
     }
 
     creditRollTextData.clear();
+
+    for(int counter = 0; counter < groupMembersTextData.size(); ++counter)
+    {
+        if(groupMembersTextData[counter] != NULL)
+        {
+            groupMembersTextData[counter]->vertices.clear();
+            free(groupMembersTextData[counter]->text);
+            free(groupMembersTextData[counter]);
+            groupMembersTextData[counter] = NULL;
+        }
+    }
+
+    groupMembersTextData.clear();
 
     if(fontRenderer != NULL)
     {

@@ -29,9 +29,17 @@ private:
     };
 
     const char* paragraphSeparator = "-----";
-    const float creditRollStartPosition = -3.75f;
-    const float creditRollEndPosition = 2.0f;
-    const float creditRollTranslationFactor = 0.01f;
+    const GLfloat creditRollStartPosition = -3.75f;
+    const GLfloat creditRollEndPosition = 1.9f;
+    const GLfloat creditRollTranslationFactor = 0.01f;
+    const GLfloat previewRectStartPoint = creditRollEndPosition + 0.2f;
+    const GLfloat previewRectHeight = 2.75f;
+
+    GLfloat fadeInOutColor = 0.0f;
+    GLfloat previewTextureFadeOutColor = 1.0f;
+
+    bool fadeInFlag = false;
+    bool fadeOutFlag = false;
 
     GLuint vertexShaderObject = 0;
     GLuint fragmentShaderObject = 0;
@@ -51,13 +59,16 @@ private:
     GLuint modelMatrixUniform = 0;
     GLuint viewMatrixUniform = 0;
     GLuint projectionMatrixUniform = 0;
+    GLuint fadeInOutColorUniform = 0;
 
     glm::mat4 perspectiveProjectionMatrix;
     glm::vec3 creditRollTranslation;
 
     FontRenderer *fontRenderer = NULL;
-    TextData *creditRollTitleTextData;
+    TextData *creditRollTitleTextData = NULL;
+    TextData *creditRollDateTextData = NULL;
     std::vector<TextData *> creditRollTextData;
+    std::vector<TextData *> groupMembersTextData;
 
     void initializefontRenderer(void);
     void initializeVertexShader(void);
@@ -67,10 +78,17 @@ private:
     void initializePreviewRectBuffer(void);
     void initializeNewspapertBuffer();
     void loadCreditRoll();
+    void loadCreditRollTitle();
+    void loadGroupMembers();
+    void loadTextDataFromFile(char * fileName, glm::vec3 textPosition, std::vector<TextData *> &textDataList);
     TextData* generateTextData(char *line, glm::vec3 position);
+    void fadeIn();
+    void fadeOut();
     void drawNewspaper();
     void drawPreview();
+    void drawCreditRollTitle();
     void drawCreditRoll();
+    void drawGroupMembers();
     bool loadGLTextures(GLuint *texture, TCHAR resourceId[]);
     int readFile(const char* fileName, char **data);
     void cleanUp(void);
