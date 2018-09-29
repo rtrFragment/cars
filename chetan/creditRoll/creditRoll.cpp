@@ -278,6 +278,10 @@ void CreditRoll::initializeBuffers(void)
 
 void CreditRoll::loadCreditRoll()
 {
+    creditRollRaceToRise = generateTextData("Race To Rise - Most Wanted", glm::vec3(0.0f, creditRollRaceToRisePositionY, -6.0f));
+    creditRollRaceToRise->scale = 0.005f;
+    fontRenderer->loadCharacters(creditRollRaceToRise);
+
     loadTextDataFromFile("creditRollData.txt", glm::vec3(0.0f, 0.0f, -6.0f), creditRollTextData);
 }
 
@@ -288,7 +292,6 @@ void CreditRoll::loadCreditRollTitle()
     fontRenderer->loadCharacters(creditRollTitleTextData);
 
     creditRollTitleDividerTextData = generateTextData("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", glm::vec3(-6.1f, 2.35f, -6.0f));
-    creditRollTitleTextData->scale = 0.01f;
     fontRenderer->loadCharacters(creditRollTitleDividerTextData);
 
     creditRollDateTextData = generateTextData("30th September, 2018", glm::vec3(-1.15f, 2.2f, -6.0f));
@@ -539,6 +542,8 @@ void CreditRoll::drawCreditRoll()
 
     modelMatrix = glm::translate(modelMatrix, creditRollTranslation);
 
+    fontRenderer->renderText(creditRollRaceToRise, glm::mat4(1.0f), viewMatrix, perspectiveProjectionMatrix);
+
     for(int counter = 0; counter < creditRollTextData.size(); ++counter)
     {
         TextData *nextTextData = creditRollTextData[counter];
@@ -657,6 +662,11 @@ void CreditRoll::cleanUp(void)
     free(creditRollDateTextData->text);
     free(creditRollDateTextData);
     creditRollDateTextData = NULL;
+
+    creditRollRaceToRise->vertices.clear();
+    free(creditRollRaceToRise->text);
+    free(creditRollRaceToRise);
+    creditRollRaceToRise = NULL;
 
     for(int counter = 0; counter < creditRollTextData.size(); ++counter)
     {

@@ -30,9 +30,10 @@ private:
 
     const char* paragraphSeparator = "-----";
     const GLfloat creditRollStartPosition = -3.75f;
-    const GLfloat creditRollEndPosition = 1.9f;
+    const GLfloat creditRollEndPosition = 1.5f;
+    const GLfloat creditRollRaceToRisePositionY = 1.82f;
     const GLfloat creditRollTranslationFactor = 0.01f;
-    const GLfloat previewRectFinalTopY = creditRollEndPosition + 0.2f;
+    const GLfloat previewRectFinalTopY = 1.9f + 0.2f;
     const GLfloat previewRectFinalBottomY = -0.5f;
     const GLfloat previewRectFinalRightX = -0.25;
     const GLfloat previewRectFinalLeftX = -5.75;
@@ -86,6 +87,7 @@ private:
     TextData *creditRollTitleTextData = NULL;
     TextData *creditRollTitleDividerTextData = NULL;
     TextData *creditRollDateTextData = NULL;
+    TextData *creditRollRaceToRise = NULL;
     std::vector<TextData *> creditRollTextData;
     std::vector<TextData *> groupMembersTextData;
 
