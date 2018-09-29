@@ -3,11 +3,21 @@
 #include <gl/glew.h>
 #include <gl/gl.h>
 #include <map>
+#include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
+struct TextDataRectSize
+{
+    // The width of the line.
+    GLfloat width = 0.0f;
+
+    // The height of the line
+    GLfloat height = 0.0f;
+};
 
 struct TextData
 {
@@ -15,7 +25,7 @@ struct TextData
     GLchar *text;
 
     // The number of characters in 'text'.
-    GLsizeiptr textSize;
+    int textSize = 0;
 
     // The position where text will be rendered.
     glm::vec3 textPosition;
@@ -25,6 +35,12 @@ struct TextData
 
     // The scale factor for rendering this text.
     float scale;
+
+    // The vertices of text.
+    std::vector<std::vector<GLfloat>> vertices;
+
+    // The rect size of this text
+    TextDataRectSize rectSize;
 };
 
 class FontRenderer
@@ -35,7 +51,7 @@ public:
 
     FT_Error initialize();
 
-    void loadCharacters(char *charactersToLoad, int numberOfCharacters);
+    void loadCharacters(TextData *textData);
     void renderText(TextData *text, glm::mat4x4 modelMatrix, glm::mat4x4 viewMatrix, glm::mat4x4 perspectiveProjectionMatrix);
 
 private:
@@ -78,9 +94,20 @@ private:
     GLuint textureSamplerUniform = 0;
     GLuint textColorUniform = 0;
 
+    GLfloat textureCoordinates[12] = {
+        0.0f, 0.0f,
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        0.0f, 0.0f,
+        1.0f, 1.0f,
+        1.0f, 0.0f,
+    };
+
     void initializeVertexShader(void);
     void initializeFragmentShader(void);
     void initializeShaderProgram(void);
     void initializeTextBuffers(void);
+    void calculateTextVertices(TextData *textData);
+    void drawLine(TextData *textData);
     void cleanUp(void);
 };

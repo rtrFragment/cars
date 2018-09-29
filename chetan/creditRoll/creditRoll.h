@@ -28,6 +28,11 @@ private:
         CG_CREDITROLL_ATTRIBUTE_TEXTURE0,
     };
 
+    const char* paragraphSeparator = "-----";
+    const float creditRollStartPosition = -3.75f;
+    const float creditRollEndPosition = 2.0f;
+    const float creditRollTranslationFactor = 0.01f;
+
     GLuint vertexShaderObject = 0;
     GLuint fragmentShaderObject = 0;
     GLuint shaderProgramObject = 0;
@@ -36,15 +41,22 @@ private:
     GLuint vboPreviewRectPosition = 0;
     GLuint vboPreviewRectTexture = 0;
 
+    GLuint vaoNewspaper = 0;
+    GLuint vboNewspaperPosition = 0;
+    GLuint vboNewspaperTexture = 0;
+
     GLuint texturePreview = 0;
+    GLuint textureNewspaper = 0;
     GLuint textureSamplerUniform = 0;
     GLuint modelMatrixUniform = 0;
     GLuint viewMatrixUniform = 0;
     GLuint projectionMatrixUniform = 0;
 
-    glm::mat4x4 perspectiveProjectionMatrix;
+    glm::mat4 perspectiveProjectionMatrix;
+    glm::vec3 creditRollTranslation;
 
     FontRenderer *fontRenderer = NULL;
+    TextData *creditRollTitleTextData;
     std::vector<TextData *> creditRollTextData;
 
     void initializefontRenderer(void);
@@ -53,7 +65,10 @@ private:
     void initializeShaderProgram(void);
     void initializeBuffers(void);
     void initializePreviewRectBuffer(void);
+    void initializeNewspapertBuffer();
     void loadCreditRoll();
+    TextData* generateTextData(char *line, glm::vec3 position);
+    void drawNewspaper();
     void drawPreview();
     void drawCreditRoll();
     bool loadGLTextures(GLuint *texture, TCHAR resourceId[]);
