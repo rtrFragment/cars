@@ -334,15 +334,13 @@ void CreditRoll::loadTextDataFromFile(char * fileName, glm::vec3 textPosition, s
 
             while((nextLine = strtok_s(NULL, "\n", &context)) != NULL)
             {
-                logInfo("Line: %s\n", nextLine);
-
                 if(strcmp(paragraphSeparator, nextLine) == 0 && strlen(nextLine) > 0)
                 {
                     textPosition[1] -= (2.0f * nextLineText->rectSize.height);
                 }
                 else if(strlen(nextLine) > 0)
                 {
-                    TextData *nextLineText  = generateTextData(nextLine, textPosition);
+                    nextLineText  = generateTextData(nextLine, textPosition);
                     fontRenderer->loadCharacters(nextLineText);
                     textDataList.push_back(nextLineText);
                     textPosition[1] -= (2.0f * nextLineText->rectSize.height);
@@ -400,15 +398,12 @@ void CreditRoll::update(void)
 void CreditRoll::fadeIn()
 {
     fadeInOutColor += 0.002f;
-    logInfo("fadeIn fadeInOutColor: %f\n", fadeInOutColor);
 }
 
 void CreditRoll::fadeOut()
 {
     fadeInOutColor -= 0.002f;
     previewTextureFadeOutColor -= 0.002f;
-
-    logInfo("previewTextureFadeOutColor %f fadeInOutColor: %f\n", previewTextureFadeOutColor, fadeInOutColor);
 }
 
 void CreditRoll::display(void)
@@ -524,16 +519,16 @@ bool CreditRoll::loadGLTextures(GLuint *texture, TCHAR resourceId[])
     if(hBitmap)
     {
         textureLoaded = true;
-		GetObject(hBitmap, sizeof(bmp), &bmp);
-	    glGenTextures(1, texture);
+        GetObject(hBitmap, sizeof(bmp), &bmp);
+        glGenTextures(1, texture);
         // For programmable pipeline set 1 instead of 4 for better performation.
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glBindTexture(GL_TEXTURE_2D, *texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		// Generate the mipmapped texture
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bmp.bmWidth, bmp.bmHeight, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, bmp.bmBits);
-		glGenerateMipmap(GL_TEXTURE_2D);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glBindTexture(GL_TEXTURE_2D, *texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        // Generate the mipmapped texture
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bmp.bmWidth, bmp.bmHeight, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, bmp.bmBits);
+        glGenerateMipmap(GL_TEXTURE_2D);
         DeleteObject(hBitmap);
 
         // Unbind the texture else the last loaded texture will be shown in display
@@ -557,34 +552,40 @@ void CreditRoll::resize(int width, int height)
 
 int CreditRoll::readFile(const char* fileName, char **data)
 {
-	FILE *dataFile = NULL;
+    FILE *dataFile = NULL;
     char *textData = NULL;
-	fopen_s(&dataFile, fileName, "r");
+    long dataLength = 0;
 
-	if(dataFile == NULL)
-	{
-		logError("Not able to load data from file '%s'\n", fileName);
-		return 0;
-	}
+    fopen_s(&dataFile, fileName, "r");
 
-	fseek(dataFile, 0, SEEK_END);
-	long dataLength = ftell(dataFile);
-	fseek(dataFile, 0, SEEK_SET);
-    logInfo("dataLength %d\n", dataLength);
-	textData = (char *)malloc(sizeof(char *) * (dataLength + 1));
-	memset((void *)textData, 0, sizeof(char *) * dataLength);
+    if(dataFile == NULL)
+    {
+        logError("Not able to load data from file '%s'\n", fileName);
+        return 0;
+    }
 
-	if (textData != NULL)
-	{
-		fread(textData, sizeof(char *), dataLength, dataFile);
-		textData[dataLength] = '\0';
-	}
+    fseek(dataFile, 0L, SEEK_END);
+    dataLength = ftell(dataFile);
+    fseek(dataFile, 0L, SEEK_SET);
 
-	fclose(dataFile);
+    textData = (char*)calloc(dataLength + 1, sizeof(char));
+
+    if(textData != NULL)
+    {
+        fread(textData, sizeof(char), dataLength, dataFile);
+    }
+    else
+    {
+        logError("Not able to allocate memory.");
+        fclose(dataFile);
+        return 0;
+    }
+
+    fclose(dataFile);
 
     *data = textData;
 
-	return dataLength + 1;
+    return dataLength + 1;
 }
 
 void CreditRoll::cleanUp(void)

@@ -3,89 +3,84 @@ References
 Books
 -----
 OpenGL Programming Guide
--
-Dave Shreiner
-Graham Sellers
-John M Kessenich
+- Dave Shreiner
+- Graham Sellers
+- John M Kessenich
 -----
 OpenGL Shading Language
--
-Randi J Rost
-Bill Licea-Kane
+- Randi J Rost
+- Bill Licea-Kane
 -----
 Texturing and Modeling
--
-David S Ebert
+- David S Ebert
 -----
 OpenGL Super Bible
--
-Graham Sellers
-Richard S Wright,Jr.
-Nocholas Haemel
+- Graham Sellers
+- Richard S Wright, Jr.
+- Nocholas Haemel
 -----
 Real Time Rendering
--
-Tomas Moller
-Naty Hoffman
-Eric Haines
+- Tomas Moller
+- Naty Hoffman
+- Eric Haines
 -----
-Third Party Libraries:
--
+Third Party Libraries
+-----
 GLEW
 GLM
 SOIL
-FREETYPE
+FreeType
 OpenAL
 -----
 Soundtracks
--
+-----
 Lamborghini Evolution 2018
 Rains of Castamere (Game of Thrones)
 In the End-Instrumental (Linkin Park)
-Danza Kudur o(Fast and Furious 5)
+Danza Kuduro (Fast and Furious 5)
 -----
 Soundtracks Sources
--
+-----
 http://soundbible.com
 https://www.youtube.com
 -----
 Websites
--
-https://www.youtube.com/channel/UCUkRj4qoT1bsWpE_C8lZYoQ
+-----
 https://learnopengl.com
 http://nehe.gamedev.net
 https://www.freetype.org
 https://github.com/openglsuperbible/sb7code
+https://www.youtube.com
 -----
-3D Models:
--
+3D Models
+-----
 https://free3d.com/3d-models
 https://www.turbosquid.com
 https://www.blendswap.com
 -----
 Textures
--
+-----
 https://www.textures.com
 https://www.shutterstock.com
 -----
 Modeling Softwares
--
+-----
 Blender
 3DS Max
 Cinema 4d
 -----
 Code Editors
--
+-----
 Microsoft Visual Studio
 Visual Studio Code
 Sublime Text Editor
 -----
 Audio Editing Softwares
--
+-----
 Audacity
 -----
 Special Thanks To
--
+-----
 Radhika Madam for Blender tutorials
-Yogeshwar Sir for Mathematical Guidance.
-RTR group leaders and Participants for all support.
+Yogeshwar Sir for Mathematical guidance
+RTR Group Leader and Participants for all support
