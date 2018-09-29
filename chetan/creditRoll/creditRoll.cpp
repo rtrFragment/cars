@@ -287,6 +287,10 @@ void CreditRoll::loadCreditRollTitle()
     creditRollTitleTextData->scale = 0.01f;
     fontRenderer->loadCharacters(creditRollTitleTextData);
 
+    creditRollTitleDividerTextData = generateTextData("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", glm::vec3(-6.1f, 2.35f, -6.0f));
+    creditRollTitleTextData->scale = 0.01f;
+    fontRenderer->loadCharacters(creditRollTitleDividerTextData);
+
     creditRollDateTextData = generateTextData("30th September, 2018", glm::vec3(-1.15f, 2.2f, -6.0f));
     fontRenderer->loadCharacters(creditRollDateTextData);
 }
@@ -524,6 +528,7 @@ void CreditRoll::drawCreditRollTitle()
     glm::mat4 modelMatrix = glm::mat4(1.0f);
 
     fontRenderer->renderText(creditRollTitleTextData, modelMatrix, viewMatrix, perspectiveProjectionMatrix);
+    fontRenderer->renderText(creditRollTitleDividerTextData, modelMatrix, viewMatrix, perspectiveProjectionMatrix);
     fontRenderer->renderText(creditRollDateTextData, modelMatrix, viewMatrix, perspectiveProjectionMatrix);
 }
 
@@ -642,6 +647,11 @@ void CreditRoll::cleanUp(void)
     free(creditRollTitleTextData->text);
     free(creditRollTitleTextData);
     creditRollTitleTextData = NULL;
+
+    creditRollTitleDividerTextData->vertices.clear();
+    free(creditRollTitleDividerTextData->text);
+    free(creditRollTitleDividerTextData);
+    creditRollTitleDividerTextData = NULL;
 
     creditRollDateTextData->vertices.clear();
     free(creditRollDateTextData->text);

@@ -84,6 +84,7 @@ private:
 
     FontRenderer *fontRenderer = NULL;
     TextData *creditRollTitleTextData = NULL;
+    TextData *creditRollTitleDividerTextData = NULL;
     TextData *creditRollDateTextData = NULL;
     std::vector<TextData *> creditRollTextData;
     std::vector<TextData *> groupMembersTextData;
