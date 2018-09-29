@@ -32,14 +32,32 @@ private:
     const GLfloat creditRollStartPosition = -3.75f;
     const GLfloat creditRollEndPosition = 1.9f;
     const GLfloat creditRollTranslationFactor = 0.01f;
-    const GLfloat previewRectStartPoint = creditRollEndPosition + 0.2f;
-    const GLfloat previewRectHeight = 2.75f;
+    const GLfloat previewRectFinalTopY = creditRollEndPosition + 0.2f;
+    const GLfloat previewRectFinalBottomY = -0.5f;
+    const GLfloat previewRectFinalRightX = -0.25;
+    const GLfloat previewRectFinalLeftX = -5.75;
+    const GLfloat previewRectInitialLeftX = -6.0f;
+    const GLfloat previewRectInitialRightX = 6.0f;
+    const GLfloat previewRectInitialTopY = 3.4f;
+    const GLfloat previewRectInitialBottomY = -3.5f;
 
     GLfloat fadeInOutColor = 0.0f;
     GLfloat previewTextureFadeOutColor = 1.0f;
 
+    GLfloat previewRectVertices[12] = {
+        previewRectInitialRightX, previewRectInitialTopY, 0.0f,
+        previewRectInitialLeftX, previewRectInitialTopY, 0.0f,
+        previewRectInitialLeftX, previewRectInitialBottomY, 0.0f,
+        previewRectInitialRightX, previewRectInitialBottomY, 0.0f
+    };
+
     bool fadeInFlag = false;
     bool fadeOutFlag = false;
+    bool previewRectTransalateTopYDone = false;
+    bool previewRectTransalateLeftXDone = false;
+    bool previewRectTransalateRightXDone = false;
+    bool previewRectTransalateBottomYDone = false;
+    bool previewRectTransalateDone = false;
 
     GLuint vertexShaderObject = 0;
     GLuint fragmentShaderObject = 0;

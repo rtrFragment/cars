@@ -79,8 +79,13 @@ Audio Editing Softwares
 -----
 Audacity
 -----
+Image Editing Softwares
+-----
+Adobe Photoshop
+Paint
+-----
 Special Thanks To
 -----
 Radhika Madam for Blender tutorials
 Yogeshwar Sir for Mathematical guidance
-RTR Group Leader and Participants for all support
+RTR Group Leader and Members for all support

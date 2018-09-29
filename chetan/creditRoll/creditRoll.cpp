@@ -199,13 +199,6 @@ void CreditRoll::initializeShaderProgram()
 
 void CreditRoll::initializePreviewRectBuffer()
 {
-    const GLfloat previewRectVertices[] = {
-        -0.25f, previewRectStartPoint, 0.0f,
-        -5.75f, previewRectStartPoint, 0.0f,
-        -5.75f, previewRectStartPoint - previewRectHeight, 0.0f,
-        -0.25f, previewRectStartPoint - previewRectHeight, 0.0f
-    };
-
     const GLfloat previewRectTextureCoordinates[] = {
         1.0f, 0.0f,
         0.0f, 0.0f,
@@ -219,7 +212,7 @@ void CreditRoll::initializePreviewRectBuffer()
     glGenBuffers(1, &vboPreviewRectPosition);
     glBindBuffer(GL_ARRAY_BUFFER, vboPreviewRectPosition);
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(previewRectVertices), previewRectVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(previewRectVertices), NULL, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(CG_CREDITROLL_ATTRIBUTE_VERTEX_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(CG_CREDITROLL_ATTRIBUTE_VERTEX_POSITION);
 
@@ -300,10 +293,10 @@ void CreditRoll::loadCreditRollTitle()
 
 void CreditRoll::loadGroupMembers()
 {
-    glm::vec3 textPosition = glm::vec3(-5.75f, previewRectStartPoint - previewRectHeight - 0.5f, -6.0f);
+    glm::vec3 textPosition = glm::vec3(-5.75f, previewRectFinalBottomY - 0.5f, -6.0f);
     loadTextDataFromFile("groupMembersColumn1.txt", textPosition, groupMembersTextData);
 
-    textPosition = glm::vec3(-2.75f, previewRectStartPoint - previewRectHeight - 0.5f, -6.0f);
+    textPosition = glm::vec3(-2.75f, previewRectFinalBottomY - 0.5f, -6.0f);
     loadTextDataFromFile("groupMembersColumn2.txt", textPosition, groupMembersTextData);
 }
 
@@ -376,21 +369,74 @@ TextData* CreditRoll::generateTextData(char *line, glm::vec3 position)
 
 void CreditRoll::update(void)
 {
-    if(fadeInOutColor <= 1.0f && fadeInFlag == false)
+    if(previewRectTransalateDone == false)
     {
-        fadeIn();
-    }
-    else
-    {
-        fadeInFlag = true;
-        creditRollTranslation[1] += creditRollTranslationFactor;
-
-        TextData *lastCreditTextData = creditRollTextData[creditRollTextData.size() - 1];
-        GLfloat lastCreditTextDataPosition = lastCreditTextData->textPosition[1] + creditRollTranslation[1];
-
-        if((lastCreditTextDataPosition > creditRollEndPosition) && fadeInOutColor >= 0.0f)
+        if(previewRectVertices[0] > previewRectFinalRightX)
         {
-            fadeOut();
+            previewRectVertices[0] -= 0.01;
+            previewRectVertices[9] -= 0.01;
+        }
+        else
+        {
+            previewRectTransalateRightXDone = true;
+        }
+
+        if(previewRectVertices[1] > previewRectFinalTopY)
+        {
+            previewRectVertices[1] -= 0.0021;
+            previewRectVertices[4] -= 0.0021;
+        }
+        else
+        {
+            previewRectTransalateTopYDone = true;
+        }
+
+        if(previewRectVertices[7] < previewRectFinalBottomY)
+        {
+            previewRectVertices[7] += 0.0048;
+            previewRectVertices[10] += 0.0048;
+        }
+        else
+        {
+            previewRectTransalateBottomYDone = true;
+        }
+
+        if(previewRectVertices[3] < previewRectFinalLeftX)
+        {
+            previewRectVertices[3] += 0.0005;
+            previewRectVertices[6] += 0.0005;
+        }
+        else
+        {
+            previewRectTransalateLeftXDone = true;
+        }
+
+        previewRectTransalateDone = (
+            previewRectTransalateRightXDone &&
+            previewRectTransalateTopYDone &&
+            previewRectTransalateBottomYDone &&
+            previewRectTransalateLeftXDone
+        );
+    }
+
+    if(previewRectTransalateDone == true)
+    {
+        if(fadeInOutColor <= 1.0f && fadeInFlag == false)
+        {
+            fadeIn();
+        }
+        else
+        {
+            fadeInFlag = true;
+            creditRollTranslation[1] += creditRollTranslationFactor;
+
+            TextData *lastCreditTextData = creditRollTextData[creditRollTextData.size() - 1];
+            GLfloat lastCreditTextDataPosition = lastCreditTextData->textPosition[1] + creditRollTranslation[1];
+
+            if((lastCreditTextDataPosition > creditRollEndPosition) && fadeInOutColor >= 0.0f)
+            {
+                fadeOut();
+            }
         }
     }
 }
@@ -408,11 +454,15 @@ void CreditRoll::fadeOut()
 
 void CreditRoll::display(void)
 {
-    drawNewspaper();
+    if(previewRectTransalateDone == true)
+    {
+        drawNewspaper();
+        drawCreditRollTitle();
+        drawCreditRoll();
+        drawGroupMembers();
+    }
+
     drawPreview();
-    drawCreditRollTitle();
-    drawCreditRoll();
-    drawGroupMembers();
 }
 
 void CreditRoll::drawPreview()
@@ -433,6 +483,11 @@ void CreditRoll::drawPreview()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texturePreview);
     glUniform1i(textureSamplerUniform, 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboPreviewRectPosition);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(previewRectVertices), previewRectVertices, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindVertexArray(0);
 
@@ -468,9 +523,6 @@ void CreditRoll::drawCreditRollTitle()
     glm::mat4 viewMatrix = glm::mat4(1.0f);
     glm::mat4 modelMatrix = glm::mat4(1.0f);
 
-    creditRollTitleTextData->textColor[0] *= fadeInOutColor;
-    creditRollTitleTextData->textColor[1] *= fadeInOutColor;
-    creditRollTitleTextData->textColor[2] *= fadeInOutColor;
     fontRenderer->renderText(creditRollTitleTextData, modelMatrix, viewMatrix, perspectiveProjectionMatrix);
     fontRenderer->renderText(creditRollDateTextData, modelMatrix, viewMatrix, perspectiveProjectionMatrix);
 }
@@ -502,10 +554,6 @@ void CreditRoll::drawGroupMembers()
     for(int counter = 0; counter < groupMembersTextData.size(); ++counter)
     {
         TextData *nextTextData = groupMembersTextData[counter];
-        nextTextData->textColor[0] *= fadeInOutColor;
-        nextTextData->textColor[1] *= fadeInOutColor;
-        nextTextData->textColor[2] *= fadeInOutColor;
-
         fontRenderer->renderText(groupMembersTextData[counter], modelMatrix, viewMatrix, perspectiveProjectionMatrix);
     }
 }
