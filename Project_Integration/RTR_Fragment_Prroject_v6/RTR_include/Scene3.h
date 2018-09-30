@@ -195,6 +195,7 @@ GLuint g_Scene3_Ocean_VertexBufferObject_Indices;
 
 GLuint g_Scene3_Ocean_Uniform_ModelMatrix, g_Scene3_Ocean_Uniform_ViewMatrix, g_Scene3_Ocean_Uniform_ProjectionMatrix;
 GLuint g_Scene3_Ocean_Uniform_Time, g_Scene3_Ocean_Uniform_Camera_Position;
+GLuint g_Scene3_Ocean_Uniform_Blackout;
 
 GLfloat g_Scene3_Ocean_U_Time = 0.0f;
 
@@ -234,6 +235,22 @@ ALuint g_Scene3_iHelicopter_Buffer = 0;
 bool g_scene3_bPlayInTheEnd = true;
 /******* Scene 3 Audio End   *******/
 
+//Quad (Finish Line)
+//Quad
+GLuint gVao_Quad;
+GLuint gVbo_Quad_Position;
+GLuint gVbo_Quad_Normal;
+GLuint gVbo_Quad_Texture;
+
+GLuint gTextureQuadFinishLine;
+
+//BlackOut
+float blackout = 1.0f;
+
+GLuint g_Scene3_Grass_Blackout;
+GLuint g_Scene3_SkyBox_Blackout;
+GLuint g_Scene3_Instance_Blackout;
+GLuint g_Scene3_CityModel_Blackout;
 
 void Init_Scene3()
 {
@@ -241,7 +258,7 @@ void Init_Scene3()
 	void Scene3_InitializeAudio(void);
 	std::vector<Mesh_Data> Scene3_MD_City;
 	char Scene3_chMtlPath[256];
-
+	void Scene3_InitQuad(void);
 
 	LoadMeshData("RTR_resources/models/Project_Model/Final_Project_Model.obj", g_Scene3_CityModel.gv_vertices, g_Scene3_CityModel.gv_textures, g_Scene3_CityModel.gv_normals, g_Scene3_CityModel.gv_Mesh_Data, g_Scene3_CityModel.chMaterialFileName);
 
@@ -280,6 +297,16 @@ void Init_Scene3()
 
 	//Helicopter Blades
 	Scene3_initializeHelicopterBlades();
+
+	int result = LoadGLTextures(&gTextureQuadFinishLine, "RTR_resources/texture/finishLine.bmp");
+
+	if (result == FALSE)
+	{
+		logError("Not able to load texture 'RTR_resources/texture/finishLine.bmp'\n");
+	}
+	
+	//Quad (Finish Line)
+	Scene3_InitQuad();
 
 	//SkyBox
 	Scene3_initializeSkyBox();
@@ -324,6 +351,76 @@ void Init_Scene3()
 	Scene3_Ocean_Initialize();
 	Scene3_InitializeAudio();
 }
+
+//***********Quad (Finish Line)***********
+void Scene3_InitQuad(void)
+{
+	//Square
+	const GLfloat quadVertices[] =
+	{
+		-1.0f, 1.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f
+	};
+
+
+	glGenVertexArrays(1, &gVao_Quad);
+	glBindVertexArray(gVao_Quad);
+
+	//position
+	glGenBuffers(1, &gVbo_Quad_Position);
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Quad_Position);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(HAD_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glEnableVertexAttribArray(HAD_ATTRIBUTE_POSITION);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	const GLfloat quadNormals[] =
+	{
+		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f
+	};
+
+	//Normal
+	glGenBuffers(1, &gVbo_Quad_Normal);
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Quad_Normal);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadNormals), quadNormals, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(HAD_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glEnableVertexAttribArray(HAD_ATTRIBUTE_NORMAL);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+	const GLfloat quadTextures[] =
+	{
+		1.0f, 1.0f,
+		0.0f, 1.0f,
+		0.0f, 0.0f,
+		1.0f, 0.0f
+	};
+
+	glGenBuffers(1, &gVbo_Quad_Texture);
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_Quad_Texture);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadTextures), quadTextures, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(HAD_ATTRIBUTE_TEXTURE0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glEnableVertexAttribArray(HAD_ATTRIBUTE_TEXTURE0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+
+
+}
 //********************GRASS**********************
 
 #include "ktx_loading_header.h"
@@ -352,7 +449,7 @@ void Scene3_initializeGrass(void)
 	g_Scene3_GrassShader.gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
 
 	const GLchar *vertexShaderSourceCode =
-		"#version 450"
+		"#version 450" 
 		"\n" // Incoming per vertex position:
 		"in vec4 vVertex;"
 
@@ -478,12 +575,12 @@ void Scene3_initializeGrass(void)
 		"\n"
 
 		"in vec4 color;"
-
+		"uniform float blackout;"
 		"out vec4 output_color;"
 
 		"void main(void)"
 		"{"
-		"output_color = color;"
+		"output_color = color * vec4(blackout);"
 		"}";
 
 	glShaderSource(g_Scene3_GrassShader.gFragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
@@ -551,6 +648,7 @@ void Scene3_initializeGrass(void)
 
 	g_Scene3_Grass_MVPMatrix = glGetUniformLocation(g_Scene3_GrassShader.gShaderProgramObject, "mvpMatrix");
 	g_Scene3_Grass_Rotation = glGetUniformLocation(g_Scene3_GrassShader.gShaderProgramObject, "rotation_increment");
+	g_Scene3_Grass_Blackout = glGetUniformLocation(g_Scene3_GrassShader.gShaderProgramObject, "blackout");
 
 	glActiveTexture(GL_TEXTURE1);
 	g_Scene3_Texture_grass_length = load("resources/Grass/grass_length.ktx", 0);
@@ -659,6 +757,7 @@ void Scene3_initializeSkyBox(void)
 		"#version 460"
 		"\n"
 		"uniform samplerCube tex_cubemap;"
+		"uniform float blackout;"
 		"in VS_OUT"
 		"{"
 		"vec3    tc;"
@@ -666,7 +765,7 @@ void Scene3_initializeSkyBox(void)
 		"layout (location = 0) out vec4 color;"
 		"void main(void)"
 		"{" //"color = texture(tex_cubemap, vec3(fs_in.tc.x, -fs_in.tc.y, fs_in.tc.z));"
-		"color = texture(tex_cubemap, fs_in.tc);"
+		"color = texture(tex_cubemap, fs_in.tc) * vec4(blackout);"
 		"}";
 
 	glShaderSource(g_Scene3_SkyBoxShader.gFragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCodeSkyBox, NULL);
@@ -736,6 +835,7 @@ void Scene3_initializeSkyBox(void)
 	g_Scene3_SkyBox_ModelMatrixUniform = glGetUniformLocation(g_Scene3_SkyBoxShader.gShaderProgramObject, "model_matrix");
 	g_Scene3_SkyBox_ViewUniform = glGetUniformLocation(g_Scene3_SkyBoxShader.gShaderProgramObject, "view_matrix");
 	g_Scene3_SkyBox_Uniform = glGetUniformLocation(g_Scene3_SkyBoxShader.gShaderProgramObject, "tex_cubemap");
+	g_Scene3_SkyBox_Blackout = glGetUniformLocation(g_Scene3_SkyBoxShader.gShaderProgramObject, "blackout");
 
 	glGenVertexArrays(1, &g_Scene3_SkyBoxModel.Vao);
 	glBindVertexArray(g_Scene3_SkyBoxModel.Vao);
@@ -978,7 +1078,7 @@ void Scene3_initializeInstancingFeature()
 		"uniform vec3 u_Ks;"
 		"uniform float u_material_shininess;"
 		"uniform int u_lighting_enabled;"
-
+		"uniform float blackout;"
 		"void main()"
 		"{"
 		"vec3 phong_ads_color;"
@@ -998,7 +1098,7 @@ void Scene3_initializeInstancingFeature()
 		"{"
 		"phong_ads_color = vec3(1.0f,1.0f,1.0f);"
 		"}"
-		"FragColor = vec4(phong_ads_color,1.0);"
+		"FragColor = vec4(phong_ads_color,1.0) * vec4(blackout);"
 
 		//		"FragColor = vec4(0.5f, 0.5f, 0.5f, 1.0);"
 		"}";
@@ -1084,6 +1184,8 @@ void Scene3_initializeInstancingFeature()
 	g_Scene3_Instance_KsUniform = glGetUniformLocation(g_Scene3_InstanceShader.gShaderProgramObject, "u_Ks");
 
 	g_Scene3_Instance_MaterialShininessUniform = glGetUniformLocation(g_Scene3_InstanceShader.gShaderProgramObject, "u_material_shininess");
+
+	g_Scene3_Instance_Blackout = glGetUniformLocation(g_Scene3_InstanceShader.gShaderProgramObject, "blackout");
 }
 
 void Scene3_initializeCityLightInstancing()
@@ -1425,6 +1527,7 @@ void Scene3_initializeCityModelWithShadow(void)
 		"in vec4 FragPosLightSpace;"
 		"uniform sampler2D shadowMap;"
 
+		"uniform float blackout;"
 		"float ShadowCalculation(vec4 fragPosLightSpace, vec3 light_direction)"
 		"{"																 //Perpective Divide
 		"vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;" //transform it into [0,1] range
@@ -1486,11 +1589,11 @@ void Scene3_initializeCityModelWithShadow(void)
 		"{"
 		"Final_Texture = texture(u_texture0_sampler,out_texture0_coord);"
 		"Temp_Output = vec4(phong_ads_color,u_alpha) * Final_Texture;"
-		"FragColor = Temp_Output;"
+		"FragColor = Temp_Output * vec4(blackout);"
 		"}"
 		"else"
 		"{"
-		"FragColor = vec4(phong_ads_color,u_alpha);"
+		"FragColor = vec4(phong_ads_color,u_alpha) * vec4(blackout);"
 		"}"
 		"}";
 
@@ -1589,6 +1692,8 @@ void Scene3_initializeCityModelWithShadow(void)
 
 	g_Scene3_CityModel_TextureActiveUniform = glGetUniformLocation(g_Scene3_CityModelShader.gShaderProgramObject, "u_is_texture");
 
+	g_Scene3_CityModel_Blackout = glGetUniformLocation(g_Scene3_CityModelShader.gShaderProgramObject, "blackout");
+
 	//VAO
 	glGenVertexArrays(1, &g_Scene3_CityModel.Vao);
 	glBindVertexArray(g_Scene3_CityModel.Vao);
@@ -1627,6 +1732,9 @@ void Uninitialize_CityLightShader(void);
 void Uninitialize_BenchShader(void);
 void Uninitialize_InstanceShader(void);
 void Uninitialize_PalmTreeShader(void);
+void Uninitialize_QuadFinishLine(void);
+void Uninitialize_HelicopterBlades(void);
+void Uninitialize_HelicopterBody(void);
 
 void Uninitialize_Scene3()
 {
@@ -1657,12 +1765,16 @@ void Uninitialize_Scene3()
 
 	Uninitialize_CityLightShader();
 	Uninitialize_BenchShader();
+	Uninitialize_PalmTreeShader();
 	Uninitialize_InstanceShader();
 
 	Uninitialize_GrassShader();
 
 	Uninitialize_SkyBoxShader();
 
+	Uninitialize_QuadFinishLine();
+	Uninitialize_HelicopterBlades();
+	Uninitialize_HelicopterBody();
 	Uninitialize_CityModelShader();
 
 	Scene3_Ocean_UnInitialize();
@@ -1716,6 +1828,32 @@ void Uninitialize_PalmTreeShader(void)
 	}
 }
 
+void Uninitialize_QuadFinishLine(void)
+{
+	if (gVao_Quad)
+	{
+		glDeleteVertexArrays(1, &gVao_Quad);
+		gVao_Quad = 0;
+	}
+}
+
+void Uninitialize_HelicopterBody(void)
+{
+	if (g_Scene3_HelicopterBodyModel.Vao)
+	{
+		glDeleteVertexArrays(1, &g_Scene3_HelicopterBodyModel.Vao);
+		g_Scene3_HelicopterBodyModel.Vao = 0;
+	}
+}
+
+void Uninitialize_HelicopterBlades(void)
+{
+	if (g_Scene3_HelicopterBladesModel.Vao)
+	{
+		glDeleteVertexArrays(1, &g_Scene3_HelicopterBladesModel.Vao);
+		g_Scene3_HelicopterBladesModel.Vao = 0;
+	}
+}
 void Uninitialize_CityModelShader(void)
 {
 	if (g_Scene3_CityModel.Vao)
@@ -2040,6 +2178,7 @@ void DrawSkyBox()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
+	glUniform1f(g_Scene3_SkyBox_Blackout, blackout);
 	glUseProgram(0);
 }
 
@@ -2093,6 +2232,7 @@ void DrawCityModelWithShadowMap(void)
 	void RenderCity(GLuint & NewModel);
 	void DrawHelicopterBody(GLuint & NewModel);
 	void DrawHelicopterBlades(GLuint & NewModel);
+	void DrawQuadFinishLine(GLuint &NewModel);
 
 	//Render Depth Map
 
@@ -2121,6 +2261,7 @@ void DrawCityModelWithShadowMap(void)
 	// render scene from light's point of view
 	glUseProgram(g_Scene3_DepthShader.gShaderProgramObject);
 
+	
 	glUniformMatrix4fv(glightSpaceMatrixSimpleDepthShaderUniform, 1, GL_FALSE, &lightSpaceMatrix[0][0]);
 
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
@@ -2131,6 +2272,7 @@ void DrawCityModelWithShadowMap(void)
 	RenderCity(gmodelSimpleDepthShaderUniform);
 	DrawHelicopterBody(gmodelSimpleDepthShaderUniform);
 	DrawHelicopterBlades(gmodelSimpleDepthShaderUniform);
+	DrawQuadFinishLine(gmodelSimpleDepthShaderUniform);
 	glCullFace(GL_BACK);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -2144,6 +2286,7 @@ void DrawCityModelWithShadowMap(void)
 
 	if (g_Scene3_Light == true)
 	{
+		glUniform1f(g_Scene3_CityModel_Blackout, blackout);
 		glUniform1i(g_Scene3_CityModel_LKeyPressedUniform, 1);
 
 		glUniform3fv(g_Scene3_CityModel_LaUniform, 1, g_Scene3_lightAmbient);
@@ -2176,6 +2319,7 @@ void DrawCityModelWithShadowMap(void)
 	RenderCity(g_Scene3_CityModel_ModelMatrixUniform);
 	DrawHelicopterBody(g_Scene3_CityModel_ModelMatrixUniform);
 	DrawHelicopterBlades(g_Scene3_CityModel_ModelMatrixUniform);
+	DrawQuadFinishLine(g_Scene3_CityModel_ModelMatrixUniform);
 	glUseProgram(0);
 }
 
@@ -2215,12 +2359,30 @@ void RenderCity(GLuint &NewModel)
 	}
 	glBindVertexArray(0);
 }
+GLfloat gfTranslate_X = 0.0f, gfTranslate_Y = 0.0f, gfTranslate_Z = 0.0f;
+void DrawQuadFinishLine(GLuint &NewModel)
+{
+	glm::mat4 modelMatrix = glm::mat4();
+	modelMatrix = translate(modelMatrix, glm::vec3(-27.0f, 5.3f, -1911.009033f));
 
-GLfloat gfTranslate_X = -196.0f, gfTranslate_Y = 0.015f, gfTranslate_Z = -945.0f;
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(85.399269f), glm::vec3(0.0f, 0.0f, 1.0f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 6.2f, 1.0f));
+	glUniformMatrix4fv(NewModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+	glBindTexture(GL_TEXTURE_2D, gTextureQuadFinishLine);
+	glBindVertexArray(gVao_Quad);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glBindVertexArray(0);
+	glBindVertexArray(0);
+}
+
+
 void DrawHelicopterBody(GLuint &NewModel)
 {
 	glm::mat4 modelMatrix = glm::mat4();
-	modelMatrix = translate(modelMatrix, glm::vec3(gfTranslate_X, 0.015f+ fTranslation_In_Y, gfTranslate_Z));
+	modelMatrix = translate(modelMatrix, glm::vec3(-196.0f, 0.015f+ fTranslation_In_Y, -945.0f));
 
 	if (bIsHelicopterDone)
 	{
@@ -2316,6 +2478,8 @@ void DrawGrassInstancing(void)
 	//Grass Instancing
 	glUseProgram(g_Scene3_GrassShader.gShaderProgramObject);
 
+	glUniform1f(g_Scene3_Grass_Blackout, blackout);
+
 	glm::mat4 modelMatrix = glm::mat4();
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(GRASS_X_TRANSLATE, GRASS_Y_TRANSLATE, GRASS_Z_TRANSLATE));
 
@@ -2361,6 +2525,7 @@ void DrawInstancingShader()
 
 	if (g_Scene3_Light == true)
 	{
+		glUniform1f(g_Scene3_Instance_Blackout, blackout);
 		glUniform1i(g_Scene3_Instance_LKeyPressedUniform, 1);
 
 		glUniform3fv(g_Scene3_Instance_LaUniform, 1, g_Scene3_lightAmbient);
@@ -2762,13 +2927,14 @@ void Scene3_Ocean_Initialize(void)
 	g_Scene3_Ocean_FragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
 
 	const GLchar *fragmentShaderSourceCode = "#version 460 core"
-											 "\n"
-											 "out vec4 FragColor;"
-											 "in vec3 finalColor;"
-											 "void main (void)"
-											 "{"
-											 "	FragColor = vec4(finalColor,1.0f);"
-											 "}";
+	 "\n"
+	 "out vec4 FragColor;"
+	 "in vec3 finalColor;"
+	"uniform float blackout;"
+	 "void main (void)"
+	 "{"
+	 "	FragColor = vec4(finalColor,1.0f) * vec4(blackout);"
+	 "}";
 	glShaderSource(g_Scene3_Ocean_FragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
 	// 0.2f,0.4f,0.45f
 	// Compile Source Code
@@ -2836,6 +3002,7 @@ void Scene3_Ocean_Initialize(void)
 	g_Scene3_Ocean_Uniform_ProjectionMatrix = glGetUniformLocation(g_Scene3_Ocean_ShaderProgramObject, "u_projection_matrix");
 	g_Scene3_Ocean_Uniform_Time = glGetUniformLocation(g_Scene3_Ocean_ShaderProgramObject, "u_time");
 	g_Scene3_Ocean_Uniform_Camera_Position = glGetUniformLocation(g_Scene3_Ocean_ShaderProgramObject, "u_Camera_Position");
+	g_Scene3_Ocean_Uniform_Blackout = glGetUniformLocation(g_Scene3_Ocean_ShaderProgramObject, "blackout");
 	// **** Verttices, Colors, Shader Attribs, Vbo, Vao Initializations ****
 
 	int iIndex = 0;
@@ -2928,6 +3095,7 @@ void Scene3_Ocean_Display(void)
 	glUniform1f(g_Scene3_Ocean_Uniform_Time, g_Scene3_Ocean_U_Time);
 	glm::vec3 CameraPos = Scene3_camera.GetCameraPostion();
 	glUniform3f(g_Scene3_Ocean_Uniform_Camera_Position, CameraPos.x, CameraPos.y, CameraPos.z);
+	glUniform1f(g_Scene3_Ocean_Uniform_Blackout, blackout);
 
 	glBindVertexArray(g_Scene3_Ocean_VertexArrayObject);
 	glBindBuffer(GL_ARRAY_BUFFER, g_Scene3_Ocean_VertexBufferObject);
@@ -2955,6 +3123,7 @@ void Scene3_HelicopterBlades_Update(void)
 		fRotation_Angle_Blades = 0.0f;
 	}
 
+	
 	if (isTranslateY)
 	{
 		fTranslation_In_Y = fTranslation_In_Y + 0.1f;
