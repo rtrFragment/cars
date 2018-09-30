@@ -71,6 +71,8 @@ extern GLfloat currentHeight = 0;
 extern bool g_scene2_bGoToScene3 = false;
 extern bool g_scene2_bBeginFadeOut = false;
 
+extern bool g_scene3_bGoToScene4 = false;
+
 extern float Helicopter_X_Translate = -5.0f;
 extern float Helicopter_Y_Translate = 1.0f;
 extern float Helicopter_Z_Translate = 0.0f;

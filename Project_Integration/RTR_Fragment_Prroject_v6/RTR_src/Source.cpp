@@ -2,9 +2,11 @@
 #include"../RTR_include/Scene1.h"
 #include"../RTR_include/CommonHeaer_Secne2.h"
 #include "../RTR_include/Scene3.h"
+#include "../RTR_lib/creditRoll/creditRoll.h"
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
+CreditRoll *creditRoll = NULL;
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -343,6 +345,9 @@ void initialize(void)
 	Scene2_Initialize();
 	Init_Scene3();
 
+	creditRoll = new CreditRoll();
+	creditRoll->initialize();
+
 	QueryPerformanceFrequency((LARGE_INTEGER*)&initFrequency);
 
 	QueryPerformanceCounter((LARGE_INTEGER*)&initTime);
@@ -398,6 +403,11 @@ void display(void)
 		Draw_Scene3();
 	}
 
+	if (g_scene3_bGoToScene4 == true && creditRoll != NULL)
+	{
+		creditRoll->display();
+	}
+
 	SwapBuffers(ghdc);
 }
 
@@ -414,6 +424,11 @@ void update(void)
 	if (g_scene3_bShowScene3 == true)
 	{
 		Scene3_Update();
+	}
+
+	if (g_scene3_bGoToScene4 == true && creditRoll != NULL)
+	{
+		creditRoll->update();
 	}
 }
 
@@ -440,6 +455,11 @@ void resize(int width, int height)
 	g_Scene3_Ocean_PerspectiveProjectionMatrix = g_Scene3_CityModel_PerspectiveProjectionMatrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100000.0f);
 
 	Scene3_resize(width, height);
+
+	if (creditRoll != NULL)
+	{
+		creditRoll->resize(width, height);
+	}
 }
 
 void ToggleFullscreen(void)
@@ -481,6 +501,12 @@ void uninitialize(int i_Exit_Flag)
 	Uninitialize_Scene1();
 	Scene2_UnInitialize(i_Exit_Flag);
 	Uninitialize_Scene3();
+
+	if (creditRoll != NULL)
+	{
+		delete creditRoll;
+		creditRoll = NULL;
+	}
 
 	//Stray call to glUseProgram(0)
 	glUseProgram(0);

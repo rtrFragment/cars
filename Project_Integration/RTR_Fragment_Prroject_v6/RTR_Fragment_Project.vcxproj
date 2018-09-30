@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="RTR_lib\audioManager\audioManager.cpp" />
     <ClCompile Include="RTR_lib\audioManager\soundSource.cpp" />
+    <ClCompile Include="RTR_lib\creditRoll\creditRoll.cpp" />
     <ClCompile Include="RTR_lib\cWaves\CWaves.cpp" />
     <ClCompile Include="RTR_lib\fontRenderer\fontRenderer.cpp" />
     <ClCompile Include="RTR_lib\logger\logger.cpp" />
@@ -44,6 +45,7 @@
     <ClInclude Include="RTR_include\stb_image.h" />
     <ClInclude Include="RTR_lib\audioManager\audioManager.h" />
     <ClInclude Include="RTR_lib\audioManager\soundSource.h" />
+    <ClInclude Include="RTR_lib\creditRoll\creditRoll.h" />
     <ClInclude Include="RTR_lib\cWaves\CWaves.h" />
     <ClInclude Include="RTR_lib\fontRenderer\fontRenderer.h" />
     <ClInclude Include="RTR_lib\logger\logger.h" />
@@ -56,6 +58,11 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="RTR_resources\texture\fire.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="RTR_lib\creditRoll\creditRollData.txt" />
+    <Text Include="RTR_lib\creditRoll\groupMembersColumn1.txt" />
+    <Text Include="RTR_lib\creditRoll\groupMembersColumn2.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

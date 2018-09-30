@@ -39,6 +39,9 @@
     <ClCompile Include="RTR_lib\speedometer\speedometer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RTR_lib\creditRoll\creditRoll.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RTR_include\camera.h">
@@ -104,6 +107,9 @@
     <ClInclude Include="RTR_lib\speedometer\speedometer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RTR_lib\creditRoll\creditRoll.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="RTR_resources\resource.rc">
@@ -114,5 +120,10 @@
     <Image Include="RTR_resources\texture\fire.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="RTR_lib\creditRoll\creditRollData.txt" />
+    <Text Include="RTR_lib\creditRoll\groupMembersColumn1.txt" />
+    <Text Include="RTR_lib\creditRoll\groupMembersColumn2.txt" />
   </ItemGroup>
 </Project>

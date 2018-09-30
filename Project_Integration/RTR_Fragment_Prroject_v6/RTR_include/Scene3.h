@@ -204,7 +204,7 @@ GLuint g_Scene3_Ocean_shIndices[6 * (VERTEX_COUNT - 1) * (VERTEX_COUNT - 1)];
 
 GLfloat fRotation_Angle = 0.0f;
 
-//Helicopter 
+//Helicopter
 GLfloat fRotation_Angle_Blades = 0.0f;
 bool isTranslateY = false;
 GLfloat fTranslation_In_Y = 0.0f;
@@ -222,6 +222,8 @@ SoundSource *g_SS_Scene3_Car = NULL;
 SoundSource *g_SS_Scene3_Ambient = NULL; // In The End
 SoundSource *g_SS_Scene3_WindSound = NULL;
 SoundSource *g_SS_Scene3_Helicopter = NULL;
+SoundSource *g_SS_Scene3_Helicopter2 = NULL;
+SoundSource *g_SS_Scene3_PoliceSiren = NULL;
 
 ALuint g_Scene3_iInTheEnd_Buffer = 0;
 ALuint g_Scene3_iSilentSound_Buffer = 0;
@@ -251,7 +253,6 @@ GLuint g_Scene3_Grass_Blackout;
 GLuint g_Scene3_SkyBox_Blackout;
 GLuint g_Scene3_Instance_Blackout;
 GLuint g_Scene3_CityModel_Blackout;
-
 
 // Scene3_mustang
 
@@ -359,7 +360,7 @@ void Init_Scene3()
 	{
 		logError("Not able to load texture 'RTR_resources/texture/finishLine.bmp'\n");
 	}
-	
+
 	//Quad (Finish Line)
 	Scene3_InitQuad();
 
@@ -505,7 +506,7 @@ void Scene3_initializeGrass(void)
 	g_Scene3_GrassShader.gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
 
 	const GLchar *vertexShaderSourceCode =
-		"#version 450" 
+		"#version 450"
 		"\n" // Incoming per vertex position:
 		"in vec4 vVertex;"
 
@@ -1858,7 +1859,7 @@ void Scene3_mustang_uninitialize()
 		Scene3_mustang_gVbo_Normal = 0;
 	}
 
-	//Detach Shader 
+	//Detach Shader
 	glDetachShader(Scene3_mustang_gShaderProgramObject, Scene3_mustang_gVertexShaderObject);
 	glDetachShader(Scene3_mustang_gShaderProgramObject, Scene3_mustang_gFragmentShaderObject);
 
@@ -2123,7 +2124,7 @@ void Scene3_mustang_update(void)
 		fZIncrement = cos(Scene3_Mustang_g_rotate_3rd_turn_for_car) * 0.9f;
 		Scene3_Mustang_translateX_Mustang = Scene3_Mustang_translateX_Mustang + fXIncrement;
 		Scene3_Mustang_translateZ_Mustang = Scene3_Mustang_translateZ_Mustang - fZIncrement;
-		
+
 		if (Scene3_Mustang_g_rotate_3rd_turn >= -45.0f)
 			Scene3_Mustang_g_rotate_3rd_turn = Scene3_Mustang_g_rotate_3rd_turn - Scene3_mustang_MODEL_ANGLE_INCREMENT - 1.0f;
 	}
@@ -2162,9 +2163,12 @@ void updateCamera(void)
 		{
 			giCameraMoves = 0;
 			gbIsCameraSet = false;
-			gCameraNumber++;			
+			gCameraNumber++;
 		}
-
+		if (giCameraMoves == 530)
+		{
+			g_SS_Scene3_WindSound->play(g_Scene3_iSilentSound_Buffer);
+		}
 		if (giCameraMoves > 600)
 		{
 			g_SS_Scene3_WindSound->stop();
@@ -2227,10 +2231,30 @@ void updateCamera(void)
 			Scene3_camera.SetPosition(glm::vec3(-182.312881f, 1.352625f, -550.358704f));
 			Scene3_camera.SetFront(glm::vec3(-0.000034f, -0.007599f, -0.999437f));
 
-			
+
 		}
 		if (giCameraMoves < 1250 && Scene3_Mustang_translateZ_Mustang <= -535.0f)
 			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime - 0.12f);
+		if (giCameraMoves ==240)
+		{
+			g_SS_Scene3_Car->stop();
+			g_SS_Scene3_Ambient->setVolume(0.4f);
+			g_SS_Scene3_PoliceSiren->play(g_Scene3_iPoliceSiren_Buffer);
+		}
+
+		if (giCameraMoves == 330)
+		{
+			g_SS_Scene3_PoliceSiren->setVolume(0.6f);
+			g_SS_Scene3_Car->play(g_Scene3_iCarCrash_Buffer);
+
+			if (g_SS_Scene3_Car->isStoped())
+			{
+				g_SS_Scene3_PoliceSiren->stop();
+			}
+		}
+
+		if (giCameraMoves < 550)
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime);
 		if (giCameraMoves > 1250)
 		{
 			giCameraMoves = 0;
@@ -2242,6 +2266,13 @@ void updateCamera(void)
 	}
 	else if (gCameraNumber == 5)
 	{
+		if (!g_SS_Scene3_Helicopter->isPlaying())
+		{
+			g_SS_Scene3_PoliceSiren->setVolume(0.6f);
+			g_SS_Scene3_Ambient->setVolume(0.4f);
+			g_SS_Scene3_Helicopter->play(g_Scene3_iHelicopter_Buffer);
+		}
+
 		if (gbIsCameraSet == false)
 		{
 			giCameraMoves = 0;
@@ -2275,6 +2306,11 @@ void updateCamera(void)
 			gbIsCameraSet = true;
 			Scene3_camera.SetPosition(glm::vec3(44.806740f, 38.181431f, -1911.009033f));
 			Scene3_camera.SetFront(glm::vec3(-0.928555f, -0.364877f, 0.068192f));
+
+			g_SS_Scene3_PoliceSiren->stop();
+			g_SS_Scene3_Helicopter->stop();
+			g_SS_Scene3_Ambient->stop();
+			g_SS_Scene3_Car->play(g_Scene3_iCarAcceleration_Start_Buffer);
 		}
 		if (giCameraMoves < 200)
 			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime - 0.3f);
@@ -2287,6 +2323,16 @@ void updateCamera(void)
 	}
 	else if (gCameraNumber == 7)
 	{
+		g_SS_Scene3_PoliceSiren->play(g_Scene3_iPoliceSiren_Buffer);
+		g_SS_Scene3_Helicopter2->play(g_Scene3_iHelicopter_Buffer);
+		//g_SS_Scene3_Helicopter->loop(AL_TRUE);
+		g_SS_Scene3_Ambient->stop();
+
+		if (giCameraMoves == 360)
+		{
+			g_SS_Scene3_Car->stop();
+		}
+
 		if (gbIsCameraSet == false)
 		{
 			giCameraMoves = 0;
@@ -2305,6 +2351,19 @@ void updateCamera(void)
 	}
 	//Comment all above this for camera facing ocean End
 	giCameraMoves++;
+
+	if (g_SS_Scene3_Helicopter2->isStoped())
+	{
+		g_SS_Scene3_PoliceSiren->stop();
+		g_SS_Scene3_Helicopter->stop();
+		g_SS_Scene3_Ambient->stop();
+		g_SS_Scene3_WindSound->stop();
+		g_SS_Scene3_Car->stop();
+		g_SS_Scene3_Helicopter2->stop();
+
+		g_scene3_bShowScene3 = false;
+		g_scene3_bGoToScene4 = true;
+	}
 }
 
 void Draw_Scene3(void);
@@ -2563,7 +2622,7 @@ void DrawCityModelWithShadowMap(void)
 	// render scene from light's point of view
 	glUseProgram(g_Scene3_DepthShader.gShaderProgramObject);
 
-	
+
 	glUniformMatrix4fv(glightSpaceMatrixSimpleDepthShaderUniform, 1, GL_FALSE, &lightSpaceMatrix[0][0]);
 
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
@@ -3664,7 +3723,7 @@ void Scene3_HelicopterBlades_Update(void)
 		fRotation_Angle_Blades = 0.0f;
 	}
 
-	
+
 	if (isTranslateY)
 	{
 		fTranslation_In_Y = fTranslation_In_Y + 0.1f;
@@ -3902,9 +3961,9 @@ void Scene3_InitializeAudio()
 	}
 
 	// Init Helicopter End
-	//// Audio Buffers End   
+	//// Audio Buffers End
 
-	//// Audio Sources Start 
+	//// Audio Sources Start
 	g_SS_Scene3_Ambient = new SoundSource();
 	g_SS_Scene3_Ambient->setPosition3f(0.0f, 0.0f, 0.0f);
 
@@ -3916,6 +3975,12 @@ void Scene3_InitializeAudio()
 
 	g_SS_Scene3_Helicopter = new SoundSource();
 	g_SS_Scene3_Helicopter->setPosition3f(0.0f, 0.0f, 0.0f);
+
+	g_SS_Scene3_Helicopter2 = new SoundSource();
+	g_SS_Scene3_Helicopter2->setPosition3f(0.0f, 0.0f, 0.0f);
+
+	g_SS_Scene3_PoliceSiren = new SoundSource();
+	g_SS_Scene3_PoliceSiren->setPosition3f(0.0f, 0.0f, 0.0f);
 	//// Audio Sources End   *******
 
 }
