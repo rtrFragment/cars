@@ -150,8 +150,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			//isTranslateY = true;
 			//gfTranslate_X = gfTranslate_X + 10.0f;
 			//break;
+			blackout -= 0.1f;
+			break;
 		case 0x42:
-			gfTranslate_X = gfTranslate_X - 10.0f;
+			//gfTranslate_X = gfTranslate_X - 10.0f;
+			//break;
+			//gbScene3_Car_Update_Flag = true;
+		    //blackout += 0.1f;
 			break;
 		case 0x43:
 			gfTranslate_Z = gfTranslate_Z + 10.0f;
@@ -196,7 +201,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			logInfo("\nHrishi : Translate X : %f Translate Y : %f Translate Z : %f\n", gfTranslate_X, gfTranslate_Y, gfTranslate_Z);
 			//logInfo("\nHrishi : Translate X : %f Translate Y : %f Translate Z : %f\n", gfTranslate_X, gfTranslate_Y, gfTranslate_Z);
 			break;
-        
+
 		case VK_ESCAPE:
 			gbIsEscapeKeyPressed = true;
 			break;
@@ -260,7 +265,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			yPos = GET_Y_LPARAM(lParam);
 			MouseMovement((double)xPos, (double)yPos);
 		}*/
-		
+
 		break;
 
 	case WM_DESTROY:
@@ -337,7 +342,7 @@ void initialize(void)
 	Init_Scene1();
 	Scene2_Initialize();
 	Init_Scene3();
-	
+
 	QueryPerformanceFrequency((LARGE_INTEGER*)&initFrequency);
 
 	QueryPerformanceCounter((LARGE_INTEGER*)&initTime);
@@ -408,7 +413,7 @@ void update(void)
 
 	if (g_scene3_bShowScene3 == true)
 	{
-		Scene3_Update();	
+		Scene3_Update();
 	}
 }
 
@@ -424,15 +429,15 @@ void resize(int width, int height)
 		height = 1;
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 
-	Scene1_gPerspectiveProjectionMatrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
-	gPerspectiveProjectionMatrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
+	Scene1_gPerspectiveProjectionMatrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100000.0f);
+	gPerspectiveProjectionMatrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100000.0f);
 
 	currentWidth = width;
 	currentHeight = height;
 	//if (g_scene2_bShowScene2 == true)
-	g_scene2_1_PerspectiveProjectionMatrix = glm::perspective(glm::radians(45.0f), (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
+	g_scene2_1_PerspectiveProjectionMatrix = glm::perspective(glm::radians(45.0f), (GLfloat)width / (GLfloat)height, 0.1f, 100000.0f);
 
-	g_Scene3_Ocean_PerspectiveProjectionMatrix = g_Scene3_CityModel_PerspectiveProjectionMatrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 10000.0f);
+	g_Scene3_Ocean_PerspectiveProjectionMatrix = g_Scene3_CityModel_PerspectiveProjectionMatrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100000.0f);
 
 	Scene3_resize(width, height);
 }
@@ -476,7 +481,7 @@ void uninitialize(int i_Exit_Flag)
 	Uninitialize_Scene1();
 	Scene2_UnInitialize(i_Exit_Flag);
 	Uninitialize_Scene3();
-	
+
 	//Stray call to glUseProgram(0)
 	glUseProgram(0);
 

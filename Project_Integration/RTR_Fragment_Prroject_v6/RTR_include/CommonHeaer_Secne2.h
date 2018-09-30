@@ -1543,7 +1543,7 @@ void Scene2_Initialize(void)
 	tdInletValveText.textColor = glm::vec3(1.0f, 0.0f, 0.0f);
 	tdInletValveText.textPosition = glm::vec3(-4.5f, 2.0f, -14.5f);
 	tdInletValveText.scale = 0.0085f; // 0 to 1 for convinience
-	frFontRenderer_InletletValveText->loadCharacters(tdInletValveText);
+	frFontRenderer_InletletValveText->loadCharacters(&tdInletValveText);
 
 	frFontRenderer_OutletletValveText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-MediumItalic.ttf", 72);
 	err = frFontRenderer_OutletletValveText->initialize();
@@ -1558,7 +1558,7 @@ void Scene2_Initialize(void)
 	tdOutletletValveText.textColor = glm::vec3(1.0f, 0.0f, 0.0f);
 	tdOutletletValveText.textPosition = glm::vec3(2.3f, 2.0f, -14.5f);
 	tdOutletletValveText.scale = 0.0085f; // 0 to 1 for convinience
-	frFontRenderer_OutletletValveText->loadCharacters(tdOutletletValveText);
+	frFontRenderer_OutletletValveText->loadCharacters(&tdOutletletValveText);
 
 	/*frFontRenderer_MainBoreText = new FontRenderer("fonts/AlegreyaSans-MediumItalic.ttf", 72);
 	err = frFontRenderer_MainBoreText->initialize();
@@ -1573,7 +1573,7 @@ void Scene2_Initialize(void)
 	tdMainBoreText.textColor = glm::vec3(1.0f, 0.0f, 0.0f);
 	tdMainBoreText.textPosition = glm::vec3(-2.0f, -4.0f, -14.5f);
 	tdMainBoreText.scale = 0.0085f; // 0 to 1 for convinience
-	frFontRenderer_MainBoreText->loadCharacters(tdMainBoreText);*/
+	frFontRenderer_MainBoreText->loadCharacters(&tdMainBoreText);*/
 
 
 	frFontRenderer_PistonText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-MediumItalic.ttf", 72);
@@ -1589,7 +1589,7 @@ void Scene2_Initialize(void)
 	tdPistonText.textColor = glm::vec3(1.0f, 0.0f, 0.0f);
 	tdPistonText.textPosition = glm::vec3(-4.0f, -3.0f, -14.5f);
 	tdPistonText.scale = 0.0085f; // 0 to 1 for convinience
-	frFontRenderer_PistonText->loadCharacters(tdPistonText);
+	frFontRenderer_PistonText->loadCharacters(&tdPistonText);
 
 	frFontRenderer_SparkPlugText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-MediumItalic.ttf", 72);
 	err = frFontRenderer_SparkPlugText->initialize();
@@ -1604,7 +1604,7 @@ void Scene2_Initialize(void)
 	tdSparkPlugText.textColor = glm::vec3(1.0f, 0.0f, 0.0f);
 	tdSparkPlugText.textPosition = glm::vec3(-1.2f, 3.0f, -14.5f);
 	tdSparkPlugText.scale = 0.0085f; // 0 to 1 for convinience
-	frFontRenderer_SparkPlugText->loadCharacters(tdSparkPlugText);
+	frFontRenderer_SparkPlugText->loadCharacters(&tdSparkPlugText);
 
 
 	frFontRenderer_IntakeText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-Bold.ttf", 78);
@@ -1620,7 +1620,7 @@ void Scene2_Initialize(void)
 	tdIntakeText.textColor = glm::vec3(0.0f, 0.0f, 1.0f);
 	tdIntakeText.textPosition = glm::vec3(1.5f, -2.0f, -14.5f);
 	tdIntakeText.scale = 0.015f;
-	frFontRenderer_IntakeText->loadCharacters(tdIntakeText);
+	frFontRenderer_IntakeText->loadCharacters(&tdIntakeText);
 
 	frFontRenderer_CompressionText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-Bold.ttf", 78);
 	err = frFontRenderer_CompressionText->initialize();
@@ -1636,7 +1636,7 @@ void Scene2_Initialize(void)
 	tdCompressionText.textColor = glm::vec3(1.0f, 1.0f, 0.56f);
 	tdCompressionText.textPosition = glm::vec3(1.5f, -2.0f, -14.5f);
 	tdCompressionText.scale = 0.015f;
-	frFontRenderer_CompressionText->loadCharacters(tdCompressionText);
+	frFontRenderer_CompressionText->loadCharacters(&tdCompressionText);
 
 	frFontRenderer_PowerText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-Bold.ttf", 78);
 	err = frFontRenderer_PowerText->initialize();
@@ -1651,7 +1651,7 @@ void Scene2_Initialize(void)
 	tdPowerText.textColor = glm::vec3(0.72f, 0.21f, 0.04f);
 	tdPowerText.textPosition = glm::vec3(1.5f, -2.0f, -14.5f);
 	tdPowerText.scale = 0.015f;
-	frFontRenderer_PowerText->loadCharacters(tdPowerText);
+	frFontRenderer_PowerText->loadCharacters(&tdPowerText);
 
 	frFontRenderer_ExhaustText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-Bold.ttf", 78);
 	err = frFontRenderer_ExhaustText->initialize();
@@ -1666,7 +1666,7 @@ void Scene2_Initialize(void)
 	tdExhaustText.textColor = glm::vec3(0.0f, 0.85f, 0.0f);
 	tdExhaustText.textPosition = glm::vec3(1.5f, -2.0f, -14.5f);
 	tdExhaustText.scale = 0.015f;
-	frFontRenderer_ExhaustText->loadCharacters(tdExhaustText);
+	frFontRenderer_ExhaustText->loadCharacters(&tdExhaustText);
 	/// Text Config End
 
 	/// Line Config Start

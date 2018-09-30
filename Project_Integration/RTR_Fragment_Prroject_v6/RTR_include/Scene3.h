@@ -252,10 +252,65 @@ GLuint g_Scene3_SkyBox_Blackout;
 GLuint g_Scene3_Instance_Blackout;
 GLuint g_Scene3_CityModel_Blackout;
 
+
+// Scene3_mustang
+
+#define Scene3_mustang_START_ANGLE_POS			0.0f	//Marks beginning angle position of rotation
+#define Scene3_mustang_END_ANGLE_POS			45.0f	//Marks terminating angle position rotation
+#define Scene3_mustang_MODEL_ANGLE_INCREMENT	1.2f	//Increment angle for MODEL
+
+GLuint Scene3_mustang_gVertexShaderObject;
+GLuint Scene3_mustang_gFragmentShaderObject;
+GLuint Scene3_mustang_gShaderProgramObject;
+
+GLuint Scene3_mustang_gVbo_Position, Scene3_mustang_gVbo_Normal, Scene3_mustang_gVbo_Texture;
+
+GLuint Scene3_mustang_gModelMatrixUniform, Scene3_mustang_gViewMatrixUniform, Scene3_mustang_gProjectionMatrixUniform;
+GLuint Scene3_mustang_gLKeyPressedUniform;
+
+GLuint Scene3_mustang_gLaUniform, Scene3_mustang_gLdUniform, Scene3_mustang_gLsUniform;
+GLuint Scene3_mustang_gLightPositionUniform;
+
+GLuint Scene3_mustang_gKaUniform, Scene3_mustang_gKdUniform, Scene3_mustang_gKsUniform, Scene3_mustang_gAlphaUniform;
+GLuint Scene3_mustang_gMaterialShininessUniform;
+GLuint Scene3_mustang_gTextureSamplerUniform, Scene3_mustang_gTextureActiveUniform;
+
+GLfloat Scene3_mustang_lightAmbient[] = { 0.0f,0.0f,0.0f,1.0f };
+GLfloat Scene3_mustang_lightDiffuse[] = { 1.0f,1.0f,1.0f,1.0f };
+GLfloat Scene3_mustang_lightSpecular[] = { 1.0f,1.0f,1.0f,1.0f };
+GLfloat Scene3_mustang_lightPosition[] = { 0.0f,20.0f,20.0f,0.0f };
+
+GLfloat Scene3_mustang_materialAmbient[] = { 0.25f,0.25f,0.25f,1.0f };
+GLfloat Scene3_mustang_materialShininess = 0.6f * 128.0f;
+
+GLfloat Scene3_mustang_g_rotate, Scene3_Mustang_g_rotate_1st_turn_for_car, Scene3_Mustang_g_rotate_3rd_turn_for_car, Scene3_Mustang_Scene3_Mustang_g_rotate_2nd_turn_for_car = 0.0f, Scene3_Mustang_g_rotate_2nd_turn = 45.0f, Scene3_Mustang_g_rotate_3rd_turn = 0.0f, Scene3_Mustang_g_rotate_4th_turn = -45.0f;
+
+struct Scene3_Mustang_Model
+{
+	GLuint gVao;
+	std::vector<float> gv_vertices_1, gv_textures_1, gv_normals_1;
+	std::vector<material>arr_material;
+	std::vector<Mesh_Data>mesh_data;
+	int count_of_vertices;
+	char mtlFileName[256];
+}gMustang_Body;
+
+GLfloat Scene3_Mustang_translateX_Mustang = 0.0f, Scene3_Mustang_translateY_Mustang = 0.0f, Scene3_Mustang_translateZ_Mustang = 150.0f;
+GLfloat Scene3_Mustang_speed = 0.4f;
+
+bool Scene3_Mustang_gb1stTurn_Complete = true;
+bool Scene3_Mustang_gb2ndTurn_Complete = true;
+bool Scene3_Mustang_gb3rdTurn_Complete = true;
+bool Scene3_Mustang_gb4thTurn_Complete = true;
+
+// Scene3_mustang
+
 void Init_Scene3()
 {
 	void Scene3_Ocean_Initialize(void);
 	void Scene3_InitializeAudio(void);
+	void Scene3_mustang_initialize(void);
+
 	std::vector<Mesh_Data> Scene3_MD_City;
 	char Scene3_chMtlPath[256];
 	void Scene3_InitQuad(void);
@@ -350,6 +405,7 @@ void Init_Scene3()
 
 	Scene3_Ocean_Initialize();
 	Scene3_InitializeAudio();
+	Scene3_mustang_initialize();
 }
 
 //***********Quad (Finish Line)***********
@@ -1735,6 +1791,7 @@ void Uninitialize_PalmTreeShader(void);
 void Uninitialize_QuadFinishLine(void);
 void Uninitialize_HelicopterBlades(void);
 void Uninitialize_HelicopterBody(void);
+void Scene3_mustang_uninitialize(void);
 
 void Uninitialize_Scene3()
 {
@@ -1778,6 +1835,43 @@ void Uninitialize_Scene3()
 	Uninitialize_CityModelShader();
 
 	Scene3_Ocean_UnInitialize();
+	Scene3_mustang_uninitialize();
+}
+
+void Scene3_mustang_uninitialize()
+{
+	if (gMustang_Body.gVao)
+	{
+		glDeleteVertexArrays(1, &gMustang_Body.gVao);
+		gMustang_Body.gVao = 0;
+	}
+
+	if (Scene3_mustang_gVbo_Position)
+	{
+		glDeleteBuffers(1, &Scene3_mustang_gVbo_Position);
+		Scene3_mustang_gVbo_Position = 0;
+	}
+
+	if (Scene3_mustang_gVbo_Normal)
+	{
+		glDeleteBuffers(1, &Scene3_mustang_gVbo_Normal);
+		Scene3_mustang_gVbo_Normal = 0;
+	}
+
+	//Detach Shader 
+	glDetachShader(Scene3_mustang_gShaderProgramObject, Scene3_mustang_gVertexShaderObject);
+	glDetachShader(Scene3_mustang_gShaderProgramObject, Scene3_mustang_gFragmentShaderObject);
+
+	//Delete Shader
+	glDeleteShader(Scene3_mustang_gVertexShaderObject);
+	Scene3_mustang_gVertexShaderObject = 0;
+
+	glDeleteShader(Scene3_mustang_gFragmentShaderObject);
+	Scene3_mustang_gFragmentShaderObject = 0;
+
+	//Delete Program
+	glDeleteProgram(Scene3_mustang_gShaderProgramObject);
+	Scene3_mustang_gShaderProgramObject = 0;
 }
 
 void Uninitialize_CityLightShader(void)
@@ -1935,11 +2029,14 @@ void Uninitialize_SkyBoxShader(void)
 	glUseProgram(0);
 }
 
+bool gbScene3_Car_Update_Flag = false;
+
 void Scene3_Update()
 {
 	void updateCamera(void);
 	void Scene3_Ocean_Update(void);
 	void Scene3_HelicopterBlades_Update(void);
+	void Scene3_mustang_update(void);
 
 	if ((g_scene3_bShowScene3==true) & (g_scene3_bPlayInTheEnd == true))
 	{
@@ -1957,6 +2054,100 @@ void Scene3_Update()
 	Scene3_Ocean_Update();
 
 	Scene3_HelicopterBlades_Update();
+	if(gCameraNumber >= 2)
+		Scene3_mustang_update();
+}
+
+void Scene3_mustang_update(void)
+{
+	GLfloat fXIncrement = 0.0f, fZIncrement = 0.0f;
+
+	if (Scene3_Mustang_translateZ_Mustang >= -390.0f && Scene3_Mustang_gb1stTurn_Complete == true)
+	{
+		Scene3_Mustang_translateZ_Mustang = Scene3_Mustang_translateZ_Mustang - Scene3_Mustang_speed;
+	}
+
+	if (Scene3_Mustang_g_rotate_1st_turn_for_car >= 1.9f && Scene3_Mustang_translateX_Mustang >= -114.0f && Scene3_Mustang_gb2ndTurn_Complete == true)
+	{
+		Scene3_Mustang_translateX_Mustang = Scene3_Mustang_translateX_Mustang - Scene3_Mustang_speed;
+	}
+
+	if (Scene3_Mustang_translateZ_Mustang <= -390.0f && Scene3_Mustang_gb1stTurn_Complete == true)
+	{
+		if (Scene3_Mustang_g_rotate_1st_turn_for_car <= 2.0f)
+		{
+			fXIncrement = sin(Scene3_Mustang_g_rotate_1st_turn_for_car) * 1.5f;
+			fZIncrement = cos(Scene3_Mustang_g_rotate_1st_turn_for_car) * 1.5f;
+			Scene3_Mustang_translateX_Mustang = Scene3_Mustang_translateX_Mustang - fXIncrement;
+			Scene3_Mustang_translateZ_Mustang = Scene3_Mustang_translateZ_Mustang - fZIncrement;
+		}
+	}
+	//Scene3_Mustang_translateX_Mustang = Scene3_Mustang_translateX_Mustang - fXIncrement;
+	//Scene3_Mustang_translateZ_Mustang = Scene3_Mustang_translateZ_Mustang - fZIncrement;
+	if (Scene3_Mustang_translateZ_Mustang <= -390.0f && Scene3_Mustang_gb1stTurn_Complete == true)
+	{
+		if (Scene3_Mustang_g_rotate_1st_turn_for_car <= 2.0f)
+			Scene3_Mustang_g_rotate_1st_turn_for_car = Scene3_Mustang_g_rotate_1st_turn_for_car + 0.1f;
+		if (Scene3_mustang_g_rotate <= Scene3_mustang_END_ANGLE_POS)
+			Scene3_mustang_g_rotate = Scene3_mustang_g_rotate + 2.2f;
+		//Scene3_mustang_g_rotate = Scene3_mustang_START_ANGLE_POS;
+	}
+	if (Scene3_Mustang_translateX_Mustang <= -113.0f && Scene3_Mustang_gb2ndTurn_Complete == true)
+	{
+		/*fXIncrement = sin(Scene3_Mustang_Scene3_Mustang_g_rotate_2nd_turn_for_car) * (-2.0f);
+		fZIncrement = cos(Scene3_Mustang_Scene3_Mustang_g_rotate_2nd_turn_for_car) * (-2.0f);
+		Scene3_Mustang_translateX_Mustang = Scene3_Mustang_translateX_Mustang - fXIncrement;
+		Scene3_Mustang_translateZ_Mustang = Scene3_Mustang_translateZ_Mustang - fZIncrement;
+		if (Scene3_Mustang_Scene3_Mustang_g_rotate_2nd_turn_for_car >= -2.0f)
+		Scene3_Mustang_Scene3_Mustang_g_rotate_2nd_turn_for_car = Scene3_Mustang_Scene3_Mustang_g_rotate_2nd_turn_for_car + 0.1f;*/
+		if (Scene3_Mustang_g_rotate_2nd_turn >= 0.0f)
+		{
+			Scene3_Mustang_g_rotate_2nd_turn = Scene3_Mustang_g_rotate_2nd_turn - 1.2f;
+		}
+		Scene3_Mustang_translateX_Mustang = -181.642319f;
+		//Scene3_mustang_g_rotate = Scene3_mustang_START_ANGLE_POS;
+	}
+	if (Scene3_Mustang_translateX_Mustang <= -113.0f)
+	{
+		Scene3_Mustang_speed = 0.3f;
+		//Scene3_Mustang_gb2ndTurn_Complete = false;
+		if (Scene3_Mustang_translateZ_Mustang >= -893.0f)
+			Scene3_Mustang_translateZ_Mustang = Scene3_Mustang_translateZ_Mustang - Scene3_Mustang_speed;
+	}
+	if (Scene3_Mustang_translateZ_Mustang <= -600.0f)
+		Scene3_Mustang_gb2ndTurn_Complete = false;
+
+	if (Scene3_Mustang_translateZ_Mustang <= -890.0f && Scene3_Mustang_translateX_Mustang <= -138.0f)
+	{
+		fXIncrement = sin(Scene3_Mustang_g_rotate_3rd_turn_for_car) * 0.9f;
+		fZIncrement = cos(Scene3_Mustang_g_rotate_3rd_turn_for_car) * 0.9f;
+		Scene3_Mustang_translateX_Mustang = Scene3_Mustang_translateX_Mustang + fXIncrement;
+		Scene3_Mustang_translateZ_Mustang = Scene3_Mustang_translateZ_Mustang - fZIncrement;
+		
+		if (Scene3_Mustang_g_rotate_3rd_turn >= -45.0f)
+			Scene3_Mustang_g_rotate_3rd_turn = Scene3_Mustang_g_rotate_3rd_turn - Scene3_mustang_MODEL_ANGLE_INCREMENT - 1.0f;
+	}
+
+	if (Scene3_Mustang_translateZ_Mustang <= -890.0f && Scene3_Mustang_gb3rdTurn_Complete == true)
+	{
+		if (Scene3_Mustang_g_rotate_3rd_turn_for_car <= 1.3f)
+			Scene3_Mustang_g_rotate_3rd_turn_for_car = Scene3_Mustang_g_rotate_3rd_turn_for_car + 0.02f;
+	}
+
+	/*if (Scene3_Mustang_translateZ_Mustang <= 890.0f)
+	{
+
+	}*/
+	/*if (Scene3_Mustang_translateZ_Mustang <= -890.0f && Scene3_Mustang_gb3rdTurn_Complete == true)
+	{
+	if (Scene3_Mustang_g_rotate_3rd_turn >= -45.0f)
+	Scene3_Mustang_g_rotate_3rd_turn = Scene3_Mustang_g_rotate_3rd_turn - Scene3_mustang_MODEL_ANGLE_INCREMENT;
+	}
+	if (Scene3_Mustang_translateX_Mustang >= -55.0f && Scene3_Mustang_translateZ_Mustang <= -932.0f && Scene3_Mustang_gb4thTurn_Complete == true)
+	{
+	if (Scene3_Mustang_g_rotate_4th_turn <= 0.0f)
+	Scene3_Mustang_g_rotate_4th_turn = Scene3_Mustang_g_rotate_4th_turn + Scene3_mustang_MODEL_ANGLE_INCREMENT;
+	}*/
 }
 
 //Camera Update Function
@@ -1965,16 +2156,16 @@ void updateCamera(void)
 {
 	if (gCameraNumber == 1)
 	{
-		if (giCameraMoves < 470)
-			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime);
-		if (giCameraMoves > 600)
+		if (giCameraMoves < 630)
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime - 0.3f);
+		if (giCameraMoves > 730)
 		{
 			giCameraMoves = 0;
 			gbIsCameraSet = false;
 			gCameraNumber++;			
 		}
 
-		if (giCameraMoves > 550)
+		if (giCameraMoves > 600)
 		{
 			g_SS_Scene3_WindSound->stop();
 			g_SS_Scene3_Ambient->play(g_Scene3_iInTheEnd_Buffer);
@@ -1994,13 +2185,13 @@ void updateCamera(void)
 			Scene3_camera.SetFront(glm::vec3(0.687855f, 0.031497f, -0.722319f));
 		}
 
-		if (giCameraMoves < 700)
-			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime);
+		if (giCameraMoves < 850)
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime - 0.3f);
 
-		if (10 < giCameraMoves && giCameraMoves < 700)
-			Scene3_camera.ProcessKeyboard(FRAG_Camera2::LEFT, deltaTime);
+		if (10 < giCameraMoves && giCameraMoves < 850)
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::LEFT, deltaTime - 0.3f);
 
-		if (giCameraMoves > 710)
+		if (giCameraMoves > 870)
 		{
 			giCameraMoves = 0;
 			gbIsCameraSet = false;
@@ -2017,7 +2208,7 @@ void updateCamera(void)
 			Scene3_camera.SetFront(glm::vec3(-0.668179f, -0.327218f, 0.668181f));
 		}
 
-		if (giCameraMoves > 200)
+		if (giCameraMoves > 570)
 		{
 			giCameraMoves = 0;
 			gbIsCameraSet = false;
@@ -2033,14 +2224,14 @@ void updateCamera(void)
 //			Scene3_camera.SetPosition(glm::vec3(-181.042267f, 1.352625f, -574.238708f));
 //			Scene3_camera.SetFront(glm::vec3(-0.017452f, -0.009599f, -0.999802f));
 
-			Scene3_camera.SetPosition(glm::vec3(-182.312881f, 1.352625f, -565.358704f));
+			Scene3_camera.SetPosition(glm::vec3(-182.312881f, 1.352625f, -550.358704f));
 			Scene3_camera.SetFront(glm::vec3(-0.000034f, -0.007599f, -0.999437f));
 
 			
 		}
-		if (giCameraMoves < 550)
-			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime);
-		if (giCameraMoves > 550)
+		if (giCameraMoves < 1250 && Scene3_Mustang_translateZ_Mustang <= -535.0f)
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime - 0.12f);
+		if (giCameraMoves > 1250)
 		{
 			giCameraMoves = 0;
 			gbIsCameraSet = false;
@@ -2069,7 +2260,7 @@ void updateCamera(void)
 
 		}
 
-		if (giCameraMoves > 500)
+		if (giCameraMoves > 600)
 		{
 			giCameraMoves = 0;
 			gbIsCameraSet = false;
@@ -2086,7 +2277,7 @@ void updateCamera(void)
 			Scene3_camera.SetFront(glm::vec3(-0.928555f, -0.364877f, 0.068192f));
 		}
 		if (giCameraMoves < 200)
-			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime);
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime - 0.3f);
 		if (giCameraMoves > 300)
 		{
 			giCameraMoves = 0;
@@ -2104,7 +2295,7 @@ void updateCamera(void)
 			Scene3_camera.SetFront(glm::vec3(-0.074943f, 0.031411f, -0.996693f));
 		}
 		if (giCameraMoves < 380)
-			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime);
+			Scene3_camera.ProcessKeyboard(FRAG_Camera2::FORWARD, deltaTime - 0.3f);
 		if (giCameraMoves > 380)
 		{
 			giCameraMoves = 0;
@@ -2127,6 +2318,8 @@ void updateCamera(void);
 void Draw_Scene3(void)
 {
 	void Scene3_Ocean_Display(void);
+	void Scene3_mustang_display(void);
+
 	DrawSkyBox();
 
 	//DrawCityModel();
@@ -2142,6 +2335,115 @@ void Draw_Scene3(void)
 	}
 
 	Scene3_Ocean_Display();
+	if (gCameraNumber >= 2)
+		Scene3_mustang_display();
+}
+
+void Scene3_mustang_display(void)
+{
+	//Use Shader Program Object
+	glUseProgram(Scene3_mustang_gShaderProgramObject);
+
+	if (gbLight == true)
+	{
+		glUniform1i(Scene3_mustang_gLKeyPressedUniform, 1);
+
+		glUniform3fv(Scene3_mustang_gLaUniform, 1, Scene3_mustang_lightAmbient);
+		glUniform3fv(Scene3_mustang_gLdUniform, 1, Scene3_mustang_lightDiffuse);
+		glUniform3fv(Scene3_mustang_gLsUniform, 1, Scene3_mustang_lightSpecular);
+		glUniform4fv(Scene3_mustang_gLightPositionUniform, 1, Scene3_mustang_lightPosition);
+	}
+	else
+	{
+		glUniform1i(Scene3_mustang_gLKeyPressedUniform, 0);
+	}
+
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	glm::mat4 viewMatrix = glm::mat4(1.0f);
+	glm::mat4 scaleMatrix = glm::mat4(1.0f);
+	glm::mat4 rotationMatrix = glm::mat4(1.0f);
+	glm::mat4 translationMatrix = glm::mat4(1.0f);
+
+	glUniformMatrix4fv(Scene3_mustang_gModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+	glUniformMatrix4fv(Scene3_mustang_gViewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+	glUniformMatrix4fv(Scene3_mustang_gProjectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(gPerspectiveProjectionMatrix));
+
+	//Mustang_Body
+
+	viewMatrix = Scene3_camera.GetViewMatrix();
+
+	translationMatrix = glm::translate(modelMatrix, glm::vec3(MODEL_X_TRANSLATE + Scene3_Mustang_translateX_Mustang, MODEL_Y_TRANSLATE + Scene3_Mustang_translateY_Mustang, MODEL_Z_TRANSLATE + Scene3_Mustang_translateZ_Mustang));
+	//translationMatrix = glm::translate(modelMatrix, glm::vec3(0.0f,0.0f,0.0f));
+	modelMatrix = modelMatrix * translationMatrix;
+
+	if (Scene3_Mustang_translateZ_Mustang <= -390.0f && Scene3_Mustang_gb1stTurn_Complete == true)
+	{
+		rotationMatrix = glm::rotate(rotationMatrix, glm::radians(Scene3_mustang_g_rotate), glm::vec3(0.0f, 1.0f, 0.0f));
+		modelMatrix = modelMatrix * rotationMatrix;
+	}
+	if (Scene3_Mustang_translateX_Mustang <= -113.0f && Scene3_Mustang_gb2ndTurn_Complete == true)
+	{
+		rotationMatrix = glm::rotate(rotationMatrix, glm::radians(Scene3_Mustang_g_rotate_2nd_turn), glm::vec3(0.0f, 1.0f, 0.0f));
+		modelMatrix = modelMatrix * rotationMatrix;
+		Scene3_Mustang_gb1stTurn_Complete = false;
+	}
+	if (Scene3_Mustang_translateZ_Mustang <= -890.0f && Scene3_Mustang_gb3rdTurn_Complete == true)
+	{
+		rotationMatrix = glm::rotate(rotationMatrix, glm::radians(Scene3_Mustang_g_rotate_3rd_turn), glm::vec3(0.0f, 1.0f, 0.0f));
+		modelMatrix = modelMatrix * rotationMatrix;
+		Scene3_Mustang_gb2ndTurn_Complete = false;
+	}
+	if (Scene3_Mustang_translateX_Mustang >= -55.0f && Scene3_Mustang_translateZ_Mustang <= -932.0f && Scene3_Mustang_gb4thTurn_Complete == true)
+	{
+		rotationMatrix = glm::rotate(rotationMatrix, glm::radians(Scene3_Mustang_g_rotate_4th_turn), glm::vec3(0.0f, 1.0f, 0.0f));
+		modelMatrix = modelMatrix * rotationMatrix;
+		Scene3_Mustang_gb3rdTurn_Complete = false;
+	}
+
+	//rotationMatrix = glm::rotate(rotationMatrix, glm::radians(Scene3_mustang_g_rotate), glm::vec3(1.0f, 0.0f, 0.0f));
+	//modelMatrix = modelMatrix*rotationMatrix;
+
+	rotationMatrix = glm::rotate(rotationMatrix, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	modelMatrix = modelMatrix*rotationMatrix;
+
+	//rotationMatrix = glm::rotate(rotationMatrix,glm::radians(Scene3_mustang_g_rotate), glm::vec3(0.0f, 0.0f, 1.0f));
+	//modelMatrix = modelMatrix*rotationMatrix;
+
+	glUniformMatrix4fv(Scene3_mustang_gModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+	glUniformMatrix4fv(Scene3_mustang_gViewMatrixUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+	glUniformMatrix4fv(Scene3_mustang_gProjectionMatrixUniform, 1, GL_FALSE, glm::value_ptr(gPerspectiveProjectionMatrix));
+
+	//glUniformMatrix4fv(gMVPUniform, 1, GL_FALSE, gPerspectiveProjectionMatrix*viewMatrix*modelMatrix);
+
+	glBindVertexArray(gMustang_Body.gVao);
+
+	for (int i = 0; i < gMustang_Body.mesh_data.size(); i++)
+	{
+		if (gbLight == true)
+		{
+			glUniform3fv(Scene3_mustang_gKaUniform, 1, gMustang_Body.arr_material[gMustang_Body.mesh_data[i].material_index].Ka);
+			glUniform3fv(Scene3_mustang_gKdUniform, 1, gMustang_Body.arr_material[gMustang_Body.mesh_data[i].material_index].Kd);
+			glUniform3fv(Scene3_mustang_gKsUniform, 1, gMustang_Body.arr_material[gMustang_Body.mesh_data[i].material_index].Ks);
+			glUniform1f(Scene3_mustang_gMaterialShininessUniform, Scene3_mustang_materialShininess);
+			glUniform1f(Scene3_mustang_gAlphaUniform, gMustang_Body.arr_material[gMustang_Body.mesh_data[i].material_index].d);
+
+			if (gMustang_Body.arr_material[gMustang_Body.mesh_data[i].material_index].ismap_Kd == true)
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, gMustang_Body.arr_material[gMustang_Body.mesh_data[i].material_index].gTexture);
+				glUniform1i(Scene3_mustang_gTextureSamplerUniform, 0);
+				glUniform1i(Scene3_mustang_gTextureActiveUniform, 1);
+			}
+			else
+				glUniform1i(Scene3_mustang_gTextureActiveUniform, 0);
+		}
+
+		glDrawArrays(GL_TRIANGLES, gMustang_Body.mesh_data[i].vertex_Index, gMustang_Body.mesh_data[i].vertex_Count);
+	}
+
+	glBindVertexArray(0);
+
+	glUseProgram(0);
 }
 
 void Scene3_resize(int width, int height)
@@ -3112,6 +3414,245 @@ void Scene3_Ocean_Display(void)
 	glBindVertexArray(0);
 
 	glUseProgram(0);
+}
+
+void Scene3_mustang_initialize(void)
+{
+	//Mustang Body
+	MessageBox(ghwnd, TEXT("Before LoadMeshData"), TEXT("MSG"), MB_OK);
+	LoadMeshData("RTR_resources/models/Mustang_GT/mustang_GT.obj", gMustang_Body.gv_vertices_1, gMustang_Body.gv_textures_1, gMustang_Body.gv_normals_1, gMustang_Body.mesh_data, gMustang_Body.mtlFileName);
+	MessageBox(ghwnd, TEXT("After LoadMeshData 1"), TEXT("MSG"), MB_OK);
+	LoadMaterialData(gMustang_Body.mtlFileName, gMustang_Body.arr_material);
+	MessageBox(ghwnd, TEXT("After LoadMaterialData"), TEXT("MSG"), MB_OK);
+	Rearrange_Material_Data(gMustang_Body.mesh_data, gMustang_Body.arr_material);
+	MessageBox(ghwnd, TEXT("After Rearrange_Material_Data "), TEXT("MSG"), MB_OK);
+
+	//Vertex Shader
+	Scene3_mustang_gVertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
+
+	const GLchar *vertexShaderSourceCode =
+		"#version 450" \
+		"\n" \
+		"in vec4 vPosition;" \
+		"in vec3 vNormal;" \
+		"in vec2 vTexture0_Coord;" \
+		"uniform mat4 u_model_matrix;" \
+		"uniform mat4 u_view_matrix;" \
+		"uniform mat4 u_projection_matrix;" \
+		"uniform int u_lighting_enabled;" \
+		"uniform vec4 u_light_position;" \
+		"out vec3 transformed_normals;" \
+		"out vec3 light_direction;" \
+		"out vec3 viewer_vector;" \
+		"out vec2 out_texture0_coord;" \
+		"void main(void)" \
+		"{" \
+		"if(u_lighting_enabled==1)" \
+		"{" \
+		"vec4 eye_coordinates = u_view_matrix*u_model_matrix*vPosition;" \
+		"transformed_normals = mat3(u_view_matrix*u_model_matrix)*vNormal;" \
+		"light_direction = vec3(u_light_position)-eye_coordinates.xyz;" \
+		"viewer_vector = -eye_coordinates.xyz;" \
+		"}" \
+		"gl_Position = u_projection_matrix*u_view_matrix*u_model_matrix*vPosition;" \
+		"out_texture0_coord = vTexture0_Coord;" \
+		"}";
+
+	glShaderSource(Scene3_mustang_gVertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
+
+	glCompileShader(Scene3_mustang_gVertexShaderObject);
+	GLint iInfoLogLength = 0;
+	GLint iShaderCompiledStatus = 0;
+	char *szInfoLog = NULL;
+
+	glGetShaderiv(Scene3_mustang_gVertexShaderObject, GL_COMPILE_STATUS, &iShaderCompiledStatus);
+	if (iShaderCompiledStatus == GL_FALSE)
+	{
+		glGetShaderiv(Scene3_mustang_gVertexShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		if (iInfoLogLength > 0)
+		{
+			szInfoLog = (char *)malloc(iInfoLogLength);
+			if (szInfoLog != NULL)
+			{
+				GLsizei written;
+				glGetShaderInfoLog(Scene3_mustang_gVertexShaderObject, iInfoLogLength, &written, szInfoLog);
+				logError("Vertex Shader Compilation Log : %s\n", szInfoLog);
+				free(szInfoLog);
+			}
+		}
+	}
+
+	//Fragment Shader
+	Scene3_mustang_gFragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
+
+	const GLchar *fragmentShaderSourceCode =
+		"#version 450" \
+		"\n" \
+		"in vec3 transformed_normals;" \
+		"in vec3 light_direction;" \
+		"in vec3 viewer_vector;" \
+		"in vec2 out_texture0_coord;" \
+		"out vec4 FragColor;" \
+		"uniform vec3 u_La;" \
+		"uniform vec3 u_Ld;" \
+		"uniform vec3 u_Ls;" \
+		"uniform vec3 u_Ka;" \
+		"uniform vec3 u_Kd;" \
+		"uniform vec3 u_Ks;" \
+		"uniform float u_material_shininess;" \
+		"uniform int u_lighting_enabled;" \
+		"uniform float u_alpha;" \
+		"uniform sampler2D u_texture0_sampler;"\
+		"uniform int u_is_texture;" \
+		"vec4 Final_Texture;" \
+		"vec4 Temp_Output;" \
+		"void main(void)" \
+		"{" \
+		"vec3 phong_ads_color;" \
+		"if(u_lighting_enabled == 1)" \
+		"{" \
+		"vec3 normalized_transformed_normals = normalize(transformed_normals);" \
+		"vec3 normalized_light_direction = normalize(light_direction);" \
+		"vec3 normalized_viewer_vector = normalize(viewer_vector);" \
+		"vec3 ambient = u_La * u_Ka;" \
+		"float tn_dot_ld = max(dot(normalized_transformed_normals,normalized_light_direction),0.0);" \
+		"vec3 diffuse = u_Ld * u_Kd * tn_dot_ld;" \
+		"vec3 reflection_vector = reflect(-normalized_light_direction,normalized_transformed_normals);" \
+		"vec3 specular = u_Ls * u_Ks * pow(max(dot(reflection_vector,normalized_viewer_vector),0.0),u_material_shininess);" \
+		"phong_ads_color = ambient + diffuse + specular;" \
+		"}" \
+		"else" \
+		"{" \
+		"phong_ads_color = vec3(1.0f,1.0f,1.0f);" \
+		"}" \
+		"if(u_is_texture == 1)" \
+		"{" \
+		"Final_Texture = texture(u_texture0_sampler,out_texture0_coord);" \
+		"Temp_Output = vec4(phong_ads_color,u_alpha) * Final_Texture;" \
+		"FragColor = Temp_Output;" \
+		"}" \
+		"else" \
+		"{" \
+		"FragColor = vec4(phong_ads_color,u_alpha);" \
+		"}" \
+		"}";
+
+	glShaderSource(Scene3_mustang_gFragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
+
+	glCompileShader(Scene3_mustang_gFragmentShaderObject);
+
+	glGetShaderiv(Scene3_mustang_gFragmentShaderObject, GL_COMPILE_STATUS, &iShaderCompiledStatus);
+	if (iShaderCompiledStatus == GL_FALSE)
+	{
+		glGetShaderiv(Scene3_mustang_gFragmentShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		if (iInfoLogLength > 0)
+		{
+			szInfoLog = (char*)malloc(iInfoLogLength);
+			if (szInfoLog != NULL)
+			{
+				GLsizei written;
+				glGetShaderInfoLog(Scene3_mustang_gFragmentShaderObject, iInfoLogLength, &written, szInfoLog);
+				logError("Fragment Shader Compilation Log : %s\n", szInfoLog);
+				free(szInfoLog);
+			}
+		}
+	}
+
+	//Shader Program
+	Scene3_mustang_gShaderProgramObject = glCreateProgram();
+
+	glAttachShader(Scene3_mustang_gShaderProgramObject, Scene3_mustang_gVertexShaderObject);
+
+	glAttachShader(Scene3_mustang_gShaderProgramObject, Scene3_mustang_gFragmentShaderObject);
+
+	glBindAttribLocation(Scene3_mustang_gShaderProgramObject, HAD_ATTRIBUTE_POSITION, "vPosition");
+
+	glBindAttribLocation(Scene3_mustang_gShaderProgramObject, HAD_ATTRIBUTE_NORMAL, "vNormal");
+
+	glBindAttribLocation(Scene3_mustang_gShaderProgramObject, HAD_ATTRIBUTE_TEXTURE0, "vTexture0_Coord");
+
+	glLinkProgram(Scene3_mustang_gShaderProgramObject);
+
+	GLint iShaderProgramLinkStatus = 0;
+
+	glGetProgramiv(Scene3_mustang_gShaderProgramObject, GL_LINK_STATUS, &iShaderProgramLinkStatus);
+	if (iShaderProgramLinkStatus == GL_FALSE)
+	{
+		glGetProgramiv(Scene3_mustang_gShaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+		if (iInfoLogLength > 0)
+		{
+			szInfoLog = (char *)malloc(iInfoLogLength);
+			if (szInfoLog != NULL)
+			{
+				GLsizei written;
+				glGetProgramInfoLog(Scene3_mustang_gShaderProgramObject, iInfoLogLength, &written, szInfoLog);
+				logError("Shader Program Link Log : %s\n", szInfoLog);
+				free(szInfoLog);
+			}
+		}
+	}
+
+	Scene3_mustang_gModelMatrixUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_model_matrix");
+	Scene3_mustang_gViewMatrixUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_view_matrix");
+	Scene3_mustang_gProjectionMatrixUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_projection_matrix");
+
+	Scene3_mustang_gLKeyPressedUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_lighting_enabled");
+
+	Scene3_mustang_gLaUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_La");
+	Scene3_mustang_gLdUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_Ld");
+	Scene3_mustang_gLsUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_Ls");
+
+	Scene3_mustang_gLightPositionUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_light_position");
+
+	Scene3_mustang_gKaUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_Ka");
+	Scene3_mustang_gKdUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_Kd");
+	Scene3_mustang_gKsUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_Ks");
+	Scene3_mustang_gAlphaUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_alpha");
+
+	Scene3_mustang_gMaterialShininessUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_material_shininess");
+
+	Scene3_mustang_gTextureSamplerUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_texture0_sampler");
+
+	Scene3_mustang_gTextureActiveUniform = glGetUniformLocation(Scene3_mustang_gShaderProgramObject, "u_is_texture");
+
+	/*****************VAO For Mustang_Body*****************/
+	glGenVertexArrays(1, &gMustang_Body.gVao);
+	glBindVertexArray(gMustang_Body.gVao);
+
+	/*****************Mustang_Body Position****************/
+	glGenBuffers(1, &Scene3_mustang_gVbo_Position);
+	glBindBuffer(GL_ARRAY_BUFFER, Scene3_mustang_gVbo_Position);
+	glBufferData(GL_ARRAY_BUFFER, gMustang_Body.gv_vertices_1.size() * sizeof(float), &gMustang_Body.gv_vertices_1[0], GL_STATIC_DRAW);
+
+	glVertexAttribPointer(HAD_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glEnableVertexAttribArray(HAD_ATTRIBUTE_POSITION);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	/*******************Mustang_Body Texture******************/
+	glGenBuffers(1, &Scene3_mustang_gVbo_Texture);
+	glBindBuffer(GL_ARRAY_BUFFER, Scene3_mustang_gVbo_Texture);
+	glBufferData(GL_ARRAY_BUFFER, gMustang_Body.gv_textures_1.size() * sizeof(float), &gMustang_Body.gv_textures_1[0], GL_STATIC_DRAW);
+
+	glVertexAttribPointer(HAD_ATTRIBUTE_TEXTURE0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glEnableVertexAttribArray(HAD_ATTRIBUTE_TEXTURE0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	/*****************Mustang_Body Normal****************/
+	glGenBuffers(1, &Scene3_mustang_gVbo_Normal);
+	glBindBuffer(GL_ARRAY_BUFFER, Scene3_mustang_gVbo_Normal);
+	glBufferData(GL_ARRAY_BUFFER, gMustang_Body.gv_normals_1.size() * sizeof(float), &gMustang_Body.gv_normals_1[0], GL_STATIC_DRAW);
+
+	glVertexAttribPointer(HAD_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glEnableVertexAttribArray(HAD_ATTRIBUTE_NORMAL);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(0);
 }
 
 void Scene3_HelicopterBlades_Update(void)

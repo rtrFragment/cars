@@ -74,7 +74,7 @@ char scene1_mustang_Mtllib[256];
 GLfloat Scene1_cutoff_angle_Car = 62.5f;
 GLfloat Scene1_outer_cutoff_angle_Car = 67.5f;
 
-FILE *gpFile;
+//FILE *gpFile;
 
 bool Scene1_Car_Rotation_Completed_Flag = false;
 
@@ -133,7 +133,7 @@ void Init_Scene1_Car(void)
 			{
 				GLsizei written;
 				glGetShaderInfoLog(gScene1_VertexShaderObject_Car, iInfoLogLength, &written, szInfoLog);
-				fprintf(gpFile, "Vertex Shader Compilation Log : %s\n", szInfoLog);
+				logError("Vertex Shader Compilation Log : %s\n", szInfoLog);
 				free(szInfoLog);
 				exit(0);
 			}
@@ -232,7 +232,7 @@ void Init_Scene1_Car(void)
 			{
 				GLsizei written;
 				glGetShaderInfoLog(gScene1_FragmentShaderObject_Car, iInfoLogLength, &written, szInfoLog);
-				fprintf(gpFile, "Fragment Shader Compilation Log : %s\n", szInfoLog);
+				logError("Fragment Shader Compilation Log : %s\n", szInfoLog);
 				free(szInfoLog);
 				exit(0);
 			}
@@ -267,7 +267,7 @@ void Init_Scene1_Car(void)
 			{
 				GLsizei written;
 				glGetProgramInfoLog(gScene1_ShaderProgramObject_Car, iInfoLogLength, &written, szInfoLog);
-				fprintf(gpFile, "Shader Program Link Log : %s\n", szInfoLog);
+				logError("Shader Program Link Log : %s\n", szInfoLog);
 				free(szInfoLog);
 				exit(0);
 			}
