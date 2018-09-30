@@ -8,7 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../fontRenderer/fontRenderer.h"
+#include "fontRenderer.h"
 
 class Speedometer
 {
@@ -59,7 +59,7 @@ private:
     glm::mat4x4 perspectiveProjectionMatrix;
     glm::vec3 color;
 
-    const int numberOfCirclePoints = 10000;
+    const int numberOfCirclePoints = 30000;
     const GLsizei viewportWidth = 400;
 	const GLsizei viewportHeight = 200;
     GLsizei viewportX = 0;

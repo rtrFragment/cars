@@ -182,8 +182,8 @@ GLuint g_scene2_1_Uniform_Rect_BlackoutColor;
 /*** View Port 1 Start ***/
 GLfloat g_scene2_1_RectangleVertices_1[] =
 {
-	0.85f,0.3f,-14.5f,  // Using 0.3 to eliminate the jerky looking motion 
-	-0.85f,0.3f,-14.5f, // at the end 
+	0.85f,0.3f,-14.5f,  // Using 0.3 to eliminate the jerky looking motion
+	-0.85f,0.3f,-14.5f, // at the end
 	-0.85f,0.2f,-14.5f,
 	0.85f,0.2f,-14.5f
 };
@@ -203,8 +203,8 @@ unsigned short g_scene2_1_rect_color_states_1 = 0;
 /*** View Port 2 Start ***/
 GLfloat g_scene2_1_RectangleVertices_2[] =
 {
-	0.85f,0.3f,-14.5f,  // Using 0.3 to eliminate the jerky looking motion 
-	-0.85f,0.3f,-14.5f, // at the end 
+	0.85f,0.3f,-14.5f,  // Using 0.3 to eliminate the jerky looking motion
+	-0.85f,0.3f,-14.5f, // at the end
 	-0.85f,-2.5f,-14.5f,
 	0.85f,-2.5f,-14.5f
 };
@@ -224,8 +224,8 @@ unsigned short rect_color_states_2 = 1;
 /*** View Port 3 Start ***/
 GLfloat g_scene2_1_RectangleVertices_3[] =
 {
-	0.85f,0.3f,-14.5f,  // Using 0.3 to eliminate the jerky looking motion 
-	-0.85f,0.3f,-14.5f, // at the end 
+	0.85f,0.3f,-14.5f,  // Using 0.3 to eliminate the jerky looking motion
+	-0.85f,0.3f,-14.5f, // at the end
 	-0.85f,-2.5f,-14.5f,
 	0.85f,-2.5f,-14.5f
 };
@@ -245,8 +245,8 @@ unsigned short rect_color_states_3 = 2;
 /*** View Port 4 Start ***/
 GLfloat g_scene2_1_RectangleVertices_4[] =
 {
-	0.85f,0.3f,-14.5f,  // Using 0.3 to eliminate the jerky looking motion 
-	-0.85f,0.3f,-14.5f, // at the end 
+	0.85f,0.3f,-14.5f,  // Using 0.3 to eliminate the jerky looking motion
+	-0.85f,0.3f,-14.5f, // at the end
 	-0.85f,0.2f,-14.5f,
 	0.85f,0.2f,-14.5f
 };
@@ -897,7 +897,7 @@ void Scene2_Initialize(void)
 	glBindAttribLocation(g_scene2_1_ShaderProgramObject_Rectangle, FRAG_ATTRIBUTE_COLOR, "vColor");
 
 
-	// link Shader 
+	// link Shader
 	glLinkProgram(g_scene2_1_ShaderProgramObject_Rectangle);
 
 	iShaderProgramLinkStatus = 0;
@@ -953,7 +953,7 @@ void Scene2_Initialize(void)
 
 	glBindVertexArray(0);
 
-	//// Rectangle Section End 
+	//// Rectangle Section End
 
 	// Config For Cheating Board End
 
@@ -1543,7 +1543,7 @@ void Scene2_Initialize(void)
 	tdInletValveText.textColor = glm::vec3(1.0f, 0.0f, 0.0f);
 	tdInletValveText.textPosition = glm::vec3(-4.5f, 2.0f, -14.5f);
 	tdInletValveText.scale = 0.0085f; // 0 to 1 for convinience
-	frFontRenderer_InletletValveText->loadCharacters(tdInletValveText.text, (int)tdInletValveText.textSize);
+	frFontRenderer_InletletValveText->loadCharacters(tdInletValveText);
 
 	frFontRenderer_OutletletValveText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-MediumItalic.ttf", 72);
 	err = frFontRenderer_OutletletValveText->initialize();
@@ -1558,7 +1558,7 @@ void Scene2_Initialize(void)
 	tdOutletletValveText.textColor = glm::vec3(1.0f, 0.0f, 0.0f);
 	tdOutletletValveText.textPosition = glm::vec3(2.3f, 2.0f, -14.5f);
 	tdOutletletValveText.scale = 0.0085f; // 0 to 1 for convinience
-	frFontRenderer_OutletletValveText->loadCharacters(tdOutletletValveText.text, (int)tdOutletletValveText.textSize);
+	frFontRenderer_OutletletValveText->loadCharacters(tdOutletletValveText);
 
 	/*frFontRenderer_MainBoreText = new FontRenderer("fonts/AlegreyaSans-MediumItalic.ttf", 72);
 	err = frFontRenderer_MainBoreText->initialize();
@@ -1573,7 +1573,7 @@ void Scene2_Initialize(void)
 	tdMainBoreText.textColor = glm::vec3(1.0f, 0.0f, 0.0f);
 	tdMainBoreText.textPosition = glm::vec3(-2.0f, -4.0f, -14.5f);
 	tdMainBoreText.scale = 0.0085f; // 0 to 1 for convinience
-	frFontRenderer_MainBoreText->loadCharacters(tdMainBoreText.text, (int)tdMainBoreText.textSize);*/
+	frFontRenderer_MainBoreText->loadCharacters(tdMainBoreText);*/
 
 
 	frFontRenderer_PistonText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-MediumItalic.ttf", 72);
@@ -1589,7 +1589,7 @@ void Scene2_Initialize(void)
 	tdPistonText.textColor = glm::vec3(1.0f, 0.0f, 0.0f);
 	tdPistonText.textPosition = glm::vec3(-4.0f, -3.0f, -14.5f);
 	tdPistonText.scale = 0.0085f; // 0 to 1 for convinience
-	frFontRenderer_PistonText->loadCharacters(tdPistonText.text, (int)tdPistonText.textSize);
+	frFontRenderer_PistonText->loadCharacters(tdPistonText);
 
 	frFontRenderer_SparkPlugText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-MediumItalic.ttf", 72);
 	err = frFontRenderer_SparkPlugText->initialize();
@@ -1604,7 +1604,7 @@ void Scene2_Initialize(void)
 	tdSparkPlugText.textColor = glm::vec3(1.0f, 0.0f, 0.0f);
 	tdSparkPlugText.textPosition = glm::vec3(-1.2f, 3.0f, -14.5f);
 	tdSparkPlugText.scale = 0.0085f; // 0 to 1 for convinience
-	frFontRenderer_SparkPlugText->loadCharacters(tdSparkPlugText.text, (int)tdSparkPlugText.textSize);
+	frFontRenderer_SparkPlugText->loadCharacters(tdSparkPlugText);
 
 
 	frFontRenderer_IntakeText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-Bold.ttf", 78);
@@ -1620,7 +1620,7 @@ void Scene2_Initialize(void)
 	tdIntakeText.textColor = glm::vec3(0.0f, 0.0f, 1.0f);
 	tdIntakeText.textPosition = glm::vec3(1.5f, -2.0f, -14.5f);
 	tdIntakeText.scale = 0.015f;
-	frFontRenderer_IntakeText->loadCharacters(tdIntakeText.text, (int)tdIntakeText.textSize);
+	frFontRenderer_IntakeText->loadCharacters(tdIntakeText);
 
 	frFontRenderer_CompressionText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-Bold.ttf", 78);
 	err = frFontRenderer_CompressionText->initialize();
@@ -1636,7 +1636,7 @@ void Scene2_Initialize(void)
 	tdCompressionText.textColor = glm::vec3(1.0f, 1.0f, 0.56f);
 	tdCompressionText.textPosition = glm::vec3(1.5f, -2.0f, -14.5f);
 	tdCompressionText.scale = 0.015f;
-	frFontRenderer_CompressionText->loadCharacters(tdCompressionText.text, (int)tdCompressionText.textSize);
+	frFontRenderer_CompressionText->loadCharacters(tdCompressionText);
 
 	frFontRenderer_PowerText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-Bold.ttf", 78);
 	err = frFontRenderer_PowerText->initialize();
@@ -1651,7 +1651,7 @@ void Scene2_Initialize(void)
 	tdPowerText.textColor = glm::vec3(0.72f, 0.21f, 0.04f);
 	tdPowerText.textPosition = glm::vec3(1.5f, -2.0f, -14.5f);
 	tdPowerText.scale = 0.015f;
-	frFontRenderer_PowerText->loadCharacters(tdPowerText.text, (int)tdPowerText.textSize);
+	frFontRenderer_PowerText->loadCharacters(tdPowerText);
 
 	frFontRenderer_ExhaustText = new FontRenderer("RTR_resources/fonts/AlegreyaSans-Bold.ttf", 78);
 	err = frFontRenderer_ExhaustText->initialize();
@@ -1666,7 +1666,7 @@ void Scene2_Initialize(void)
 	tdExhaustText.textColor = glm::vec3(0.0f, 0.85f, 0.0f);
 	tdExhaustText.textPosition = glm::vec3(1.5f, -2.0f, -14.5f);
 	tdExhaustText.scale = 0.015f;
-	frFontRenderer_ExhaustText->loadCharacters(tdExhaustText.text, (int)tdExhaustText.textSize);
+	frFontRenderer_ExhaustText->loadCharacters(tdExhaustText);
 	/// Text Config End
 
 	/// Line Config Start
@@ -1756,7 +1756,7 @@ void Scene2_Initialize(void)
 	glAttachShader(g_scene2_Line_ShaderProgramObject, g_scene2_Line_FragmentShaderObject);
 	// pre-link Program object with Vertex Sahder position attribute
 	glBindAttribLocation(g_scene2_Line_ShaderProgramObject, FRAG_ATTRIBUTE_POSITION, "vPosition");
-	// link Shader 
+	// link Shader
 	glLinkProgram(g_scene2_Line_ShaderProgramObject);
 
 	iShaderProgramLinkStatus = 0;
@@ -2336,7 +2336,7 @@ void Scene2_Display(void)
 			glBindVertexArray(0);
 
 			glUseProgram(0);
-			// Set 5 End 
+			// Set 5 End
 
 			// Outlet Particle End
 			//fprintf_s(gpFile, "Out Outlet Particles. \n");
@@ -2399,7 +2399,7 @@ void Scene2_Display(void)
 		tdPistonText.textColor[1] *= blackOutColor[1];
 		tdPistonText.textColor[2] *= blackOutColor[2];
 		frFontRenderer_PistonText->renderText(&tdPistonText, modelMatrix, viewMatrix, g_scene2_1_PerspectiveProjectionMatrix);
-		
+
 
 		modelMatrix = glm::mat4(1.0f);
 		viewMatrix = glm::mat4(1.0f);
@@ -2484,7 +2484,7 @@ void Scene2_Display(void)
 
 		glUseProgram(0);
 
-		// Outlet Line 
+		// Outlet Line
 		glUseProgram(g_scene2_Line_ShaderProgramObject);
 
 		glBindVertexArray(g_scene2_Line_VertexArrayObject);
@@ -2504,7 +2504,7 @@ void Scene2_Display(void)
 
 		glUseProgram(0);
 
-		// Piston Line 
+		// Piston Line
 		glUseProgram(g_scene2_Line_ShaderProgramObject);
 
 		glBindVertexArray(g_scene2_Line_VertexArrayObject);
@@ -2676,7 +2676,7 @@ void Scene2_Display(void)
 	/*** View Port 2 End   ***/
 
 	/*** View Port 3 Start ***/
-	//Use Shader Program Object 
+	//Use Shader Program Object
 	glViewport(g_scene2_1_iPresentViewPort_3, 0, (GLsizei)currentWidth, (GLsizei)currentHeight);
 	//glViewport((GLint)100, 0, (GLsizei)currentWidth, (GLsizei)currentHeight);
 	glUseProgram(g_scene2_1_ShaderProgramObject);
@@ -3759,7 +3759,7 @@ void Scene2_Update(void)
 
 	if (g_scene2_bBeginFadeOut == true)
 	{
-		
+
 		blackOutColor[0] -= 0.002f;
 		blackOutColor[1] -= 0.002f;
 		blackOutColor[2] -= 0.002f;
@@ -3770,7 +3770,7 @@ void Scene2_Update(void)
 		if (blackOutColor[0] <= 0.0f)
 		{
 			//g_scene2_bGoToScene3 = true;
-			
+
 			// stop scene 2
 			g_scene2_bShowScene2 = false;
 			g_scene3_bShowScene3 = true;
@@ -3980,7 +3980,7 @@ void Scene2_UnInitialize(int i_Exit_Flag)
 		g_scene2_1_VertexBufferObject_ParticleVelocity_Spark = 0;
 	}
 
-	//Detach Shader 
+	//Detach Shader
 	glDetachShader(g_scene2_1_ShaderProgramObject, g_scene2_1_VertexShaderObject);
 	glDetachShader(g_scene2_1_ShaderProgramObject, g_scene2_1_FragmentShaderObject);
 
@@ -4052,8 +4052,8 @@ void Scene2_UnInitialize(int i_Exit_Flag)
 	//Stray call to glUseProgram(0)
 	glUseProgram(0);
 
-	
 
-	
+
+
 }
 

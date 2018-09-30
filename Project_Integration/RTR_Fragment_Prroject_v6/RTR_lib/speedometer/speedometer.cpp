@@ -94,7 +94,7 @@ void Speedometer::initializeSpeedPointText(void)
         textSpeedText->textPosition = glm::vec3(x, y, z);
         textSpeedText->scale = 0.003f;
 
-        fontRenderer->loadCharacters(textSpeedText->text, textSpeedText->textSize);
+        fontRenderer->loadCharacters(textSpeedText);
         speedPoints.push_back(textSpeedText);
     }
 }
@@ -120,9 +120,7 @@ void Speedometer::initializeFuelPointText(void)
         textFuelText->textPosition = glm::vec3(x, y, z);
         textFuelText->scale = 0.003f;
 
-		logInfo("fuel points: %s position %f %f %f", textFuelText->text, x, y, z);
-
-        fontRenderer->loadCharacters(textFuelText->text, textFuelText->textSize);
+        fontRenderer->loadCharacters(textFuelText);
         fuelPoints.push_back(textFuelText);
     }
 }
@@ -525,7 +523,7 @@ void Speedometer::resize(int width, int height)
 
 void Speedometer::cleanUp(void)
 {
-	logInfo("Speedometer cleanUp.\n");
+    logInfo("Speedometer cleanUp.\n");
     for(int counter = 0; counter < speedPoints.size(); ++counter)
     {
         if(speedPoints[counter] != NULL)
