@@ -24,6 +24,7 @@ CreditRoll::CreditRoll()
 void CreditRoll::initialize(void)
 {
     initializefontRenderer();
+    initializeAudio();
     initializeVertexShader();
     initializeFragmentShader();
     initializeShaderProgram();
@@ -37,6 +38,14 @@ void CreditRoll::initialize(void)
     loadCreditRollTitle();
     loadCreditRoll();
     loadGroupMembers();
+
+    if(totalAudioTime > 0.0f && creditRollTextData.size() > 0)
+    {
+        creditRollTranslationFactor = (totalAudioTime + 50.0f) / creditRollTextData.size() / 1000.0f;
+
+        logInfo("totalAudioTime: %f\n", totalAudioTime);
+        logInfo("creditRollTranslationFactor: %f\n", creditRollTranslationFactor);
+    }
 }
 
 void CreditRoll::initializefontRenderer(void)
@@ -47,6 +56,46 @@ void CreditRoll::initializefontRenderer(void)
     if(error != 0)
     {
         logError("Not able to initialize FreeType, error code: %d\n", error);
+    }
+}
+
+void CreditRoll::initializeAudio(void)
+{
+    audioManager = new AudioManager();
+    ALboolean audioManagerrInitialize = audioManager->initialize();
+
+    if(!audioManagerrInitialize)
+    {
+        logError("Not able to initialize audio manager.\n");
+    }
+    else
+    {
+        audioManager->setListenerPosition(0.0f, 0.0f, 0.0f);
+        audioManager->setListenerVelocity(0.0f, 0.0f, 0.0f);
+
+        alGenBuffers(1, &audioBufferId);
+
+        ALenum error = alGetError();
+
+        if(error != AL_NO_ERROR)
+        {
+            logError("Not able to create audio buffer, error code: %d\n", error);
+        }
+
+        error = AL_NO_ERROR;
+
+        ALboolean waveDataLoaded = audioManager->loadWaveAudio("resources/audio/creditRoll.wav", audioBufferId);
+
+        if(!waveDataLoaded)
+        {
+            logError("Not able to load audio file.\n");
+        }
+
+        soundSource = new SoundSource();
+        soundSource->setSourcef(AL_ROLLOFF_FACTOR, 1.0f);
+        soundSource->setSourcef(AL_REFERENCE_DISTANCE, 1.0f);
+
+        totalAudioTime = audioManager->getBufferLength(audioBufferId);
     }
 }
 
@@ -374,6 +423,11 @@ TextData* CreditRoll::generateTextData(char *line, glm::vec3 position)
     return nextLineText;
 }
 
+void CreditRoll::start(void)
+{
+    soundSource->play(audioBufferId);
+}
+
 void CreditRoll::update(void)
 {
     if(previewRectTransalateDone == false)
@@ -698,6 +752,24 @@ void CreditRoll::cleanUp(void)
     {
         delete fontRenderer;
         fontRenderer = NULL;
+    }
+
+    if(soundSource != NULL)
+    {
+        delete soundSource;
+        soundSource = NULL;
+    }
+
+    if(audioBufferId != 0)
+    {
+        alDeleteBuffers(1, &audioBufferId);
+        audioBufferId = 0;
+    }
+
+    if(audioManager != NULL)
+    {
+        delete audioManager;
+        audioManager = NULL;
     }
 
     if(vaoPreviewRect != 0)

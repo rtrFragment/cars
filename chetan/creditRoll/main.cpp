@@ -23,6 +23,7 @@ CreditRoll *creditRoll = NULL;
 bool isFullscreen = false;
 bool isActive = false;
 bool isEscapeKeyPressed = false;
+bool start = false;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 
@@ -162,18 +163,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
                     toggleFullscreen(hWnd, isFullscreen);
                 break;
 
-                case VK_UP:
-                break;
-
-                case VK_DOWN:
-                break;
-
-                case VK_LEFT:
-                break;
-
-                case VK_RIGHT:
-                break;
-
                 default:
                 break;
             }
@@ -181,6 +170,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
         break;
 
         case WM_CHAR:
+            switch(wParam)
+            {
+                case 'S':
+                case 's':
+                    if(start == false)
+                    {
+                        start = true;
+                        creditRoll->start();
+                    }
+                break;
+            }
+
         break;
 
         case WM_LBUTTONDOWN:
@@ -272,7 +273,7 @@ void initialize(void)
 
 void update(void)
 {
-    if(creditRoll != NULL)
+    if(creditRoll != NULL && start == true)
     {
         creditRoll->update();
     }
@@ -282,7 +283,7 @@ void display(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    if(creditRoll != NULL)
+    if(creditRoll != NULL && start == true)
     {
         creditRoll->display();
     }

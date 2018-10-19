@@ -5,6 +5,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "fontRenderer.h"
+#include "lib/audioManager/audioManager.h"
+#include "lib/audioManager/soundSource.h"
 
 class CreditRoll
 {
@@ -13,6 +15,7 @@ public:
     ~CreditRoll();
 
     void initialize(void);
+    void start(void);
     void update(void);
     void display(void);
     void resize(int width, int height);
@@ -32,7 +35,6 @@ private:
     const GLfloat creditRollStartPosition = -3.75f;
     const GLfloat creditRollEndPosition = 1.5f;
     const GLfloat creditRollRaceToRisePositionY = 1.82f;
-    const GLfloat creditRollTranslationFactor = 0.01f;
     const GLfloat previewRectFinalTopY = 1.9f + 0.2f;
     const GLfloat previewRectFinalBottomY = -0.5f;
     const GLfloat previewRectFinalRightX = -0.25;
@@ -44,6 +46,7 @@ private:
 
     GLfloat fadeInOutColor = 0.0f;
     GLfloat previewTextureFadeOutColor = 1.0f;
+    GLfloat creditRollTranslationFactor = 0.01f;
 
     GLfloat previewRectVertices[12] = {
         previewRectInitialRightX, previewRectInitialTopY, 0.0f,
@@ -91,7 +94,13 @@ private:
     std::vector<TextData *> creditRollTextData;
     std::vector<TextData *> groupMembersTextData;
 
+    AudioManager *audioManager = NULL;
+    SoundSource *soundSource = NULL;
+    ALuint audioBufferId = 0;
+    float totalAudioTime = 0.0f;
+
     void initializefontRenderer(void);
+    void initializeAudio(void);
     void initializeVertexShader(void);
     void initializeFragmentShader(void);
     void initializeShaderProgram(void);
