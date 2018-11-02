@@ -25,6 +25,7 @@ class AudioManager
         ~AudioManager();
 
         static AudioManager *audioManager;
+        static ALboolean initializationCompleted;
 
         FILE *logFile = NULL;
         CWaves *waveLoader = NULL;

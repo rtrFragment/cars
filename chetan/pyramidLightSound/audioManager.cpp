@@ -2,6 +2,7 @@
 #include "lib/logger/logger.h"
 
 AudioManager* AudioManager::audioManager = nullptr;
+ALboolean AudioManager::initializationCompleted = AL_FALSE;
 
 AudioManager::AudioManager() {}
 AudioManager::AudioManager(const AudioManager&) {}
@@ -10,40 +11,39 @@ ALboolean AudioManager::initialize()
 {
     if(audioManager == nullptr)
     {
+        AudioManager::initializationCompleted = AL_FALSE;
         audioManager = new AudioManager();
-    }
 
-    audioManager->waveLoader = new CWaves();
+        audioManager->waveLoader = new CWaves();
 
-    if(audioManager->waveLoader == NULL)
-    {
-        logError("Not able to create wave loader.\n");
-    }
-
-
-    ALboolean initializationCompleted = AL_FALSE;
-    audioManager->device = alcOpenDevice(NULL);
-
-    if(audioManager->device)
-    {
-        logInfo("Audio device created: %s\n", alcGetString(audioManager->device, ALC_DEVICE_SPECIFIER));
-        audioManager->context = alcCreateContext(audioManager->device, NULL);
-
-        if(audioManager->context)
+        if(audioManager->waveLoader == NULL)
         {
-            alcMakeContextCurrent(audioManager->context);
-            initializationCompleted = AL_TRUE;
-            logInfo("Context created.\n");
+            logError("Not able to create wave loader.\n");
+        }
+
+        audioManager->device = alcOpenDevice(NULL);
+
+        if(audioManager->device)
+        {
+            logInfo("Audio device created: %s\n", alcGetString(audioManager->device, ALC_DEVICE_SPECIFIER));
+            audioManager->context = alcCreateContext(audioManager->device, NULL);
+
+            if(audioManager->context)
+            {
+                alcMakeContextCurrent(audioManager->context);
+                initializationCompleted = AL_TRUE;
+                logInfo("Context created.\n");
+            }
+            else
+            {
+                alcCloseDevice(audioManager->device);
+                logError("Cannot create context.\n");
+            }
         }
         else
         {
-            alcCloseDevice(audioManager->device);
-            logError("Cannot create context.\n");
+            logError("Cannot create audio device.\n");
         }
-    }
-    else
-    {
-        logError("Cannot create audio device.\n");
     }
 
     return initializationCompleted;
