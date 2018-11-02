@@ -1,47 +1,49 @@
 #include "audioManager.h"
+#include "lib/logger/logger.h"
 
-AudioManager::AudioManager()
-{
-    if (fopen_s(&logFile, "audio_manager_debug.log", "w") != 0)
-	{
-        printf("\nNot able to open audio manager debug log.\n");
-	}
+AudioManager* AudioManager::audioManager = nullptr;
+ALboolean AudioManager::initializationCompleted = AL_FALSE;
 
-    log("---------- AudioManager | OpenAL Debug Logs Starts ----------\n");
-
-    waveLoader = new CWaves();
-
-    if(waveLoader == NULL)
-    {
-        log("[Error] | Not able to create wave loader.");
-    }
-}
+AudioManager::AudioManager() {}
+AudioManager::AudioManager(const AudioManager&) {}
 
 ALboolean AudioManager::initialize()
 {
-    ALboolean initializationCompleted = AL_FALSE;
-    device = alcOpenDevice(NULL);
-
-    if(device)
+    if(audioManager == nullptr)
     {
-        log("[Info]: Audio device created: %s\n", alcGetString(device, ALC_DEVICE_SPECIFIER));
-        context = alcCreateContext(device, NULL);
+        AudioManager::initializationCompleted = AL_FALSE;
+        audioManager = new AudioManager();
 
-        if(context)
+        audioManager->waveLoader = new CWaves();
+
+        if(audioManager->waveLoader == NULL)
         {
-            alcMakeContextCurrent(context);
-            initializationCompleted = AL_TRUE;
-            log("[Info]: Context created.\n");
+            logError("Not able to create wave loader.\n");
+        }
+
+        audioManager->device = alcOpenDevice(NULL);
+
+        if(audioManager->device)
+        {
+            logInfo("Audio device created: %s\n", alcGetString(audioManager->device, ALC_DEVICE_SPECIFIER));
+            audioManager->context = alcCreateContext(audioManager->device, NULL);
+
+            if(audioManager->context)
+            {
+                alcMakeContextCurrent(audioManager->context);
+                initializationCompleted = AL_TRUE;
+                logInfo("Context created.\n");
+            }
+            else
+            {
+                alcCloseDevice(audioManager->device);
+                logError("Cannot create context.\n");
+            }
         }
         else
         {
-            alcCloseDevice(device);
-            log("[Error]: Cannot create context.\n");
+            logError("Cannot create audio device.\n");
         }
-    }
-    else
-    {
-        log("[Error]: Cannot create audio device.\n");
     }
 
     return initializationCompleted;
@@ -56,18 +58,18 @@ ALboolean AudioManager::loadWaveAudio(const char* filePath, ALuint bufferId)
 	ALenum bufferFormat;
 	ALchar *data = NULL;
 
-    if(waveLoader)
+    if(audioManager->waveLoader)
     {
-        WAVERESULT loadWaveResult = waveLoader->LoadWaveFile(filePath, &waveId);
+        WAVERESULT loadWaveResult = audioManager->waveLoader->LoadWaveFile(filePath, &waveId);
 
         if(SUCCEEDED(loadWaveResult))
         {
-            WAVERESULT waveSizeResult = waveLoader->GetWaveSize(waveId, (unsigned long *)&dataSize);
-            WAVERESULT waveDataResult = waveLoader->GetWaveData(waveId, (void **)&data);
-            WAVERESULT waveFrequencyResult = waveLoader->GetWaveFrequency(waveId, (unsigned long *)&frequency);
-            WAVERESULT waveBufferFormatResult = waveLoader->GetWaveALBufferFormat(waveId, &alGetEnumValue, (unsigned long *)&bufferFormat);
+            WAVERESULT waveSizeResult = audioManager->waveLoader->GetWaveSize(waveId, (unsigned long *)&dataSize);
+            WAVERESULT waveDataResult = audioManager->waveLoader->GetWaveData(waveId, (void **)&data);
+            WAVERESULT waveFrequencyResult = audioManager->waveLoader->GetWaveFrequency(waveId, (unsigned long *)&frequency);
+            WAVERESULT waveBufferFormatResult = audioManager->waveLoader->GetWaveALBufferFormat(waveId, &alGetEnumValue, (unsigned long *)&bufferFormat);
 
-            log("[Info] | Buffer format: %d\n", bufferFormat);
+            logInfo("Buffer format: %d\n", bufferFormat);
 
             if(SUCCEEDED(waveSizeResult) && SUCCEEDED(waveDataResult) && SUCCEEDED(waveFrequencyResult) && SUCCEEDED(waveBufferFormatResult))
             {
@@ -82,23 +84,23 @@ ALboolean AudioManager::loadWaveAudio(const char* filePath, ALuint bufferId)
                 if(error == AL_NO_ERROR)
                 {
                     loaded = AL_TRUE;
-                    log("[Info] | wav file loaded: %s\n", filePath);
+                    logInfo("Wave file loaded: %s\n", filePath);
                 }
                 else
                 {
-                    log("[Error] | Not able to load audio data, error: %d, file: %s\n", error, filePath);
+                    logError("Not able to load audio data, error: %d, file: %s\n", error, filePath);
                 }
             }
             else
             {
-                log("[Error]: Not able to load wav data\n");
+                logError("Not able to load wav data\n");
             }
 
-            waveLoader->DeleteWaveFile(waveId);
+            audioManager->waveLoader->DeleteWaveFile(waveId);
         }
         else
         {
-            log("[Error]: Not able to load audio file '%s'\n", filePath);
+            logError("Not able to load audio file '%s'\n", filePath);
         }
     }
 
@@ -115,50 +117,56 @@ void AudioManager::setListenerVelocity(float x, float y, float z)
     alListener3f(AL_VELOCITY, x, y, z);
 }
 
-void AudioManager::log(const char* message, ...)
+ALfloat AudioManager::getBufferLength(ALuint buffer)
 {
-    if(logFile != NULL)
-    {
-        va_list args;
-        va_start(args, message );
-        vfprintf(logFile, message, args );
-        va_end( args );
+    ALint size;
+    ALint bits;
+    ALint channels;
+    ALint freq;
 
-        fflush(logFile);
+    alGetBufferi(buffer, AL_SIZE, &size);
+    alGetBufferi(buffer, AL_BITS, &bits);
+    alGetBufferi(buffer, AL_CHANNELS, &channels);
+    alGetBufferi(buffer, AL_FREQUENCY, &freq);
+
+    ALenum error =  alGetError();
+
+    if(error != AL_NO_ERROR)
+    {
+        return 0.0f;
     }
+
+    return (ALfloat)((ALuint)size / channels / (bits / 8)) / (ALfloat)freq;
 }
 
 void AudioManager::cleanUp()
 {
-    ALCcontext *pContext = alcGetCurrentContext();
-
-	if(pContext == context)
+    if(audioManager != nullptr)
     {
-        alcMakeContextCurrent(NULL);
-    }
-
-	alcDestroyContext(context);
-	alcCloseDevice(device);
-
-    context = NULL;
-    device = NULL;
-
-    if (waveLoader)
-	{
-		delete waveLoader;
-		waveLoader = NULL;
-        log("[Info]: Audio device destroyed.\n");
-	}
-
-    if(logFile)
-    {
-        log("---------- AudioManager | OpenAL Debug Logs End ----------\n");
-        fclose(logFile);
-        logFile = NULL;
+        delete audioManager;
+        audioManager = nullptr;
     }
 }
 
 AudioManager::~AudioManager()
 {
-    cleanUp();
+    ALCcontext *pContext = alcGetCurrentContext();
+
+	if(pContext == audioManager->context)
+    {
+        alcMakeContextCurrent(NULL);
+    }
+
+	alcDestroyContext(audioManager->context);
+	alcCloseDevice(audioManager->device);
+
+    audioManager->context = NULL;
+    audioManager->device = NULL;
+
+    if (audioManager->waveLoader)
+	{
+		delete audioManager->waveLoader;
+		audioManager->waveLoader = NULL;
+        logInfo("Audio device destroyed.\n");
+	}
 }

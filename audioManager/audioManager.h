@@ -11,16 +11,22 @@
 class AudioManager
 {
     public:
-        AudioManager();
-        ~AudioManager();
+        static ALboolean initialize();
+        static ALboolean loadWaveAudio(const char* filePath, ALuint bufferId);
 
-        ALboolean initialize();
-        ALboolean loadWaveAudio(const char* filePath, ALuint bufferId);
-
-        void setListenerPosition(float x, float y, float z);
-        void setListenerVelocity(float x, float y, float z);
+        static void setListenerPosition(float x, float y, float z);
+        static void setListenerVelocity(float x, float y, float z);
+        static ALfloat AudioManager::getBufferLength(ALuint buffer);
+        static void cleanUp();
 
     private:
+        AudioManager();
+        AudioManager(const AudioManager&);
+        ~AudioManager();
+
+        static AudioManager *audioManager;
+        static ALboolean initializationCompleted;
+
         FILE *logFile = NULL;
         CWaves *waveLoader = NULL;
 
@@ -28,5 +34,4 @@ class AudioManager
         ALCcontext *context = NULL;
 
         void log(const char* message, ...);
-        void cleanUp();
 };
