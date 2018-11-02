@@ -4,6 +4,7 @@
 #include <gl/gl.h>
 
 #include "resources/resource.h"
+#include "lib/logger/logger.h"
 #include "vmath.h"
 #include "audioManager.h"
 #include "soundSource.h"
@@ -80,8 +81,6 @@ GLfloat materialDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
 GLfloat materialSpecular[] = {1.0f, 1.0f, 1.0f, 0.0f};
 GLfloat materialShininess = 50.0f;
 
-FILE *logFile = NULL;
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 
 void initialize(void);
@@ -106,14 +105,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInsatnce, LPSTR lpszCmdLi
     TCHAR szApplicationClassName[] = TEXT("RTR_OPENGL_PP_PYRAMID_MULTIPLE_LIGHT");
     bool done = false;
 
-	if (fopen_s(&logFile, "debug.log", "w") != 0)
+	if (!Logger::initialize("debug.log"))
 	{
 		MessageBox(NULL, TEXT("Unable to open log file."), TEXT("Error"), MB_OK | MB_TOPMOST | MB_ICONSTOP);
 		exit(EXIT_FAILURE);
 	}
-
-    fprintf(logFile, "---------- CG: OpenGL Debug Logs Start ----------\n");
-    fflush(logFile);
 
     wndClassEx.cbSize = sizeof(WNDCLASSEX);
     wndClassEx.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -195,10 +191,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInsatnce, LPSTR lpszCmdLi
     }
 
     cleanUp();
-
-    fprintf(logFile, "---------- CG: OpenGL Debug Logs End ----------\n");
-    fflush(logFile);
-    fclose(logFile);
 
     return (int)message.wParam;
 }
@@ -319,9 +311,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 void initialize(void)
 {
-    PIXELFORMATDESCRIPTOR pfd;
     int pixelFormatIndex = 0;
-
+    PIXELFORMATDESCRIPTOR pfd;
     ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));
 
     pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
@@ -368,17 +359,15 @@ void initialize(void)
     }
 
     GLenum glewError = glewInit();
+
 	if (glewError != GLEW_OK)
 	{
-        fprintf(logFile, "Cannot initialize GLEW, Error: %d", glewError);
-        fflush(logFile);
-
+        logError("Cannot initialize GLEW, error: %d", glewError);
         cleanUp();
         exit(EXIT_FAILURE);
 	}
 
     listExtensions();
-
     initializeAudio();
 
     // Initialize the shaders and shader program object.
@@ -412,24 +401,21 @@ void listExtensions(void)
     GLint extensionCount = 0;
     glGetIntegerv(GL_NUM_EXTENSIONS, &extensionCount);
 
-    fprintf(logFile, "Number of extensions: %d\n", extensionCount);
-    fflush(logFile);
+    logInfo("Number of extensions: %d\n", extensionCount);
 
     for(int counter = 0; counter < extensionCount; ++counter)
     {
-        fprintf(logFile, "%d] Extension name: %s\n", counter + 1, (const char*)glGetStringi(GL_EXTENSIONS, counter));
-        fflush(logFile);
+        logInfo("%2d] Extension name: %s\n", counter + 1, (const char*)glGetStringi(GL_EXTENSIONS, counter));
     }
 }
 
 void initializeAudio(void)
 {
-    audioManager = new AudioManager();
-    ALboolean audioManagerrInitialize = audioManager->initialize();
+    ALboolean audioManagerrInitialize = AudioManager::initialize();
 
     if(!audioManagerrInitialize)
     {
-        fprintf(logFile, "[Error] | Not able to initialize audio manager.\n");
+        logError("Not able to initialize audio manager.\n");
     }
     else
     {
@@ -442,7 +428,7 @@ void initializeAudio(void)
 
         if(error != AL_NO_ERROR)
         {
-            fprintf(logFile, "[Error] | Not able to create audio buffer, error code: %d\n", error);
+            logError("Not able to create audio buffer, error code: %d\n", error);
         }
 
         error = AL_NO_ERROR;
@@ -451,7 +437,7 @@ void initializeAudio(void)
 
         if(!waveDataLoaded)
         {
-            fprintf(logFile, "[Error] | Not able to load audio file.\n");
+            logError("Not able to load audio file.\n");
         }
 
         soundSource = new SoundSource();
@@ -517,7 +503,7 @@ void initializeVertexShader()
             {
                 GLsizei written = 0;
                 glGetShaderInfoLog(vertexShaderObject, infoLogLength, &written, infoLog);
-                fprintf(logFile, "CG: Vertex shader compilation log: %s\n", infoLog);
+                logError("Vertex shader compilation log: %s\n", infoLog);
                 free(infoLog);
                 cleanUp();
                 exit(EXIT_FAILURE);
@@ -604,7 +590,7 @@ void initializeFragmentShader()
             {
                 GLsizei written = 0;
                 glGetShaderInfoLog(fragmentShaderObject, infoLogLength, &written, infoLog);
-                fprintf(logFile, "CG: Fragment shader compilation log: %s\n", infoLog);
+                logError("Fragment shader compilation log: %s\n", infoLog);
                 free(infoLog);
                 cleanUp();
                 exit(EXIT_FAILURE);
@@ -646,7 +632,7 @@ void initializeShaderProgram()
             {
                 GLsizei written = 0;
                 glGetProgramInfoLog(shaderProgramObject, infoLogLength, &written, infoLog);
-                fprintf(logFile, "CG: Shader program link log: %s\n", infoLog);
+                logError("Shader program link log: %s\n", infoLog);
                 free(infoLog);
                 cleanUp();
                 exit(EXIT_FAILURE);
@@ -811,8 +797,6 @@ void drawPyramid()
     soundSource->setPosition(modalTranslate);
     soundSource->setSource3f(AL_DIRECTION, 0.0f, 0.0f, -0.6f);
 
-    // fprintf(logFile, "Direction: %f %f %f\n", direction[0], direction[1], direction[2]);
-
     // Pass modelMatrix to vertex shader in 'modelMatrix' variable defined in shader.
     glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, modelMatrix);
 
@@ -896,11 +880,7 @@ void cleanUp(void)
         audioBufferId = 0;
     }
 
-    if(audioManager != NULL)
-    {
-        delete audioManager;
-        audioManager = NULL;
-    }
+    AudioManager::cleanUp();
 
     if(vaoPyramid)
     {
@@ -963,4 +943,6 @@ void cleanUp(void)
 
     DestroyWindow(hWnd);
     hWnd = NULL;
+
+    Logger::close();
 }
